@@ -1,0 +1,25 @@
+name: Server Unit Test
+
+on:
+  pull_request:
+    branches: dev-server
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Setup Stage
+      - name: "[Setup] Checkout"
+        uses: actions/checkout@v3
+      - name: "[Setup] Check Python Version"
+        run: python --version
+      - name: "[Setup] Python dependencies"
+        run: pip install -r fastapi/requirements.txt
+      # Test Stage
+      - name: "[Test] Unit Test"
+        run: |
+          cd fastapi
+          for entry in tests/*.py
+          do
+            python -m unittest ${entry}
+          done
