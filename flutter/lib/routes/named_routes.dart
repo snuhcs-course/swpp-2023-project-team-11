@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 abstract class Routes {
+  static const String ENTRY = "/entry";
   static const String FIRST = "/first";
   static const String SIGN_UP = "/sign-up";
   static String Maker({
