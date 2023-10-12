@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 
 // ignore: unused_import
 import 'entry_screen_controller.dart';
@@ -10,33 +11,40 @@ class EntryScreen extends GetView<EntryScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfff2e2f3),
+      backgroundColor: const Color(0xfff2e2f3),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [_buildLogoContainer()],
+        children: [
+          const SizedBox(height: 200),
+          _buildLogoContainer(),
+        ],
       ),
       bottomNavigationBar: _buildActionsContainer(context),
+      extendBody: true,
     );
   }
 
   Widget _buildLogoContainer() {
-    return Container(
+    return SizedBox(
       child: Column(
         children: [
-          Container(
+          Image.asset(
+            'assets/images/SNEK_LOGO.png',
             width: 140,
             height: 112,
-            color: Colors.orange,
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             "일이삼사오육칠팔구십이삼사",
             style: TextStyle(fontSize: 16, color: const Color(0xff9f75d1)),
           ),
-          Text(
+          const Text(
             "SNEK",
-            style: TextStyle(fontSize: 30, color: const Color(0xffff733d)),
+            style: TextStyle(
+              fontSize: 30,
+              color: const Color(0xffff733d),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -45,8 +53,8 @@ class EntryScreen extends GetView<EntryScreenController> {
 
   Widget _buildActionsContainer(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
-        bottom: MediaQuery.of(context).padding.bottom / 2 + 12,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
+        bottom: MediaQuery.of(context).padding.bottom / 2 + 24,
       ),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
@@ -58,18 +66,17 @@ class EntryScreen extends GetView<EntryScreenController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildButton(
+          MainButton(
+            mainButtonType: MainButtonType.light,
             text: '로그인',
-            color: Color(0xfff8f1f8),
-            onTap: () {},
+            onPressed: controller.onSignInButtonTap,
           ),
           const SizedBox(height: 16),
-          _buildButton(
+          MainButton(
+            mainButtonType: MainButtonType.key,
             text: '회원가입',
-            color: Color(0xffff733d),
-            onTap: () {},
+            onPressed: controller.onSignUpButtonTap,
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
