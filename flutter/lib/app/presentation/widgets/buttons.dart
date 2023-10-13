@@ -27,7 +27,7 @@ class MainButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        minimumSize:fixedSize?? const Size(double.infinity,52),
+        minimumSize: fixedSize ?? const Size(double.infinity, 52),
         fixedSize: fixedSize,
       ),
       child: Text(
@@ -50,4 +50,43 @@ enum MainButtonType {
   final Color textColor;
 
   const MainButtonType(this.buttonColor, this.textColor);
+}
+
+class SmallButton extends StatelessWidget {
+  final void Function() onPressed;
+  final String text;
+
+  const SmallButton({
+    super.key,
+    required this.onPressed,
+    required this.text,
+  });
+
+  final Color buttonColor = const Color(0xffff9162);
+  final Color textColor = Colors.white;
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: buttonColor,
+        disabledBackgroundColor: const Color(0xffd3d3d3),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 11.5,
+          vertical: 13,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 }

@@ -4,12 +4,16 @@ class MainTextFormField extends StatelessWidget {
   final TextEditingController textEditingController;
   final String? hintText;
   final String? titleText;
+  final TextStyle? textStyle;
+  final double? verticalPadding;
 
   const MainTextFormField({
     super.key,
     required this.textEditingController,
     required this.hintText,
     this.titleText,
+    this.textStyle,
+    this.verticalPadding,
   });
 
   @override
@@ -43,7 +47,9 @@ class MainTextFormField extends StatelessWidget {
     );
     return TextFormField(
       controller: textEditingController,
+      style: textStyle,
       decoration: InputDecoration(
+        contentPadding: EdgeInsets.symmetric(horizontal: 12,vertical: verticalPadding??10),
         filled: true,
         fillColor: const Color(0xfff8f1fb),
         border: border,
@@ -52,6 +58,7 @@ class MainTextFormField extends StatelessWidget {
         focusedBorder: border,
         disabledBorder: border,
         hintText: hintText,
+        hintStyle: textStyle?.copyWith(color: Color(0xff2d2a45).withOpacity(0.64)),
       ),
     );
   }
