@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 abstract class Routes {
   static const String ENTRY = "/entry";
   static const String FIRST = "/first";
-  static const String SIGN_UP = "/sign-up";
+  static const String COUNTRY = "/country";
+  static const String EMAIL = "/email";
+
   static String Maker({
     required String nextRoute,
     Map<String, String>? parameters,

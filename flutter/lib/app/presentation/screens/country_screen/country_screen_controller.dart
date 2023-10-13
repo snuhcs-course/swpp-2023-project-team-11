@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 
 class CountryScreenController extends GetxController {
   final eitherOptionTapped = false.obs;
@@ -9,5 +10,7 @@ class CountryScreenController extends GetxController {
     this.tappedButton.value = tappedButton;
   }
 
-  CountryScreenController();
+  void onNextButtonTap() {
+    Get.toNamed(Routes.Maker(nextRoute: Routes.EMAIL));
+  }
 }

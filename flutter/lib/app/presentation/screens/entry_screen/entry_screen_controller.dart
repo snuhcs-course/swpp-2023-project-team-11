@@ -21,7 +21,7 @@ class EntryScreenController extends GetxController {
   }
 
   void onSignUpButtonTap() {
-    Get.offNamed(Routes.SIGN_UP);
+    Get.toNamed(Routes.Maker(nextRoute: Routes.COUNTRY));
   }
 
   void onSignInButtonTap() {

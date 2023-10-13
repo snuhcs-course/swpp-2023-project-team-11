@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 
 // ignore: unused_import
@@ -13,11 +14,7 @@ class CountryScreen extends GetView<CountryScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 64,
-        leading: BackButton(color: Color(0xff2D3A45).withOpacity(0.4)),
-      ),
+      appBar: SimpleAppBar(),
       backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +103,7 @@ class CountryScreen extends GetView<CountryScreenController> {
       child: MainButton(
         mainButtonType: MainButtonType.key,
         text: '다음',
-        onPressed: controller.eitherOptionTapped.value ? () => {} : null,
+        onPressed: controller.eitherOptionTapped.value ? controller.onNextButtonTap : null,
       ),
     );
   }
