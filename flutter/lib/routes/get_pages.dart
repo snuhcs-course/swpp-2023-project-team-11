@@ -3,6 +3,9 @@ import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen.da
 import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen_binding.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
+import '../app/presentation/screens/country_screen/country_screen.dart';
+import '../app/presentation/screens/country_screen/country_screen_binding.dart';
+
 abstract class GetPages {
   static get pages => [
     GetPage(
@@ -10,5 +13,10 @@ abstract class GetPages {
       page: () => const EntryScreen(),
       binding: EntryScreenBinding(),
     ),
+    GetPage(
+      name: Routes.SIGN_UP,
+      page: () => const CountryScreen(),
+      binding: CountryScreenBinding(),
+    )
   ];
 }

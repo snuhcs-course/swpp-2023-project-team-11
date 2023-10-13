@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/use_cases/sign_in_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/sign_up_use_case.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/widgets/sign_in_bottom_sheet.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 
 class EntryScreenController extends GetxController {
   final SignInUseCase _signInUseCase;
@@ -19,7 +20,9 @@ class EntryScreenController extends GetxController {
     FlutterNativeSplash.remove();
   }
 
-  void onSignUpButtonTap() {}
+  void onSignUpButtonTap() {
+    Get.offNamed(Routes.SIGN_UP);
+  }
 
   void onSignInButtonTap() {
     Get.bottomSheet(
