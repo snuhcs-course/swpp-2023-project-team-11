@@ -78,6 +78,7 @@ class SmallButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+        minimumSize: Size(90, 0)
       ),
       child: Text(
         text,
@@ -89,4 +90,26 @@ class SmallButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class BottomNextButton extends StatelessWidget{
+  final void Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding:
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
+        bottom: MediaQuery.of(context).padding.bottom / 2 + 24,
+      ),
+      child: MainButton(
+          mainButtonType: MainButtonType.key,
+          text: '다음',
+          onPressed: onPressed
+      ),
+    );
+  }
+
+  BottomNextButton({required this.onPressed});
+
 }

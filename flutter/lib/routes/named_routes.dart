@@ -5,6 +5,8 @@ abstract class Routes {
   static const String FIRST = "/first";
   static const String COUNTRY = "/country";
   static const String EMAIL = "/email";
+  static const String PASSWORD = "/password";
+  static const String MAKE_PROFILE = "/make_profile";
 
   static String Maker({
     required String nextRoute,
