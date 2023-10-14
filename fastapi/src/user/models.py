@@ -1,4 +1,8 @@
-from sqlalchemy import Column, Integer, String, BigInteger, Date, ForeignKey
+from datetime import date
+from typing import List
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Date
+from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
 
@@ -6,85 +10,111 @@ from src.database import Base
 class Email(Base):
     __tablename__ = "email"
 
-    email = Column(String(31), nullable=False, unique=True)
-    email_id = Column(BigInteger, primary_key=True)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    email: Mapped[str] = Column(String(31), nullable=False, unique=True)
+
+    code: Mapped["EmailCode"] = relationship(back_populates="email")
+    verification: Mapped["EmailVerification"] = relationship(back_populates="email")
 
 
 class EmailCode(Base):
     __tablename__ = "email_code"
 
-    email_id = Column(BigInteger, nullable=False, unique=True, ForeignKey=Email.email_id)
-    code = Column(Integer, nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    email_id: Mapped[int] = Column(ForeignKey("email.id"), nullable=False, unique=True)
+    code: Mapped[int] = Column(Integer, nullable=False)
+
+    email: Mapped["Email"] = relationship(back_populates="code")
 
 
-class VerifiedEmail(Base):
-    __tablename__ = "verified_email"
+class EmailVerification(Base):
+    __tablename__ = "email_verification"
 
-    email_id = Column(BigInteger, nullable=False, unique=True, ForeignKey=Email.email_id)
-    id = Column(BigInteger, primary_key=True)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    email_id: Mapped[int] = Column(ForeignKey("email.id"), nullable=False, unique=True)
+    token: Mapped[str] = Column(String(44), nullable=False, unique=True)
+
+    email: Mapped["Email"] = relationship(back_populates="verification")
 
 
-class Profile(Base):
-    __tablename__ = "profile"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False)
-    birth = Column(Date, nullable=False)
-    sex = Column(String(1), nullable=False)
-    major = Column(String(63), nullable=False)
-    admission_year = Column(Integer, nullable=False)
-    about_me = Column(String(255))
-    mbti = Column(Integer)
-    favorite_food = Column(Integer, ForeignKey("food.food_id"))
-    favorite_movie = Column(Integer, ForeignKey("movie.movie_id"))
+user_hobby = Table(
+    "user_hobby",
+    Base.metadata,
+    Column("user_id", ForeignKey("profile.id"), nullable=False),
+    Column("hobby_id", ForeignKey("hobby.id"), nullable=False),
+)
+
+
+user_lang = Table(
+    "user_lang",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.user_id"), nullable=False),
+    Column("lang_id", ForeignKey("language.id"), nullable=False),
+)
 
 
 class Food(Base):
     __tablename__ = "food"
-    food_id = Column(Integer, primary_key=True)
-    food = Column(String(31), nullable=False, unique=True)
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
 class Movie(Base):
     __tablename__ = "movie"
-    movie_id = Column(Integer, primary_key=True)
-    movie_name = Column(String(63), nullable=False, unique=True)
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(63), nullable=False, unique=True)
 
 
 class Hobby(Base):
     __tablename__ = "hobby"
-    hobby_id = Column(Integer, primary_key=True)
-    hobby = Column(String(31), nullable=False, unique=True)
 
-
-class UserHobby(Base):
-    __tablename__ = "user_hobby"
-    user_id = Column(Integer, ForeignKey("profile.user_id"))
-    hobby_id = Column(Integer, ForeignKey("hobby.hobby_id"))
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
 class Language(Base):
     __tablename__ = "language"
-    lang_id = Column(Integer, primary_key=True)
-    lang = Column(String(31), nullable=False, unique=True)
 
-
-class UserLanguage(Base):
-    __tablename__ = "user_id"
-
-    user_id = Column(Integer, foreign_key=Profile.user_id, nullable=False)
-    lang_id = Column(Integer, foreign_key=Language.lang_id, nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
 class Country(Base):
     __tablename__ = "country"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(31), nullable=False, unique=True)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
-class Users(Base):
+class Profile(Base):
+    __tablename__ = "profile"
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False)
+    birth: Mapped[date] = Column(Date, nullable=False)
+    sex: Mapped[str] = Column(String(1), nullable=False)
+    major: Mapped[str] = Column(String(63), nullable=False)
+    admission_year: Mapped[int] = Column(Integer, nullable=False)
+    about_me: Mapped[str] = Column(String(255))
+    mbti: Mapped[int] = Column(Integer)
+    food_id: Mapped[int] = Column(ForeignKey("food.id"))
+    movie_id: Mapped[int] = Column(ForeignKey("movie.id"))
+
+    favorite_food: Mapped[Food | None] = relationship()
+    favorite_movie: Mapped[Movie | None] = relationship()
+    hobbies: Mapped[List["Hobby"]] = relationship(secondary=user_hobby)
+    user: Mapped["User"] = relationship(back_populates="profile")
+
+
+class User(Base):
     __tablename__ = "users"
 
-    user_id = Column(Integer, foreign_key=Profile.id, nullable=False)
-    verification_id = Column(Integer, foreign_key=VerifiedEmail.id, nullable=False)
-    counting = Column(Integer, foreign_key=Country.id, nullable=False)
+    user_id: Mapped[int] = Column(ForeignKey("profile.id"), primary_key=True)
+    verification_id: Mapped[int] = Column(ForeignKey("email_verification.id"), nullable=False, unique=True)
+    country_id: Mapped[int] = Column(ForeignKey("country.id"), nullable=False)
+
+    profile: Mapped["Profile"] = relationship(back_populates="user")
+    verification: Mapped["EmailVerification"] = relationship()
+    country: Mapped["Country"] = relationship()
