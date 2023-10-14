@@ -1,10 +1,11 @@
 from sqlalchemy import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 
 # Base Model Class
-Base = declarative_base()
+Base: DeclarativeMeta = declarative_base()
 
 
 # Session Class

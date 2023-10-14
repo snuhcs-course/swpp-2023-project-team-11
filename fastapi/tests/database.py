@@ -18,6 +18,7 @@ class TestDbConnector(unittest.TestCase):
     PG_USER = os.environ.get('SNEK_POSTGRES_USER')
     PG_PW = os.environ.get('SNEK_POSTGRES_PW')
     TEST_DB_URL: str = f"postgresql://{PG_USER}:{PG_PW}@localhost:5432/{PG_DB}"
+
     engine: Engine = create_engine(TEST_DB_URL)
     SessionLocal: sessionmaker[Session] = declarative_session(engine)
 
