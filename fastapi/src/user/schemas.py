@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class EmailRequest(BaseModel):
-    email: str
+    email: EmailStr
 
 
 class VerificationRequest(BaseModel):
-    email: str
+    email: EmailStr
     code: int
 
 
@@ -19,6 +19,6 @@ class UserProfile(BaseModel):
 
 
 class CreateUserRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     user: UserProfile

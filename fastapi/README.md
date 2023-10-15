@@ -13,7 +13,11 @@ brew install postgresql@14
 virtualenv venv --python=3.11
 source venv/bin/activate
 pip install -r requirements.txt
-pip install fastapi
+# make sure you are using uvicorn installed in your virtual environment.
+which uvicorn
+# if it does not belong to your venv, deactivate and then activate venv
+deactivate
+source venv/bin/activate
 ```
 
 ## How to Test
