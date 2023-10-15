@@ -1,46 +1,44 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 
-from src.auth.dependencies import oauth2_scheme
+from src.auth.schemas import SessionResponse
+from src.auth.service import create_session
+from src.user.dependencies import *
 from src.user.schemas import *
+from src.user import service
 
 
 router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/email/code")
-def create_verification_code(req: EmailRequest):
-    pass
-    # code = service.create_verification_code(req.email)
-    # service.send_code_via_email(req.email, code)
+def create_verification_code(email: str = Depends(check_snu_email)):
+    code = service.create_verification_code(email)
+    service.send_code_via_email(email, code)
 
 
 @router.post("/email/verify", response_model=VerificationResponse)
-def create_email_verification(req: VerificationRequest):
-    pass
-    # if service.check_verificaiton_code(req.email, req.code):
-    #     token = service.create_verification(req.email)
-    #     return VerificationResponse(token=token)
+def create_email_verification(email: str = Depends(check_verification_code)):
+    token = service.create_verification(email)
+    return VerificationResponse(token=token)
 
 
-@router.post("/sign_up")
-def create_user(req: CreateUserRequest):
-    pass
-    # service.create_user(req.email, req.password, req.user)
-    # session_id = service.create_session(req.email)
-    # # TODO add session id into the header
+@router.post("/sign_up", response_model=SessionResponse)
+def create_user(req: CreateUserRequest = Depends(check_verification_token)):
+    service.create_user(req.email, req.password, req.user)
+    session_key = create_session(req.email)
+    return SessionResponse(access_token=session_key, token_type="bearer")
 
 
 @router.get("/me", response_model=UserProfile)
-def get_me(session_id: str = Depends(oauth2_scheme)):
-    pass
-    # return service.get_user_by_session_id(session_id)
+def get_me(user: UserProfile = Depends(get_user)):
+    return user
 
 
-@router.get("/all")
-def get_all_users(session_id: str = Depends(oauth2_scheme)):
-    pass
-    # user = service.get_user_by_session_id(session_id)
-    # return service.get_user_recommendations(user)
+@router.get("/all", response_model=List[UserProfile])
+def get_all_users(user: UserProfile = Depends(get_user)):
+    return service.get_user_recommendations(user)
 
 # @router.post("email/send_by_gmail")
 # async def email_by_gmail(request: Request, mailing_list: SendEmail, background_tasks: BackgroundTasks):

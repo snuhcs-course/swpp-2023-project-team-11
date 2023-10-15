@@ -20,5 +20,6 @@ class UserProfile(BaseModel):
 
 class CreateUserRequest(BaseModel):
     email: EmailStr
+    token: str
     password: str
     user: UserProfile
