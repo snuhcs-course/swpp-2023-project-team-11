@@ -14,6 +14,6 @@ def create_session(email: str = Depends(check_password)):
     return SessionResponse(access_token=session_key, token_type="bearer")
 
 
-@router.post("/sign_out", response_model=None)
+@router.delete("/sign_out", response_model=None)
 def delete_session(session_key: str = Depends(oauth2_scheme)):
     service.delete_session(session_key)
