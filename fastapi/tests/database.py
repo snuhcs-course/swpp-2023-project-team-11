@@ -3,7 +3,7 @@ from sqlalchemy import Engine, Integer, String, Column, create_engine
 from sqlalchemy.orm import sessionmaker, Session
 import unittest
 
-from src.database import Base, declarative_session
+from src.database import Base, engine, SessionLocal
 
 
 class ForTest(Base):
@@ -14,17 +14,10 @@ class ForTest(Base):
 
 
 class TestDbConnector(unittest.TestCase):
-    PG_DB = os.environ.get('SNEK_POSTGRES_DB')
-    PG_USER = os.environ.get('SNEK_POSTGRES_USER')
-    PG_PW = os.environ.get('SNEK_POSTGRES_PW')
-    TEST_DB_URL: str = f"postgresql://{PG_USER}:{PG_PW}@localhost:5432/{PG_DB}"
-
-    engine: Engine = create_engine(TEST_DB_URL)
-    SessionLocal: sessionmaker[Session] = declarative_session(engine)
 
     def test_connection(self):
         Base.metadata.create_all(bind=self.engine)
-        db = self.SessionLocal()
+        db = SessionLocal()
 
         test = ForTest(id=1, subject="math")
 
