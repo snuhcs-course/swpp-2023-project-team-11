@@ -1,55 +1,46 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from src.auth.dependencies import oauth2_scheme
 from src.user.schemas import *
-from src.user.service import *
 
-router = APIRouter("/user")
+
+router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/email/code")
 def create_verification_code(req: EmailRequest):
     pass
-    # service.auth_request(req.email)
+    # code = service.create_verification_code(req.email)
+    # service.send_code_via_email(req.email, code)
 
 
 @router.post("/email/verify", response_model=VerificationResponse)
 def create_email_verification(req: VerificationRequest):
     pass
-    # token = service.get_token(email, code)
-    # return {"token":token}
+    # if service.check_verificaiton_code(req.email, req.code):
+    #     token = service.create_verification(req.email)
+    #     return VerificationResponse(token=token)
 
 
-@router.post("/auth/sign_in")
-def create_session(req: SessionRequest):
-    pass
-    # session_id = service.get_session_id(email, password)
-    # return {"session_id":session_id}
-
-
-@router.post("/auth/sign_up")
+@router.post("/sign_up")
 def create_user(req: CreateUserRequest):
     pass
-    # session_id = service.get_session_id(email, password)
-    # return {"session_id":session_id}
+    # service.create_user(req.email, req.password, req.user)
+    # session_id = service.create_session(req.email)
+    # # TODO add session id into the header
 
 
-@router.post("/auth/sign_out")
-def delete_session():
+@router.get("/me", response_model=UserProfile)
+def get_me(session_id: str = Depends(oauth2_scheme)):
     pass
-    # result = service.delete_session_id(session_id)
-    # return {"result":result}
-
-
-@router.get("/me")
-def get_me():
-    pass
-    # return {"user":}
+    # return service.get_user_by_session_id(session_id)
 
 
 @router.get("/all")
-def get_all_users():
+def get_all_users(session_id: str = Depends(oauth2_scheme)):
     pass
-    # return {"user":}
+    # user = service.get_user_by_session_id(session_id)
+    # return service.get_user_recommendations(user)
 
 # @router.post("email/send_by_gmail")
 # async def email_by_gmail(request: Request, mailing_list: SendEmail, background_tasks: BackgroundTasks):
