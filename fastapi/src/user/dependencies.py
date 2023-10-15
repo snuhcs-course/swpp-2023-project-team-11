@@ -17,4 +17,5 @@ def check_verification_token(req: CreateUserRequest) -> CreateUserRequest:
 
 
 def get_user(session_key: str = Depends(oauth2_scheme)) -> UserProfile:
+
     pass
