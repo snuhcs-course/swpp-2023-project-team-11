@@ -115,6 +115,9 @@ class User(Base):
     verification_id: Mapped[int] = Column(ForeignKey("email_verification.id"), nullable=False, unique=True)
     country_id: Mapped[int] = Column(ForeignKey("country.id"), nullable=False)
 
+    salt: Mapped[str] = Column(String(24), nullable=False)
+    hash: Mapped[str] = Column(String(44), nullable=False)
+
     profile: Mapped["Profile"] = relationship(back_populates="user")
     verification: Mapped["EmailVerification"] = relationship()
     country: Mapped["Country"] = relationship()
