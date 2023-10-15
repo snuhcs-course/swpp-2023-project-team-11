@@ -1,9 +1,7 @@
-import os
-from sqlalchemy import Engine, Integer, String, Column, create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import Integer, String, Column, create_engine
 import unittest
 
-from src.database import Base, engine, SessionLocal
+from src.database import Base, DbConnector
 
 
 class ForTest(Base):
@@ -16,8 +14,8 @@ class ForTest(Base):
 class TestDbConnector(unittest.TestCase):
 
     def test_connection(self):
-        Base.metadata.create_all(bind=self.engine)
-        db = SessionLocal()
+        Base.metadata.create_all(bind=DbConnector.engine)
+        db = DbConnector.get_db()
 
         test = ForTest(id=1, subject="math")
 
