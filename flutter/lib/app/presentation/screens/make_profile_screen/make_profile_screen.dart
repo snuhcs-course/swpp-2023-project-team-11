@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
+import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 
 // ignore: unused_import
 import '../../widgets/text_form_fields.dart';
@@ -41,7 +42,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                   fontSize: 14))
             ],
           ),
-        )
+        ),
+      bottomNavigationBar:  BottomNextButton(onPressed: controller.onNextButtonTap),
     );
   }
 

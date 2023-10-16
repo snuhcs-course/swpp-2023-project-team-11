@@ -1,8 +1,13 @@
 import 'package:get/route_manager.dart';
+import 'package:mobile_app/app/presentation/screens/chatting_rooms_screen/chatting_rooms_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/email_screen/email_screen.dart';
 import 'package:mobile_app/app/presentation/screens/email_screen/email_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/friends_screen/friends_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen.dart';
+import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/profile_screen/profile_screen_binding.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 import '../app/presentation/screens/country_screen/country_screen.dart';
@@ -39,6 +44,16 @@ abstract class GetPages {
           name: Routes.ENTRY + Routes.COUNTRY + Routes.EMAIL + Routes.PASSWORD + Routes.MAKE_PROFILE,
           page: () => const MakeProfileScreen(),
           binding: MakeProfileScreenBinding(),
+        ),
+        GetPage(
+          name: Routes.MAIN,
+          page: () => const MainIndexedScreen(),
+          bindings: [
+            MainIndexedScreenBinding(),
+            FriendsScreenBinding(),
+            ChattingRoomsScreenBinding(),
+            ProfileScreenBinding(),
+          ]
         )
       ];
 }

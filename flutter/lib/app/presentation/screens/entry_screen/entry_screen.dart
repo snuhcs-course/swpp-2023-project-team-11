@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 
 // ignore: unused_import
 import 'entry_screen_controller.dart';
@@ -12,6 +13,11 @@ class EntryScreen extends GetView<EntryScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff2e2f3),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Get.offAllNamed(Routes.MAIN);
+        },
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
