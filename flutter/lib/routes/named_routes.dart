@@ -1,8 +1,14 @@
 import 'package:get/get.dart';
 
 abstract class Routes {
+  static const String ENTRY = "/entry";
   static const String FIRST = "/first";
-  static const String SIGN_UP = "/sign-up";
+  static const String COUNTRY = "/country";
+  static const String EMAIL = "/email";
+  static const String PASSWORD = "/password";
+  static const String MAKE_PROFILE = "/make_profile";
+  static const String MAIN = "/main";
+
   static String Maker({
     required String nextRoute,
     Map<String, String>? parameters,
