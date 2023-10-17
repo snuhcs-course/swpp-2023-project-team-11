@@ -7,16 +7,6 @@ from sqlalchemy.orm import Mapped, relationship
 from src.database import Base
 
 
-class Email(Base):
-    __tablename__ = "email"
-
-    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    email: Mapped[str] = Column(String(31), nullable=False, unique=True)
-
-    code: Mapped["EmailCode"] = relationship(back_populates="email")
-    verification: Mapped["EmailVerification"] = relationship(back_populates="email")
-
-
 class EmailCode(Base):
     __tablename__ = "email_code"
 
@@ -37,11 +27,45 @@ class EmailVerification(Base):
     email: Mapped["Email"] = relationship(back_populates="verification")
 
 
+class Email(Base):
+    __tablename__ = "email"
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    email: Mapped[str] = Column(String(31), nullable=False, unique=True)
+
+    code: Mapped[EmailCode | None] = relationship(back_populates="email")
+    verification: Mapped[EmailVerification | None] = relationship(back_populates="email")
+
+
+user_food = Table(
+    "user_food",
+    Base.metadata,
+    Column("user_id", ForeignKey("profile.id"), nullable=False),
+    Column("food_id", ForeignKey("food.id"), nullable=False),
+)
+
+
+user_movie = Table(
+    "user_movie",
+    Base.metadata,
+    Column("user_id", ForeignKey("profile.id"), nullable=False),
+    Column("movie_id", ForeignKey("movie.id"), nullable=False),
+)
+
+
 user_hobby = Table(
     "user_hobby",
     Base.metadata,
     Column("user_id", ForeignKey("profile.id"), nullable=False),
     Column("hobby_id", ForeignKey("hobby.id"), nullable=False),
+)
+
+
+user_location = Table(
+    "user_location",
+    Base.metadata,
+    Column("user_id", ForeignKey("profile.id"), nullable=False),
+    Column("location_id", ForeignKey("location.id"), nullable=False),
 )
 
 
@@ -51,6 +75,13 @@ user_lang = Table(
     Column("user_id", ForeignKey("users.user_id"), nullable=False),
     Column("lang_id", ForeignKey("language.id"), nullable=False),
 )
+
+
+class Country(Base):
+    __tablename__ = "country"
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
 class Food(Base):
@@ -74,15 +105,15 @@ class Hobby(Base):
     name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
-class Language(Base):
-    __tablename__ = "language"
+class Location(Base):
+    __tablename__ = "location"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = Column(String(31), nullable=False, unique=True)
 
 
-class Country(Base):
-    __tablename__ = "country"
+class Language(Base):
+    __tablename__ = "language"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = Column(String(31), nullable=False, unique=True)
@@ -94,18 +125,18 @@ class Profile(Base):
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = Column(String(31), nullable=False)
     birth: Mapped[date] = Column(Date, nullable=False)
-    sex: Mapped[str] = Column(String(1), nullable=False)
-    major: Mapped[str] = Column(String(63), nullable=False)
+    sex: Mapped[str] = Column(String(15), nullable=False)
+    major: Mapped[str] = Column(String(31), nullable=False)
     admission_year: Mapped[int] = Column(Integer, nullable=False)
-    about_me: Mapped[str] = Column(String(255))
-    mbti: Mapped[int] = Column(Integer)
-    food_id: Mapped[int] = Column(ForeignKey("food.id"))
-    movie_id: Mapped[int] = Column(ForeignKey("movie.id"))
+    about_me: Mapped[str | None] = Column(String(255))
+    mbti: Mapped[str | None] = Column(String(15))
+    country_id: Mapped[int] = Column(ForeignKey("country.id"), nullable=False)
 
-    favorite_food: Mapped[Food | None] = relationship()
-    favorite_movie: Mapped[Movie | None] = relationship()
-    hobbies: Mapped[List["Hobby"]] = relationship(secondary=user_hobby)
-    user: Mapped["User"] = relationship(back_populates="profile")
+    country: Mapped[Country] = relationship()
+    foods: Mapped[List[Food]] = relationship(secondary=user_food)
+    movies: Mapped[List[Movie]] = relationship(secondary=user_movie)
+    hobbies: Mapped[List[Hobby]] = relationship(secondary=user_hobby)
+    locations: Mapped[List[Location]] = relationship(secondary=user_location)
 
 
 class User(Base):
@@ -113,11 +144,11 @@ class User(Base):
 
     user_id: Mapped[int] = Column(ForeignKey("profile.id"), primary_key=True)
     verification_id: Mapped[int] = Column(ForeignKey("email_verification.id"), nullable=False, unique=True)
-    country_id: Mapped[int] = Column(ForeignKey("country.id"), nullable=False)
-
+    lang_id: Mapped[int] = Column(ForeignKey("language.id"), nullable=False)
     salt: Mapped[str] = Column(String(24), nullable=False)
     hash: Mapped[str] = Column(String(44), nullable=False)
 
-    profile: Mapped["Profile"] = relationship(back_populates="user")
-    verification: Mapped["EmailVerification"] = relationship()
-    country: Mapped["Country"] = relationship()
+    profile: Mapped[Profile] = relationship()
+    verification: Mapped[EmailVerification] = relationship()
+    main_language: Mapped[Language] = relationship()
+    languages: Mapped[List[Language]] = relationship(secondary=user_lang)

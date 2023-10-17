@@ -1,3 +1,4 @@
+from typing import Generator, Any
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -19,7 +20,7 @@ class DbConnector:
     SessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     @classmethod
-    def get_db(cls) -> Session:
+    def get_db(cls) -> Generator[Session, Any, None]:
         db = cls.SessionLocal()
         try:
             yield db
