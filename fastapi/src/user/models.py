@@ -77,13 +77,6 @@ user_lang = Table(
 )
 
 
-class Country(Base):
-    __tablename__ = "country"
-
-    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = Column(String(31), nullable=False, unique=True)
-
-
 class Food(Base):
     __tablename__ = "food"
 
@@ -130,9 +123,8 @@ class Profile(Base):
     admission_year: Mapped[int] = Column(Integer, nullable=False)
     about_me: Mapped[str | None] = Column(String(255))
     mbti: Mapped[str | None] = Column(String(15))
-    country_id: Mapped[int] = Column(ForeignKey("country.id"), nullable=False)
+    nation_code: Mapped[int] = Column(Integer, nullable=False)
 
-    country: Mapped[Country] = relationship()
     foods: Mapped[List[Food]] = relationship(secondary=user_food)
     movies: Mapped[List[Movie]] = relationship(secondary=user_movie)
     hobbies: Mapped[List[Hobby]] = relationship(secondary=user_hobby)

@@ -3,6 +3,9 @@ import unittest
 
 from src.database import Base, DbConnector
 from src.user.dependencies import *
+from src.user.models import *
+from src.user.schemas import ProfileData
+from src.user.service import *
 
 
 class TestDependencies(unittest.TestCase):
@@ -50,13 +53,17 @@ class TestDependencies(unittest.TestCase):
             with self.assertRaises(InvalidEmailException):
                 self.assertEqual(check_verification_code(invalid_email_req, db), self.naver_email)
             with self.assertRaises(InvalidEmailCodeException):
-                self.assertEqual(check_verification_code(invalid_code_req ,db), self.snu_email)
+                self.assertEqual(check_verification_code(invalid_code_req, db), self.snu_email)
 
     def test_check_verification_token(self) -> None:
-        profile = Profile(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None, country="Korea", foods=[], movies=[], hobbies=[], locations=[])
-        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile, main_language="", languages=[])
-        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile, main_language="", languages=[])
-        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile, main_language="", languages=[])
+        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
+                          nation_code=82, foods=[], movies=[], hobbies=[], locations=[])
+        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile,
+                                      main_language="", languages=[])
+        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
+                                              main_language="", languages=[])
+        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile,
+                                              main_language="", languages=[])
 
         for db in DbConnector.get_db():
             check_verification_token(valid_req, db)
@@ -64,6 +71,56 @@ class TestDependencies(unittest.TestCase):
                 check_verification_token(invalid_email_req, db)
             with self.assertRaises(InvalidEmailTokenException):
                 check_verification_token(invalid_token_req, db)
+
+
+class TestService(unittest.TestCase):
+    def test_sort_target_users(self):
+        my_profile = ProfileData(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "japan_food"],
+            movies=["horror", "action"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+
+        your_profile1 = ProfileData(
+            name="sangin", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=82,
+            foods=["italian_food", "japan_food"], movies=["romance", "action"],
+            locations=["up", "jahayeon"],
+            hobbies=["golf"])
+
+        your_profile2 = ProfileData(
+            name="abdula", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+             mbti=None,nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+
+        your_profile3 = ProfileData(
+            name="jiho", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            nation_code=1, mbti=None,
+            foods=["japan_food"], movies=["action"],
+            locations=["jahayeon"],
+            hobbies=["golf", "soccer", "book"])
+
+        me = User(user_id = 0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        you1 = User(user_id = 1, verification_id=2, lang_id=2, salt="2", hash="2", profile=your_profile1)
+        you2 = User(user_id = 2, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile2)
+        you3 = User(user_id = 3, verification_id=4, lang_id=4, salt="4", hash="4", profile=your_profile3)
+        yous = [you1, you2, you3]
+
+        result = sort_target_users(me, yous)
+        self.assertEqual(result[0].user_id, 2)
+        self.assertEqual(result[0].profile.name, "abdula")
+        self.assertEqual(result[1].user_id, 1)
+        self.assertEqual(result[1].profile.name, "sangin")
+        self.assertEqual(result[2].user_id, 3)
+        self.assertEqual(result[2].profile.name, "jiho")
 
 
 if __name__ == '__main__':
