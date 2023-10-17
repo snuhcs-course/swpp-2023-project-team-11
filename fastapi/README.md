@@ -29,5 +29,5 @@ SNEK_POSTGRES_DB={DBNAME} SNEK_POSTGRES_USER={USER} SNEK_POSTGRES_PW={PW} python
 ## How to Run
 
 ```sh
-uvicorn src.app.main:app --reload
+SNEK_POSTGRES_DB={DBNAME} SNEK_POSTGRES_USER={USER} SNEK_POSTGRES_PW={PW} uvicorn src.main:app --reload
 ```
