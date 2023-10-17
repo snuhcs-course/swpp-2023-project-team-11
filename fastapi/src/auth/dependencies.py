@@ -14,20 +14,19 @@ from src.user.models import User, EmailVerification, Email
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/sign_in")
 
 
-def check_password(form: OAuth2PasswordRequestForm = Depends(),  db: DbSession = Depends(DbConnector.get_db)) -> str:
+def check_password(form: OAuth2PasswordRequestForm = Depends(),  db: DbSession = Depends(DbConnector.get_db)) -> int:
     user = db.query(User).join(User.verification).join(EmailVerification.email).filter(Email.email == form.username).first()
     if user is None:
         raise InvalidUserException(form.username)
 
     payload = bytes(form.password + user.salt, 'utf-8')
-    # TODO replace with secret
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
 
     hash = bytes(user.hash, 'utf-8')
     if signature != base64.urlsafe_b64decode(hash):
         raise InvalidPasswordException()
 
-    return form.username
+    return user.user_id
 
 
 def get_session(session_key: str = Depends(oauth2_scheme), db: DbSession = Depends(DbConnector.get_db)) -> Session:

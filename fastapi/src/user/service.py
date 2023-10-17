@@ -1,6 +1,6 @@
 from typing import List
 
-from src.user.schemas import UserProfile
+from src.user.schemas import Profile
 
 
 def create_verification_code(email: str) -> int:
@@ -15,9 +15,9 @@ def create_verification(email: str) -> str:
     pass
 
 
-def create_user(email: str, password: str, user: UserProfile):
+def create_user(email: str, password: str, user: Profile):
     pass
 
 
-def get_user_recommendations(user: UserProfile) -> List[UserProfile]:
+def get_user_recommendations(user: Profile) -> List[Profile]:
     pass

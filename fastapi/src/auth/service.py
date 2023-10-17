@@ -1,32 +1,30 @@
-from fastapi import Depends
+import base64
+from datetime import datetime
 import hmac, hashlib
+from sqlalchemy import insert, delete
 from sqlalchemy.orm import Session as DbSession
-import time
 
-import src.auth.models
-from src.database import *
-from src.auth.models import *
-
-HASH_SECRET = ""
+from src.auth.constants import HASH_SECRET
+from src.auth.exceptions import InvalidSessionException
+from src.auth.models import Session
 
 
-def create_session(email: str, db: DbSession = Depends(DbConnector.get_db)) -> str:
-    secret = bytes(HASH_SECRET, 'utr-8')
-    message = bytes(email + str(time.time()), 'utf-8')
-    session_key = hmac.new(
-        key=secret,
-        msg=message,
-        digestmod=hashlib.sha256
-    ).digest()
+def create_session(user_id: int, db: DbSession) -> str:
+    payload = bytes(str(user_id) + ' ' + str(datetime.now()), 'utf-8')
+    signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
+    session_key = base64.urlsafe_b64encode(signature).decode('utf-8')
 
-    session = src.auth.models.Session(session_key=session_key)
+    db.execute(insert(Session).values({
+        "session_key": session_key,
+        "user_id": user_id,
+    }))
+    db.commit()
 
-
-    pass
-    # return 'session-key'
+    return session_key
 
 
-def delete_session(session_key: str):
-    pass
-    # if session_key != 'session-key':
-    #     raise HTTPException(status_code=401, detail="session does not exist")
+def delete_session(session_key: str, db: DbSession):
+    if db.scalar(delete(Session).where(Session.session_key == session_key).returning(Session.session_key)) != session_key:
+        raise InvalidSessionException()
+
+    db.commit()

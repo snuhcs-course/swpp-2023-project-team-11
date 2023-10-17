@@ -40,6 +40,8 @@ class CreateUserRequest(BaseModel):
     token: str
     password: str
     profile: Profile
+    main_language: str
+    languages: List[str]
 
 
 class UserResponse(BaseModel):
