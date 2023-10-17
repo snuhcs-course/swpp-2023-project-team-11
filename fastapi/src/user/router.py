@@ -11,7 +11,7 @@ from src.database import DbConnector
 from src.user.dependencies import *
 from src.user.schemas import *
 from src.user import service
-
+import asyncio
 
 router = APIRouter(prefix="/user", tags=["user"])
 
