@@ -54,9 +54,9 @@ class TestDependencies(unittest.TestCase):
 
     def test_check_verification_token(self) -> None:
         profile = Profile(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None, country="Korea", foods=[], movies=[], hobbies=[], locations=[])
-        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile)
-        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile)
-        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile)
+        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile, main_language="", languages=[])
+        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile, main_language="", languages=[])
+        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile, main_language="", languages=[])
 
         for db in DbConnector.get_db():
             check_verification_token(valid_req, db)
