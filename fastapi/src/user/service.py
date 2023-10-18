@@ -47,15 +47,12 @@ def create_user(email: str, password: str, user: ProfileData):
 
 
 def get_target_users(user: User, db: DbSession) -> List[User]:
+    filter = (Profile.nation_code != 82) if user.profile.nation_code == 82 else (Profile.nation_code == 82)
     me = alias(user_lang, 'M')
     you = alias(user_lang, 'Y')
-    return list(db.query(User).where(
+    return list(db.query(User).join(User.profile).where(filter).where(
         User.user_id.in_(
-            select(you.c.user_id).join(
-                me, you.c.lang_id == me.c.lang_id
-            ).where(me.c.user_id == 3)
-        )
-    ))
+            select(you.c.user_id).join(me, you.c.lang_id == me.c.lang_id).where(me.c.user_id == user.user_id))))
 
 
 def sort_target_users(user: User, targets: List[User]) -> List[User]:

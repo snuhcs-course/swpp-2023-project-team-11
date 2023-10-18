@@ -154,11 +154,11 @@ class TestService(unittest.TestCase):
         for db in DbConnector.get_db():
             kor_user = db.query(User).join(User.profile).where(Profile.name == 'user1').first()
             for_user = db.query(User).join(User.profile).where(Profile.name == 'user8').first()
-            
+
             targets = list(map(lambda user: user.profile.name, get_target_users(kor_user, db)))
-            self.assertEqual(targets, ['user2', 'user4', 'user6'])
+            self.assertEqual(set(targets), set(['user2', 'user4', 'user6']))
             targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
-            self.assertEqual(targets, ['user1', 'user3', 'user5'])
+            self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
 
     def test_sort_target_users(self):
         my_profile = Profile(
