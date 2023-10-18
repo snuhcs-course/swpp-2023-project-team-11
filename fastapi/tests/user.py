@@ -45,7 +45,7 @@ class TestService(unittest.TestCase):
     user_names: List[str] = [
         "user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8",
     ]
-    user_nation_codes: List[int] = [82, 13, 82, 14, 82, 15, 82, 16]
+    user_nation_codes: List[int] = [KOREA_CODE, 13, KOREA_CODE, 14, KOREA_CODE, 15, KOREA_CODE, 16]
     user_main_lang_idxs: List[int] = [0, 0, 0, 0, 1, 1, 1, 1]
     user_lang_idxs: List[List[int]] = [
         [0, 2], [0, 2], [0, 3], [0, 3], [1, 2], [1, 2], [1, 3], [1, 3]
@@ -147,7 +147,7 @@ class TestService(unittest.TestCase):
 
     def test_check_verification_token(self) -> None:
         profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
-                          nation_code=82, foods=[], movies=[], hobbies=[], locations=[])
+                          nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
         valid_req = CreateUserRequest(email=self.email, token=self.token, password="", profile=profile,
                                       main_language="", languages=[])
         invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
@@ -165,34 +165,77 @@ class TestService(unittest.TestCase):
             with self.assertRaises(InvalidEmailTokenException):
                 check_verification_token(invalid_token_req, db)
 
-    @unittest.skip("Currently it fails")
     def test_create_user(self):
         for db in DbConnector.get_db():
             email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
             verification_id = db.scalar(insert(EmailVerification).values({"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
-            db.flush()
-
+            db.commit()
+        for db in DbConnector.get_db():
             req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name,
-                    birth=date.today(),
-                    sex="male",
-                    major="Hello",
-                    admission_year=2023,
-                    nation_code=82,
-                    foods=['A', 'B'],
-                    movies=['A', 'B'],
-                    hobbies=['A', 'B'],
-                    locations=['A', 'B']
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=13, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
                 ), main_language='A', languages=['B'])
             user_id = create_user(req, verification_id, db)
             user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
             self.assertEqual(user.user_id, user_id)
             self.assertEqual(user.profile.name, self.name)
-            self.assertEqual(set(user.profile.foods), {'A', 'B'} )
-            self.assertEqual(set(user.profile.movies), {'A', 'B'})
-            self.assertEqual(set(user.profile.hobbies), {'A', 'B'})
-            self.assertEqual(set(user.profile.locations), {'A', 'B'})
-            self.assertEqual(set(user.languages), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'} )
+            self.assertEqual(set(map(lambda item: item.name, user.profile.movies)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'A', 'B'})
+            with self.assertRaises(EmailInUseException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            user_id = create_user(req, verification_id, db)
+            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
+            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'B'})
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'X'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidFoodException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'X'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidMovieException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'X'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidHobbyException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'X']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidLocationException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='X', languages=['B'])
+            with self.assertRaises(InvalidLanguageException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['X'])
+            with self.assertRaises(InvalidLanguageException):
+                create_user(req, verification_id, db)
 
     def test_create_salt_hash(self):
         salt, hash = create_salt_hash('')
@@ -256,6 +299,7 @@ class TestService(unittest.TestCase):
         self.assertEqual(result[1].profile.name, "sangin")
         self.assertEqual(result[2].user_id, 3)
         self.assertEqual(result[2].profile.name, "jiho")
+
 
 if __name__ == '__main__':
     unittest.main()

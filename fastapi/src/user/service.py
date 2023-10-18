@@ -29,7 +29,6 @@ def create_verification_code(email: str, db: DbSession) -> int:
         db.execute(insert(EmailCode).values({"email_id": email_id, "code": code}))
     else:
         db.execute(update(EmailCode).values(code=code).where(EmailCode.email_id == email_id))
-    db.flush()
 
     return code
 
@@ -63,8 +62,6 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
         db.execute(insert(EmailVerification).values({"token": token, "email_id": email_id}))
     except IntegrityError:
         raise EmailInUseException(email)
-    else:
-        db.flush()
 
     return token
 
@@ -78,28 +75,35 @@ def check_verification_token(req: CreateUserRequest, db: DbSession) -> int:
 
 
 def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> int:
-    if req.main_language not in req.languages:
+    # Add foreign user's main language to available languages list
+    if req.profile.nation_code != KOREA_CODE and req.main_language not in req.languages:
         req.languages.append(req.main_language)
 
     salt, hash = create_salt_hash(req.password)
-    profile_id = db.scalar(insert(Profile).values({
-            "name": req.profile.name,
-            "birth": req.profile.birth,
-            "sex": req.profile.sex,
-            "major": req.profile.major,
-            "admission_year": req.profile.admission_year,
-            "about_me": req.profile.about_me,
-            "mbti": req.profile.mbti,
-            "nation_code": req.profile.nation_code,
-        }).returning(Profile.id))
-    db.execute(insert(User).values({
-            "user_id": profile_id,
-            "verification_id": verification_id,
-            "lang_id": select(Language.id).where(Language.name == req.main_language).scalar_subquery(),
-            "salt": salt,
-            "hash": hash,
-        }))
-    db.flush()
+    profile_id = create_profile(req.profile, db)
+    create_user_item(profile_id, user_food, "food_id", Food, req.profile.foods, InvalidFoodException, db)
+    create_user_item(profile_id, user_movie, "movie_id", Movie, req.profile.movies, InvalidMovieException, db)
+    create_user_item(profile_id, user_hobby, "hobby_id", Hobby, req.profile.hobbies, InvalidHobbyException, db)
+    create_user_item(profile_id, user_location, "location_id", Location, req.profile.locations, InvalidLocationException, db)
+
+    lang_id = db.scalar(select(Language.id).where(Language.name == req.main_language))
+    if lang_id is None:
+        raise InvalidLanguageException()
+
+    try:
+        db.execute(insert(User).values({
+                "user_id": profile_id,
+                "verification_id": verification_id,
+                "lang_id": lang_id,
+                "salt": salt,
+                "hash": hash,
+            }))
+    except IntegrityError:
+        raise EmailInUseException(req.email)
+    
+    create_user_item(profile_id, user_lang, "lang_id", Language, req.languages, InvalidLanguageException, db)
+
+    return profile_id
 
 
 def create_salt_hash(password: str) -> (str, str):
@@ -107,11 +111,35 @@ def create_salt_hash(password: str) -> (str, str):
     payload = bytes(password + salt, 'utf-8')
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
     hash = base64.b64encode(signature).decode()
+
     return (salt, hash)
 
 
+def create_profile(profile: ProfileData, db: DbSession) -> int:
+    return db.scalar(insert(Profile).values({
+            "name": profile.name,
+            "birth": profile.birth,
+            "sex": profile.sex,
+            "major": profile.major,
+            "admission_year": profile.admission_year,
+            "about_me": profile.about_me,
+            "mbti": profile.mbti,
+            "nation_code": profile.nation_code,
+        }).returning(Profile.id))
+
+
+def create_user_item(profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException], db: DbSession):
+    try:
+        db.execute(insert(table).values([{
+            "user_id": profile_id,
+            column: select(model.id).where(model.name == item)
+        }for item in items]))
+    except IntegrityError:
+        raise exception()
+
+
 def get_target_users(user: User, db: DbSession) -> List[User]:
-    filter = (Profile.nation_code != 82) if user.profile.nation_code == 82 else (Profile.nation_code == 82)
+    filter = (Profile.nation_code != KOREA_CODE) if user.profile.nation_code == KOREA_CODE else (Profile.nation_code == KOREA_CODE)
     me = alias(user_lang, 'M')
     you = alias(user_lang, 'Y')
     return list(db.query(User).join(User.profile).where(filter).where(

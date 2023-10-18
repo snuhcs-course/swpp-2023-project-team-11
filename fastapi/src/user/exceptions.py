@@ -21,6 +21,31 @@ class InvalidEmailTokenException(HTTPException):
         super().__init__(400, detail='invalid email token')
 
 
+class InvalidFoodException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid food(s)')
+
+
+class InvalidMovieException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid movie(s)')
+
+
+class InvalidHobbyException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid hobby(s)')
+
+
+class InvalidLocationException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid location(s)')
+
+
+class InvalidLanguageException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid language(s)')
+
+
 class UserNotExistException(HTTPException):
     def __init__(self, email: str):
         self.email = email
