@@ -1,8 +1,9 @@
-from sqlalchemy import insert, delete
+from sqlalchemy import insert, delete, select
 import unittest
 
 from src.database import Base, DbConnector
 from src.user.dependencies import *
+from src.user.service import *
 
 
 class TestDependencies(unittest.TestCase):
@@ -64,6 +65,31 @@ class TestDependencies(unittest.TestCase):
                 check_verification_token(invalid_email_req, db)
             with self.assertRaises(InvalidEmailTokenException):
                 check_verification_token(invalid_token_req, db)
+
+
+class TestService(unittest.TestCase):
+    email = "test@snu.ac.kr"
+    code = 100000
+
+    def setUp(self) -> None:
+        Base.metadata.create_all(bind=DbConnector.engine)
+
+    def tearDown(self) -> None:
+        for db in DbConnector.get_db():
+            db.execute(delete(EmailCode))
+            db.execute(delete(Email))
+            db.commit()
+
+    def test_create_verification_code(self):
+        for db in DbConnector.get_db():
+            self.assertEqual(
+                create_verification_code(self.email, db),
+                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+            )
+    
+    @unittest.skip("We do not actually send email")
+    def test_send_code_via_email(self):
+        send_code_via_email(self.email, self.code)
 
 
 if __name__ == '__main__':
