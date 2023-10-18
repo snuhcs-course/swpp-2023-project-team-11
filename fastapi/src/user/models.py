@@ -22,7 +22,7 @@ class EmailVerification(Base):
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     email_id: Mapped[int] = Column(ForeignKey("email.id"), nullable=False, unique=True)
-    token: Mapped[str] = Column(String(44), nullable=False, unique=True)
+    token: Mapped[str] = Column(String(44), nullable=False)
 
     email: Mapped["Email"] = relationship(back_populates="verification")
 

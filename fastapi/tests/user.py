@@ -4,7 +4,6 @@ import unittest
 from src.database import Base, DbConnector
 from src.user.dependencies import *
 from src.user.models import *
-from src.user.schemas import ProfileData
 from src.user.service import *
 
 
@@ -77,13 +76,67 @@ class TestService(unittest.TestCase):
     email = "test@snu.ac.kr"
     code = 100000
 
+    languages: List[str] = ['A', 'B', 'C', 'D']
+    user_emails: List[str] = [
+        "user1@snu.ac.kr",
+        "user2@snu.ac.kr",
+        "user3@snu.ac.kr",
+        "user4@snu.ac.kr",
+        "user5@snu.ac.kr",
+        "user6@snu.ac.kr",
+        "user7@snu.ac.kr",
+        "user8@snu.ac.kr",
+    ]
+    user_names: List[str] = [
+        "user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8",
+    ]
+    user_nation_codes: List[int] = [82, 13, 82, 14, 82, 15, 82, 16]
+    user_main_lang_idxs: List[int] = [0, 0, 0, 0, 1, 1, 1, 1]
+    user_lang_idxs: List[List[int]] = [
+        [0, 2], [0, 2], [0, 3], [0, 3], [1, 2], [1, 2], [1, 3], [1, 3]
+    ]
+    token = "token"
+
     def setUp(self) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
+        for db in DbConnector.get_db():
+            lang_ids = list(db.scalars(insert(Language).values([{"name": lang} for lang in self.languages]).returning(Language.id)))
+            email_ids = db.scalars(insert(Email).values([{"email": email} for email in self.user_emails]).returning(Email.id))
+            verification_ids = db.scalars(insert(EmailVerification).values([{
+                    "token": self.token,
+                    "email_id": email_id
+                } for email_id in email_ids]).returning(EmailVerification.id))
+            profile_ids = list(db.scalars(insert(Profile).values([{
+                    "name": name,
+                    "birth": date.today(),
+                    "sex": "male",
+                    "major": "Hello",
+                    "admission_year": 2023,
+                    "nation_code": nation_code,
+                } for name, nation_code in zip(self.user_names, self.user_nation_codes)]).returning(Profile.id)))
+            db.execute(insert(User).values([{
+                    "user_id": profile_id,
+                    "verification_id": verification_id,
+                    "lang_id": lang_ids[main_lang_idx],
+                    "salt": "",
+                    "hash": ""
+                } for profile_id, verification_id, main_lang_idx in zip(profile_ids, verification_ids, self.user_main_lang_idxs)]))
+            db.execute(insert(user_lang).values([{
+                    "user_id": user_id,
+                    "lang_id": lang_ids[lang_idx]
+                } for user_id, lang_idxs in zip(profile_ids, self.user_lang_idxs) for lang_idx in lang_idxs]))
+            db.commit()
+
 
     def tearDown(self) -> None:
         for db in DbConnector.get_db():
+            db.execute(delete(user_lang))
+            db.execute(delete(User))
+            db.execute(delete(Profile))
+            db.execute(delete(EmailVerification))
             db.execute(delete(EmailCode))
             db.execute(delete(Email))
+            db.execute(delete(Language))
             db.commit()
 
     def test_create_verification_code(self):
@@ -97,8 +150,18 @@ class TestService(unittest.TestCase):
     def test_send_code_via_email(self):
         send_code_via_email(self.email, self.code)
 
+    def test_get_target_users(self):
+        for db in DbConnector.get_db():
+            kor_user = db.query(User).join(User.profile).where(Profile.name == 'user1').first()
+            for_user = db.query(User).join(User.profile).where(Profile.name == 'user8').first()
+            
+            targets = list(map(lambda user: user.profile.name, get_target_users(kor_user, db)))
+            self.assertEqual(targets, ['user2', 'user4', 'user6'])
+            targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
+            self.assertEqual(targets, ['user1', 'user3', 'user5'])
+
     def test_sort_target_users(self):
-        my_profile = ProfileData(
+        my_profile = Profile(
             name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             mbti="isfj", nation_code=82,
             foods=["korean_food", "japan_food"],
@@ -107,7 +170,7 @@ class TestService(unittest.TestCase):
             hobbies=["soccer", "golf"]
         )
 
-        your_profile1 = ProfileData(
+        your_profile1 = Profile(
             name="sangin", birth=date(1999, 5, 14)
             , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             mbti=None, nation_code=82,
@@ -115,7 +178,7 @@ class TestService(unittest.TestCase):
             locations=["up", "jahayeon"],
             hobbies=["golf"])
 
-        your_profile2 = ProfileData(
+        your_profile2 = Profile(
             name="abdula", birth=date(1999, 5, 14)
             , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
              mbti=None,nation_code=0,
@@ -123,7 +186,7 @@ class TestService(unittest.TestCase):
             locations=['up', "down", "jahayeon"],
             hobbies=["soccer"])
 
-        your_profile3 = ProfileData(
+        your_profile3 = Profile(
             name="jiho", birth=date(1999, 5, 14)
             , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             nation_code=1, mbti=None,
