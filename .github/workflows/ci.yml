@@ -40,5 +40,5 @@ jobs:
           cd fastapi
           for entry in tests/*.py
           do
-            python -m unittest ${entry}
+            python -m unittest --verbose ${entry}
           done
