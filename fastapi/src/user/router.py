@@ -11,16 +11,15 @@ from src.database import DbConnector
 from src.user.dependencies import *
 from src.user.schemas import *
 from src.user import service
-import asyncio
+
 
 router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/email/code", response_model=None)
 def create_verification_code(email: str = Depends(check_snu_email), db: DbSession = Depends(DbConnector.get_db)):
-    pass
-    # code = service.create_verification_code(email, db)
-    # service.send_code_via_email(email, code)
+    code = service.create_verification_code(email, db)
+    service.send_code_via_email(email, code)
 
 
 @router.post("/email/verify", response_model=VerificationResponse)
