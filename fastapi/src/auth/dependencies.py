@@ -17,7 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/sign_in")
 def check_password(form: OAuth2PasswordRequestForm = Depends(),  db: DbSession = Depends(DbConnector.get_db)) -> int:
     user = db.query(User).join(User.verification).join(EmailVerification.email).filter(Email.email == form.username).first()
     if user is None:
-        raise InvalidUserException(form.username)
+        raise InvalidUserException()
 
     payload = bytes(form.password + user.salt, 'utf-8')
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()

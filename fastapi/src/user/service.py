@@ -5,12 +5,14 @@ import numpy as np
 import pandas as pd
 import random
 from smtplib import SMTP_SSL
-from sqlalchemy import insert, select, alias
+from sqlalchemy import insert, select, alias, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DbSession
 from typing import List
 
 from src.constants import HASH_SECRET
 from src.user.constants import *
+from src.user.exceptions import *
 from src.user.schemas import *
 from src.user.models import *
 
@@ -19,12 +21,15 @@ def create_verification_code(email: str, db: DbSession) -> int:
     # 100000 ≤ code ≤ 999999
     code = 100000 + max(0, min(int(random.random() * 900000), 900000))
 
-    email_id = db.scalar(insert(Email).values({"email": email}).returning(Email.id))
-    db.execute(insert(EmailCode).values({
-        "email_id": email_id,
-        "code": code,
-    }))
-    db.commit()
+    email_id = db.scalar(select(Email.id).where(Email.email == email))
+    if email_id is None:
+        email_id = db.scalar(insert(Email).values({"email": email}).returning(Email.id))
+
+    if db.query(EmailCode).where(EmailCode.email_id == email_id).first() is None:
+        db.execute(insert(EmailCode).values({"email_id": email_id, "code": code}))
+    else:
+        db.execute(update(EmailCode).values(code=code).where(EmailCode.email_id == email_id))
+    db.flush()
 
     return code
 
@@ -41,43 +46,60 @@ def send_code_via_email(email: str, code: int) -> None:
         smtp.send_message(msg)
 
 
-def create_verification(email: str, db: DbSession) -> str:
+def check_verification_code(req: VerificationRequest, db: DbSession) -> int:
+    code = db.query(EmailCode).join(EmailCode.email).filter(Email.email == req.email).first()
+    if code is None or code.code != req.code:
+        raise InvalidEmailCodeException()
+
+    return code.email_id
+
+
+def create_verification(email: str, email_id: int, db: DbSession) -> str:
     payload = bytes(email, 'utf-8')
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
     token = base64.urlsafe_b64encode(signature).decode('utf-8')
 
-    db.execute(insert(EmailVerification).values({
-        "token": token,
-        "email_id": select(Email.id).where(Email.email == email).scalar_subquery(),
-    }))
-    db.commit()
+    try:
+        db.execute(insert(EmailVerification).values({"token": token, "email_id": email_id}))
+    except IntegrityError:
+        raise EmailInUseException(email)
+    else:
+        db.flush()
 
     return token
 
 
-def create_user(user: CreateUserRequest, db: DbSession):
-    if user.main_language not in user.languages:
-        user.languages.append(user.main_language)
+def check_verification_token(req: CreateUserRequest, db: DbSession) -> int:
+    verification = db.query(EmailVerification).join(EmailVerification.email).filter(Email.email == req.email).first()
+    if verification is None or verification.token != req.token:
+        raise InvalidEmailTokenException()
+    
+    return verification.id
 
-    salt, hash = create_salt_hash(user.password)
+
+def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> int:
+    if req.main_language not in req.languages:
+        req.languages.append(req.main_language)
+
+    salt, hash = create_salt_hash(req.password)
     profile_id = db.scalar(insert(Profile).values({
-            "name": user.profile.name,
-            "birth": user.profile.birth,
-            "sex": user.profile.sex,
-            "major": user.profile.major,
-            "admission_year": user.profile.admission_year,
-            "about_me": user.profile.about_me,
-            "mbti": user.profile.mbti,
-            "nation_code": user.profile.nation_code,
+            "name": req.profile.name,
+            "birth": req.profile.birth,
+            "sex": req.profile.sex,
+            "major": req.profile.major,
+            "admission_year": req.profile.admission_year,
+            "about_me": req.profile.about_me,
+            "mbti": req.profile.mbti,
+            "nation_code": req.profile.nation_code,
         }).returning(Profile.id))
     db.execute(insert(User).values({
             "user_id": profile_id,
-            "verification_id": select(EmailVerification.id).join(EmailVerification.email).where(Email.email == user.email).scalar_subquery(),
-            "lang_id": select(Language.id).where(Language.name == user.main_language).scalar_subquery(),
+            "verification_id": verification_id,
+            "lang_id": select(Language.id).where(Language.name == req.main_language).scalar_subquery(),
             "salt": salt,
             "hash": hash,
         }))
-    db.commit()
+    db.flush()
 
 
 def create_salt_hash(password: str) -> (str, str):

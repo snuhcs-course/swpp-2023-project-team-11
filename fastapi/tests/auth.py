@@ -136,6 +136,9 @@ class TestService(unittest.TestCase):
     def test_create_delete_session(self):
         for db in DbConnector.get_db():
             session_key = create_session(self.profile_id, db)
+            with self.assertRaises(IntegrityError):
+                db.execute(insert(Session).values({"session_key": session_key, "user_id": self.profile_id}))
+            db.commit()
             with self.assertRaises(InvalidSessionException):
                 delete_session("", db)
             delete_session(session_key, db)

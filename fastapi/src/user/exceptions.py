@@ -1,23 +1,26 @@
-class UserAlreadyExistException(Exception):
+from fastapi import HTTPException
+
+
+class InvalidEmailException(HTTPException):
     def __init__(self, email: str):
-        self.email = email
+        super().__init__(400, detail=f'{email} is not a valid email')
 
 
-class UserNotExistException(Exception):
+class InvalidEmailCodeException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid email code')
+
+
+class EmailInUseException(HTTPException):
     def __init__(self, email: str):
-        self.email = email
+        super().__init__(400, detail=f'{email} is already in use')
 
 
-class InvalidEmailException(Exception):
-    def __init__(self, email: str):
-        self.email = email
+class InvalidEmailTokenException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='invalid email token')
 
 
-class InvalidEmailCodeException(Exception):
-    def __init__(self, email: str):
-        self.email = email
-
-
-class InvalidEmailTokenException(Exception):
+class UserNotExistException(HTTPException):
     def __init__(self, email: str):
         self.email = email

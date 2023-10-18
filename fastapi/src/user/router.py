@@ -19,19 +19,27 @@ router = APIRouter(prefix="/user", tags=["user"])
 @router.post("/email/code", response_model=None)
 def create_verification_code(email: str = Depends(check_snu_email), db: DbSession = Depends(DbConnector.get_db)):
     code = service.create_verification_code(email, db)
+    db.commit()
+
     service.send_code_via_email(email, code)
 
 
 @router.post("/email/verify", response_model=VerificationResponse)
-def create_email_verification(email: str = Depends(check_verification_code), db: DbSession = Depends(DbConnector.get_db)):
-    token = service.create_verification(email, db)
+def create_email_verification(req: VerificationRequest, db: DbSession = Depends(DbConnector.get_db)):
+    email_id = service.check_verification_code(req, db)
+    token = service.create_verification(req.email, email_id, db)
+    db.commit()
+
     return VerificationResponse(token=token)
 
 
 @router.post("/sign_up", response_model=SessionResponse)
-def create_user(req: CreateUserRequest = Depends(check_verification_token), db: DbSession = Depends(DbConnector.get_db)):
-    service.create_user(req, db)
-    session_key = create_session(req.email, db)
+def create_user(req: CreateUserRequest, db: DbSession = Depends(DbConnector.get_db)):
+    verification_id = service.check_verification_token(req, db)
+    user_id = service.create_user(req, verification_id, db)
+    db.commit()
+    session_key = create_session(user_id, db)
+
     return SessionResponse(access_token=session_key, token_type="bearer")
 
 
