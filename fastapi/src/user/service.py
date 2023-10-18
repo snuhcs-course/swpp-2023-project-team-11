@@ -21,14 +21,14 @@ def create_verification_code(email: str, db: DbSession) -> int:
     # 100000 ≤ code ≤ 999999
     code = 100000 + max(0, min(int(random.random() * 900000), 900000))
 
-    email_id = db.scalar(select(Email.id).where(Email.email == email))
-    if email_id is None:
-        email_id = db.scalar(insert(Email).values({"email": email}).returning(Email.id))
-
-    if db.query(EmailCode).where(EmailCode.email_id == email_id).first() is None:
-        db.execute(insert(EmailCode).values({"email_id": email_id, "code": code}))
+    obj = db.query(Email).where(Email.email == email).first()
+    if obj is None:
+        db.add(EmailCode(email=Email(email=email), code=code))
+        db.flush()
+    elif obj.code is None:
+        db.execute(insert(EmailCode).values({"email_id": obj.id, "code": code}))
     else:
-        db.execute(update(EmailCode).values(code=code).where(EmailCode.email_id == email_id))
+        db.execute(update(EmailCode).values(code=code).where(EmailCode.email_id == obj.id))
 
     return code
 
@@ -58,10 +58,13 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
     token = base64.urlsafe_b64encode(signature).decode('utf-8')
 
-    try:
+    verification = db.query(EmailVerification).where(EmailVerification.email_id == email_id).first()
+    if verification is None:
         db.execute(insert(EmailVerification).values({"token": token, "email_id": email_id}))
-    except IntegrityError:
-        raise EmailInUseException(email)
+    elif verification.user is None:
+        db.execute(update(EmailVerification).values(token=token).where(EmailVerification.email_id == email_id))
+    else:
+        raise EmailVerification(email)
 
     return token
 

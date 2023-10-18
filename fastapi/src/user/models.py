@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Union
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Date
 from sqlalchemy.orm import Mapped, relationship
@@ -25,6 +25,7 @@ class EmailVerification(Base):
     token: Mapped[str] = Column(String(44), nullable=False)
 
     email: Mapped["Email"] = relationship(back_populates="verification")
+    user: Mapped[Union["User", None]] = relationship(back_populates="verification")
 
 
 class Email(Base):
@@ -141,6 +142,6 @@ class User(Base):
     hash: Mapped[str] = Column(String(44), nullable=False)
 
     profile: Mapped[Profile] = relationship()
-    verification: Mapped[EmailVerification] = relationship()
+    verification: Mapped[EmailVerification] = relationship(back_populates="user")
     main_language: Mapped[Language] = relationship()
     languages: Mapped[List[Language]] = relationship(secondary=user_lang)

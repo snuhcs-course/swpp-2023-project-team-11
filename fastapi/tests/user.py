@@ -142,8 +142,10 @@ class TestService(unittest.TestCase):
                 create_verification(self.email, email_id, db),
                 db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
             )
-            with self.assertRaises(EmailInUseException):
-                create_verification(self.email, email_id, db)
+            self.assertEqual(
+                create_verification(self.email, email_id, db),
+                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+            )
 
     def test_check_verification_token(self) -> None:
         profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
