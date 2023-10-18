@@ -5,7 +5,7 @@ import unittest
 from src.auth.dependencies import *
 from src.auth.service import *
 from src.database import Base, DbConnector
-from src.user.models import Language, Profile, Country
+from src.user.models import Language, Profile
 
 
 class TestDependencies(unittest.TestCase):
@@ -29,8 +29,7 @@ class TestDependencies(unittest.TestCase):
                 })
                 .returning(EmailVerification.id)
             )
-            country_id = db.scalar(insert(Country).values({"name": "Korea"}).returning(Country.id))
-            lang_id = db.scalar(insert(Language).values({"name": "Korean"}).returning(Language.id))
+            lang_id = db.scalar(insert(Language).values({"name": "korean"}).returning(Language.id))
             profile_id = db.scalar(
                 insert(Profile).values({
                     "name": self.name,
@@ -38,7 +37,7 @@ class TestDependencies(unittest.TestCase):
                     "sex": "",
                     "major": "",
                     "admission_year": 2023,
-                    "country_id": country_id,
+                    "nation_code": 82,
                 })
                 .returning(Profile.id)
             )
@@ -61,7 +60,6 @@ class TestDependencies(unittest.TestCase):
             db.execute(delete(User))
             db.execute(delete(Profile))
             db.execute(delete(Language))
-            db.execute(delete(Country))
             db.execute(delete(EmailVerification))
             db.execute(delete(Email))
             db.commit()
@@ -104,7 +102,6 @@ class TestService(unittest.TestCase):
                 })
                 .returning(EmailVerification.id)
             )
-            country_id = db.scalar(insert(Country).values({"name": "Korea"}).returning(Country.id))
             lang_id = db.scalar(insert(Language).values({"name": "Korean"}).returning(Language.id))
             self.profile_id = db.scalar(
                 insert(Profile).values({
@@ -113,7 +110,7 @@ class TestService(unittest.TestCase):
                     "sex": "",
                     "major": "",
                     "admission_year": 2023,
-                    "country_id": country_id,
+                    "nation_code": 82,
                 })
                 .returning(Profile.id)
             )
@@ -132,7 +129,6 @@ class TestService(unittest.TestCase):
             db.execute(delete(User))
             db.execute(delete(Profile))
             db.execute(delete(Language))
-            db.execute(delete(Country))
             db.execute(delete(EmailVerification))
             db.execute(delete(Email))
             db.commit()

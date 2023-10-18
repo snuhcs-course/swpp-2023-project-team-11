@@ -1,7 +1,9 @@
 from email.message import EmailMessage
+import numpy as np
+import pandas as pd
 import random
 from smtplib import SMTP_SSL
-from sqlalchemy import insert
+from sqlalchemy import insert, select, alias
 from sqlalchemy.orm import Session as DbSession
 from typing import List
 
@@ -40,9 +42,58 @@ def create_verification(email: str) -> str:
     pass
 
 
-def create_user(email: str, password: str, user: Profile):
+def create_user(email: str, password: str, user: ProfileData):
     pass
 
 
-def get_user_recommendations(user: Profile) -> List[Profile]:
-    pass
+def get_target_users(user: User, db: DbSession) -> List[User]:
+    filter = (Profile.nation_code != 82) if user.profile.nation_code == 82 else (Profile.nation_code == 82)
+    me = alias(user_lang, 'M')
+    you = alias(user_lang, 'Y')
+    return list(db.query(User).join(User.profile).where(filter).where(
+        User.user_id.in_(
+            select(you.c.user_id).join(me, you.c.lang_id == me.c.lang_id).where(me.c.user_id == user.user_id))))
+
+
+def sort_target_users(user: User, targets: List[User]) -> List[User]:
+    user_dict = {}
+    for target in targets:
+        user_dict[target.user_id] = target
+
+    targets_sorted = []
+
+    df_me = get_user_dataframe(user)
+    df_targets = pd.DataFrame()
+    for target in targets:
+        df_target = get_user_dataframe(target)
+        df_target["count"] = count_intersection(df_me, df_target)
+        df_targets = pd.concat([df_targets, df_target])
+
+    user_ids = df_targets.sort_values(by=["count"], ascending=False).loc[:, "id"]
+
+    for user_id in user_ids:
+        targets_sorted.append(user_dict[user_id])
+    return targets_sorted
+
+
+def get_user_dataframe(user: User) -> pd.DataFrame:
+    my_dict = {
+        "id": user.user_id,
+        "foods": list([food for food in user.profile.foods]),
+        "movies": list([movie for movie in user.profile.movies]),
+        "hobbies": list([hobby for hobby in user.profile.hobbies]),
+        "locations": list([location for location in user.profile.locations])
+    }
+    return pd.DataFrame.from_dict(my_dict, orient="index").T
+
+
+def count_intersection(df_me: pd.DataFrame, df_target: pd.DataFrame) -> int:
+    cnt = 0
+    features = ["foods", "movies", "hobbies", "locations"]
+
+    for feature in features:
+        my_list = np.array(df_me.loc[:, feature].to_list()).flatten()
+        target_list = np.array(df_target.loc[:, feature].to_list()).flatten()
+        cnt += len(set(my_list) & set(target_list))
+
+    return cnt

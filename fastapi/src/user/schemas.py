@@ -17,7 +17,7 @@ class VerificationResponse(BaseModel):
     token: str
 
 
-class Profile(BaseModel):
+class ProfileData(BaseModel):
     name: str
     birth: date
     sex: str
@@ -25,21 +25,18 @@ class Profile(BaseModel):
     admission_year: int
     about_me: str | None
     mbti: str | None
-    country: str
+    nation_code: int
     foods: List[str]
     movies: List[str]
     hobbies: List[str]
     locations: List[str]
-
-    class Config:
-        from_attributes = True
 
 
 class CreateUserRequest(BaseModel):
     email: EmailStr
     token: str
     password: str
-    profile: Profile
+    profile: ProfileData
     main_language: str
     languages: List[str]
 
@@ -47,7 +44,7 @@ class CreateUserRequest(BaseModel):
 class UserResponse(BaseModel):
     name: str
     email: EmailStr
-    profile: Profile
+    profile: ProfileData
     type: str
     main_language: str
     languages: List[str]
