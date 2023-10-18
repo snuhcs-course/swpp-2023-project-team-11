@@ -73,9 +73,13 @@ class TestDependencies(unittest.TestCase):
 
 
 class TestService(unittest.TestCase):
+    name = "SNEK"
     email = "test@snu.ac.kr"
     code = 100000
-
+    foods: List[str] = ['A', 'B', 'C', 'D']
+    hobbies: List[str] = ['A', 'B', 'C', 'D']
+    movies: List[str] = ['A', 'B', 'C', 'D']
+    locations: List[str] = ['A', 'B', 'C', 'D']
     languages: List[str] = ['A', 'B', 'C', 'D']
     user_emails: List[str] = [
         "user1@snu.ac.kr",
@@ -100,7 +104,11 @@ class TestService(unittest.TestCase):
     def setUp(self) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
         for db in DbConnector.get_db():
-            lang_ids = list(db.scalars(insert(Language).values([{"name": lang} for lang in self.languages]).returning(Language.id)))
+            db.execute(insert(Food).values([{"name": name} for name in self.foods]))
+            db.execute(insert(Hobby).values([{"name": name} for name in self.hobbies]))
+            db.execute(insert(Movie).values([{"name": name} for name in self.movies]))
+            db.execute(insert(Location).values([{"name": name} for name in self.locations]))
+            lang_ids = list(db.scalars(insert(Language).values([{"name": name} for name in self.languages]).returning(Language.id)))
             email_ids = db.scalars(insert(Email).values([{"email": email} for email in self.user_emails]).returning(Email.id))
             verification_ids = db.scalars(insert(EmailVerification).values([{
                     "token": self.token,
@@ -137,6 +145,10 @@ class TestService(unittest.TestCase):
             db.execute(delete(EmailCode))
             db.execute(delete(Email))
             db.execute(delete(Language))
+            db.execute(delete(Location))
+            db.execute(delete(Movie))
+            db.execute(delete(Hobby))
+            db.execute(delete(Food))
             db.commit()
 
     def test_create_verification_code(self):
@@ -145,7 +157,49 @@ class TestService(unittest.TestCase):
                 create_verification_code(self.email, db),
                 db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
             )
-    
+
+    def test_create_verification(self):
+        for db in DbConnector.get_db():
+            db.execute(insert(Email).values({"email": self.email}))
+            db.commit()
+
+            self.assertEqual(
+                create_verification(self.email, db),
+                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+            )
+
+    def test_create_user(self):
+        for db in DbConnector.get_db():
+            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
+            db.execute(insert(EmailVerification).values({"token": self.token, "email_id": email_id}))
+            db.commit()
+
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name,
+                    birth=date.today(),
+                    sex="male",
+                    major="Hello",
+                    admission_year=2023,
+                    nation_code=82,
+                    foods=['A', 'B'],
+                    movies=['A', 'B'],
+                    hobbies=['A', 'B'],
+                    locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            create_user(req, db)
+            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
+            self.assertEqual(user.profile.name, self.name)
+            self.assertEqual(set(user.profile.foods), {'A', 'B'} )
+            self.assertEqual(set(user.profile.movies), {'A', 'B'})
+            self.assertEqual(set(user.profile.hobbies), {'A', 'B'})
+            self.assertEqual(set(user.profile.locations), {'A', 'B'})
+            self.assertEqual(set(user.languages), {'A', 'B'})
+
+    def test_create_salt_hash(self):
+        salt, hash = create_salt_hash('')
+        self.assertEqual(len(salt), 24)
+        self.assertEqual(len(hash), 44)
+
     @unittest.skip("We do not actually send email")
     def test_send_code_via_email(self):
         send_code_via_email(self.email, self.code)

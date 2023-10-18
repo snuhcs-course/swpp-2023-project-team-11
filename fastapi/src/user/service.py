@@ -1,4 +1,6 @@
+import base64
 from email.message import EmailMessage
+import hmac, hashlib
 import numpy as np
 import pandas as pd
 import random
@@ -7,6 +9,7 @@ from sqlalchemy import insert, select, alias
 from sqlalchemy.orm import Session as DbSession
 from typing import List
 
+from src.constants import HASH_SECRET
 from src.user.constants import *
 from src.user.schemas import *
 from src.user.models import *
@@ -38,12 +41,51 @@ def send_code_via_email(email: str, code: int) -> None:
         smtp.send_message(msg)
 
 
-def create_verification(email: str) -> str:
-    pass
+def create_verification(email: str, db: DbSession) -> str:
+    payload = bytes(email, 'utf-8')
+    signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
+    token = base64.urlsafe_b64encode(signature).decode('utf-8')
+
+    db.execute(insert(EmailVerification).values({
+        "token": token,
+        "email_id": select(Email.id).where(Email.email == email).scalar_subquery(),
+    }))
+    db.commit()
+
+    return token
 
 
-def create_user(email: str, password: str, user: ProfileData):
-    pass
+def create_user(user: CreateUserRequest, db: DbSession):
+    if user.main_language not in user.languages:
+        user.languages.append(user.main_language)
+
+    salt, hash = create_salt_hash(user.password)
+    profile_id = db.scalar(insert(Profile).values({
+            "name": user.profile.name,
+            "birth": user.profile.birth,
+            "sex": user.profile.sex,
+            "major": user.profile.major,
+            "admission_year": user.profile.admission_year,
+            "about_me": user.profile.about_me,
+            "mbti": user.profile.mbti,
+            "nation_code": user.profile.nation_code,
+        }).returning(Profile.id))
+    db.execute(insert(User).values({
+            "user_id": profile_id,
+            "verification_id": select(EmailVerification.id).join(EmailVerification.email).where(Email.email == user.email).scalar_subquery(),
+            "lang_id": select(Language.id).where(Language.name == user.main_language).scalar_subquery(),
+            "salt": salt,
+            "hash": hash,
+        }))
+    db.commit()
+
+
+def create_salt_hash(password: str) -> (str, str):
+    salt = base64.b64encode(random.randbytes(16)).decode()
+    payload = bytes(password + salt, 'utf-8')
+    signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
+    hash = base64.b64encode(signature).decode()
+    return (salt, hash)
 
 
 def get_target_users(user: User, db: DbSession) -> List[User]:

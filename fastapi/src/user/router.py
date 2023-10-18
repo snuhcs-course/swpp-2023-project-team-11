@@ -24,17 +24,15 @@ def create_verification_code(email: str = Depends(check_snu_email), db: DbSessio
 
 @router.post("/email/verify", response_model=VerificationResponse)
 def create_email_verification(email: str = Depends(check_verification_code), db: DbSession = Depends(DbConnector.get_db)):
-    pass
-    # token = service.create_verification(email, db)
-    # return VerificationResponse(token=token)
+    token = service.create_verification(email, db)
+    return VerificationResponse(token=token)
 
 
 @router.post("/sign_up", response_model=SessionResponse)
 def create_user(req: CreateUserRequest = Depends(check_verification_token), db: DbSession = Depends(DbConnector.get_db)):
-    pass
-    # service.create_user(req.email, req.password, req.profile, db)
-    # session_key = create_session(req.email)
-    # return SessionResponse(access_token=session_key, token_type="bearer")
+    service.create_user(req, db)
+    session_key = create_session(req.email, db)
+    return SessionResponse(access_token=session_key, token_type="bearer")
 
 
 @router.get("/me", response_model=UserResponse)
@@ -44,5 +42,5 @@ def get_me(session: Session = Depends(get_session)):
 
 @router.get("/all", response_model=List[UserResponse])
 def get_all_users(session: Session = Depends(get_session), db: DbSession = Depends(DbConnector.get_db)):
-    pass
-    # return service.get_user_recommendations(session.user, db)
+    targets = service.get_target_users(session.user, db)
+    return service.sort_target_users(session.user, targets)

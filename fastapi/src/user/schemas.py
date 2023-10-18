@@ -23,8 +23,8 @@ class ProfileData(BaseModel):
     sex: str
     major: str
     admission_year: int
-    about_me: str | None
-    mbti: str | None
+    about_me: str | None = None
+    mbti: str | None = None
     nation_code: int
     foods: List[str]
     movies: List[str]
