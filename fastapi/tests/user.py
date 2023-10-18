@@ -1,4 +1,4 @@
-from sqlalchemy import insert, delete
+from sqlalchemy import insert, delete, select
 import unittest
 
 from src.database import Base, DbConnector
@@ -74,6 +74,29 @@ class TestDependencies(unittest.TestCase):
 
 
 class TestService(unittest.TestCase):
+    email = "test@snu.ac.kr"
+    code = 100000
+
+    def setUp(self) -> None:
+        Base.metadata.create_all(bind=DbConnector.engine)
+
+    def tearDown(self) -> None:
+        for db in DbConnector.get_db():
+            db.execute(delete(EmailCode))
+            db.execute(delete(Email))
+            db.commit()
+
+    def test_create_verification_code(self):
+        for db in DbConnector.get_db():
+            self.assertEqual(
+                create_verification_code(self.email, db),
+                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+            )
+    
+    @unittest.skip("We do not actually send email")
+    def test_send_code_via_email(self):
+        send_code_via_email(self.email, self.code)
+
     def test_sort_target_users(self):
         my_profile = ProfileData(
             name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
@@ -121,7 +144,6 @@ class TestService(unittest.TestCase):
         self.assertEqual(result[1].profile.name, "sangin")
         self.assertEqual(result[2].user_id, 3)
         self.assertEqual(result[2].profile.name, "jiho")
-
 
 if __name__ == '__main__':
     unittest.main()
