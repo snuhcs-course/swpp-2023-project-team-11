@@ -153,6 +153,9 @@ def get_target_users(user: User, db: DbSession) -> List[User]:
 
 
 def sort_target_users(user: User, targets: List[User]) -> List[User]:
+    if len(targets) == 0:
+        return targets
+
     user_dict = {}
     for target in targets:
         user_dict[target.user_id] = target

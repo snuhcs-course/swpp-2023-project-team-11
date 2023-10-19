@@ -302,6 +302,9 @@ class TestService(unittest.TestCase):
         self.assertEqual(result[2].user_id, 3)
         self.assertEqual(result[2].profile.name, "jiho")
 
+        result = sort_target_users(me, [])
+        self.assertEqual(result, [])
+
 
 if __name__ == '__main__':
     unittest.main()

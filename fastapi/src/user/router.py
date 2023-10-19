@@ -9,6 +9,7 @@ from src.auth.schemas import SessionResponse
 from src.auth.service import create_session
 from src.database import DbConnector
 from src.user.dependencies import *
+from src.user.mapper import from_user
 from src.user.schemas import *
 from src.user import service
 
@@ -45,10 +46,10 @@ def create_user(req: CreateUserRequest, db: DbSession = Depends(DbConnector.get_
 
 @router.get("/me", response_model=UserResponse)
 def get_me(session: Session = Depends(get_session)):
-    return session.user
+    return from_user(session.user)
 
 
 @router.get("/all", response_model=List[UserResponse])
 def get_all_users(session: Session = Depends(get_session), db: DbSession = Depends(DbConnector.get_db)):
     targets = service.get_target_users(session.user, db)
-    return service.sort_target_users(session.user, targets)
+    return list(from_user(user) for user in service.sort_target_users(session.user, targets))
