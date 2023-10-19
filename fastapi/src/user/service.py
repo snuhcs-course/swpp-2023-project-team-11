@@ -132,6 +132,8 @@ def create_profile(profile: ProfileData, db: DbSession) -> int:
 
 
 def create_user_item(profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException], db: DbSession):
+    if len(items) == 0:
+        return
     try:
         db.execute(insert(table).values([{
             "user_id": profile_id,
