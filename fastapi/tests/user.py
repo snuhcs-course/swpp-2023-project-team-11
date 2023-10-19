@@ -10,29 +10,6 @@ from src.user.service import *
 class TestDependencies(unittest.TestCase):
     snu_email = "test@snu.ac.kr"
     naver_email = "test@naver.com"
-    code = 100000
-    token = "token"
-
-    def setUp(self) -> None:
-        Base.metadata.create_all(bind=DbConnector.engine)
-        for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.snu_email}).returning(Email.id))
-            db.execute(insert(EmailCode).values({
-                "code": self.code,
-                "email_id": email_id
-            }))
-            db.execute(insert(EmailVerification).values({
-                "token": self.token,
-                "email_id": email_id
-            }))
-            db.commit()
-
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(EmailVerification))
-            db.execute(delete(EmailCode))
-            db.execute(delete(Email))
-            db.commit()
 
     def test_check_snu_email(self):
         valid_req = EmailRequest(email=self.snu_email)
@@ -42,40 +19,18 @@ class TestDependencies(unittest.TestCase):
         with self.assertRaises(InvalidEmailException):
             self.assertEqual(check_snu_email(invalid_req), self.naver_email)
 
-    def test_check_verification_code(self) -> None:
-        valid_req = VerificationRequest(email=self.snu_email, code=self.code)
-        invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
-        invalid_code_req = VerificationRequest(email=self.snu_email, code=0)
-
-        for db in DbConnector.get_db():
-            self.assertEqual(check_verification_code(valid_req, db), self.snu_email)
-            with self.assertRaises(InvalidEmailException):
-                self.assertEqual(check_verification_code(invalid_email_req, db), self.naver_email)
-            with self.assertRaises(InvalidEmailCodeException):
-                self.assertEqual(check_verification_code(invalid_code_req, db), self.snu_email)
-
-    def test_check_verification_token(self) -> None:
-        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
-                          nation_code=82, foods=[], movies=[], hobbies=[], locations=[])
-        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile,
-                                      main_language="", languages=[])
-        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
-                                              main_language="", languages=[])
-        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile,
-                                              main_language="", languages=[])
-
-        for db in DbConnector.get_db():
-            check_verification_token(valid_req, db)
-            with self.assertRaises(InvalidEmailException):
-                check_verification_token(invalid_email_req, db)
-            with self.assertRaises(InvalidEmailTokenException):
-                check_verification_token(invalid_token_req, db)
-
 
 class TestService(unittest.TestCase):
+    name = "SNEK"
     email = "test@snu.ac.kr"
+    naver_email = "test@naver.com"
     code = 100000
+    token = "token"
 
+    foods: List[str] = ['A', 'B', 'C', 'D']
+    hobbies: List[str] = ['A', 'B', 'C', 'D']
+    movies: List[str] = ['A', 'B', 'C', 'D']
+    locations: List[str] = ['A', 'B', 'C', 'D']
     languages: List[str] = ['A', 'B', 'C', 'D']
     user_emails: List[str] = [
         "user1@snu.ac.kr",
@@ -90,17 +45,21 @@ class TestService(unittest.TestCase):
     user_names: List[str] = [
         "user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8",
     ]
-    user_nation_codes: List[int] = [82, 13, 82, 14, 82, 15, 82, 16]
+    user_nation_codes: List[int] = [KOREA_CODE, 13, KOREA_CODE, 14, KOREA_CODE, 15, KOREA_CODE, 16]
     user_main_lang_idxs: List[int] = [0, 0, 0, 0, 1, 1, 1, 1]
     user_lang_idxs: List[List[int]] = [
         [0, 2], [0, 2], [0, 3], [0, 3], [1, 2], [1, 2], [1, 3], [1, 3]
     ]
-    token = "token"
 
     def setUp(self) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
         for db in DbConnector.get_db():
-            lang_ids = list(db.scalars(insert(Language).values([{"name": lang} for lang in self.languages]).returning(Language.id)))
+            db.execute(insert(Food).values([{"name": name} for name in self.foods]))
+            db.execute(insert(Hobby).values([{"name": name} for name in self.hobbies]))
+            db.execute(insert(Movie).values([{"name": name} for name in self.movies]))
+            db.execute(insert(Location).values([{"name": name} for name in self.locations]))
+            lang_ids = list(db.scalars(insert(Language).values([{"name": name} for name in self.languages]).returning(Language.id)))
+
             email_ids = db.scalars(insert(Email).values([{"email": email} for email in self.user_emails]).returning(Email.id))
             verification_ids = db.scalars(insert(EmailVerification).values([{
                     "token": self.token,
@@ -127,7 +86,6 @@ class TestService(unittest.TestCase):
                 } for user_id, lang_idxs in zip(profile_ids, self.user_lang_idxs) for lang_idx in lang_idxs]))
             db.commit()
 
-
     def tearDown(self) -> None:
         for db in DbConnector.get_db():
             db.execute(delete(user_lang))
@@ -137,18 +95,154 @@ class TestService(unittest.TestCase):
             db.execute(delete(EmailCode))
             db.execute(delete(Email))
             db.execute(delete(Language))
+            db.execute(delete(Location))
+            db.execute(delete(Movie))
+            db.execute(delete(Hobby))
+            db.execute(delete(Food))
             db.commit()
 
     def test_create_verification_code(self):
         for db in DbConnector.get_db():
+            code = create_verification_code(self.email, db)
             self.assertEqual(
-                create_verification_code(self.email, db),
                 db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+                code
             )
-    
+            code = create_verification_code(self.email, db)
+            self.assertEqual(
+                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+                code
+            )
+
     @unittest.skip("We do not actually send email")
     def test_send_code_via_email(self):
         send_code_via_email(self.email, self.code)
+
+    def test_check_verification_code(self) -> None:
+        valid_req = VerificationRequest(email=self.email, code=self.code)
+        invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
+        invalid_code_req = VerificationRequest(email=self.email, code=0)
+
+        for db in DbConnector.get_db():
+            db.add(EmailCode(code=self.code, email=Email(email=self.email)))
+            db.flush()
+
+            check_verification_code(valid_req, db)
+            with self.assertRaises(InvalidEmailCodeException):
+                check_verification_code(invalid_email_req, db)
+            with self.assertRaises(InvalidEmailCodeException):
+                check_verification_code(invalid_code_req, db)
+
+    def test_create_verification(self):
+        for db in DbConnector.get_db():
+            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
+            db.flush()
+
+            self.assertEqual(
+                create_verification(self.email, email_id, db),
+                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+            )
+            self.assertEqual(
+                create_verification(self.email, email_id, db),
+                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+            )
+
+    def test_check_verification_token(self) -> None:
+        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
+                          nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
+        valid_req = CreateUserRequest(email=self.email, token=self.token, password="", profile=profile,
+                                      main_language="", languages=[])
+        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
+                                              main_language="", languages=[])
+        invalid_token_req = CreateUserRequest(email=self.email, token="", password="", profile=profile,
+                                              main_language="", languages=[])
+
+        for db in DbConnector.get_db():
+            db.add(EmailVerification(token=self.token, email=Email(email=self.email)))
+            db.flush()
+
+            check_verification_token(valid_req, db)
+            with self.assertRaises(InvalidEmailTokenException):
+                check_verification_token(invalid_email_req, db)
+            with self.assertRaises(InvalidEmailTokenException):
+                check_verification_token(invalid_token_req, db)
+
+    def test_create_user(self):
+        for db in DbConnector.get_db():
+            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
+            verification_id = db.scalar(insert(EmailVerification).values({"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
+            db.commit()
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=13, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            user_id = create_user(req, verification_id, db)
+            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
+            self.assertEqual(user.user_id, user_id)
+            self.assertEqual(user.profile.name, self.name)
+            self.assertEqual(set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'} )
+            self.assertEqual(set(map(lambda item: item.name, user.profile.movies)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
+            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'A', 'B'})
+            with self.assertRaises(EmailInUseException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            user_id = create_user(req, verification_id, db)
+            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
+            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'B'})
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'X'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidFoodException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'X'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidMovieException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'X'], locations=['A', 'B']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidHobbyException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'X']
+                ), main_language='A', languages=['B'])
+            with self.assertRaises(InvalidLocationException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='X', languages=['B'])
+            with self.assertRaises(InvalidLanguageException):
+                create_user(req, verification_id, db)
+        for db in DbConnector.get_db():
+            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
+                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
+                ), main_language='A', languages=['X'])
+            with self.assertRaises(InvalidLanguageException):
+                create_user(req, verification_id, db)
+
+    def test_create_salt_hash(self):
+        salt, hash = create_salt_hash('')
+        self.assertEqual(len(salt), 24)
+        self.assertEqual(len(hash), 44)
 
     def test_get_target_users(self):
         for db in DbConnector.get_db():
@@ -207,6 +301,10 @@ class TestService(unittest.TestCase):
         self.assertEqual(result[1].profile.name, "sangin")
         self.assertEqual(result[2].user_id, 3)
         self.assertEqual(result[2].profile.name, "jiho")
+
+        result = sort_target_users(me, [])
+        self.assertEqual(result, [])
+
 
 if __name__ == '__main__':
     unittest.main()

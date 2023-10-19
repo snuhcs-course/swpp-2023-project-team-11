@@ -1,35 +1,16 @@
-class InvalidUserException(Exception):
-    def __init__(self, email: str):
-        self.email = email
+from fastapi import HTTPException
 
 
-class InvalidPasswordException(Exception):
-    pass
+class InvalidUserException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail="user does not exist")
 
 
-class InvalidSessionException(Exception):
-    pass
+class InvalidPasswordException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail="wrong password")
 
 
-# @app.exception_handler(PasswordMatchException)
-# def password_match_exception_handler(req: Request, exc: PasswordMatchException):
-#     return JSONResponse(
-#         status_code=400,
-#         content={"message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-#     )
-
-
-# @app.exception_handler(UserAlreadyExistException)
-# def password_match_exception_handler(req: Request, exc: PasswordMatchException):
-#     return JSONResponse(
-#         status_code=400,
-#         content={"message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-#     )
-
-
-# @app.exception_handler(UserNotExistException)
-# def password_match_exception_handler(req: Request, exc: PasswordMatchException):
-#     return JSONResponse(
-#         status_code=400,
-#         content={"message": f"Oops! {exc.name} did something. There goes a rainbow..."},
-#     )
+class InvalidSessionException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail="session does not exist")
