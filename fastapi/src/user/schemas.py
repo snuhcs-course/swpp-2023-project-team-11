@@ -1,5 +1,5 @@
 from datetime import date
-from enum import StrEnum
+from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, EmailStr
@@ -51,6 +51,6 @@ class UserResponse(BaseModel):
     languages: List[str]
 
 
-class UserType(StrEnum):
+class UserType(Enum):
     Kor = 'korean'
     For = 'foreign'
