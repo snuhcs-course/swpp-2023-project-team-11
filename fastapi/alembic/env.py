@@ -6,6 +6,10 @@ from sqlalchemy import pool
 from sqlalchemy.ext.declarative import declarative_base
 
 from alembic import context
+import sys
+
+sys.path.append("..")
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
