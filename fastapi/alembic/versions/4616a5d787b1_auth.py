@@ -26,6 +26,7 @@ def upgrade() -> None:
         Session.__tablename__,
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("session_key", sa.String(44), nullable=False, unique=True),
+        sa.Column("user_id", sa.Integer, nullable=False)
     )
     op.create_foreign_key("user_id_fk", source_table=Session.__tablename__, referent_table=User.__tablename__,
                           local_cols=["user_id"], remote_cols=["user_id"], ondelete="CASCADE")
