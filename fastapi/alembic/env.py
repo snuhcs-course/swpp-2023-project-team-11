@@ -1,7 +1,9 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.ext.declarative import declarative_base
 
 from alembic import context
 
@@ -18,13 +20,18 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+Base = declarative_base()
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
+# section = config.config_ini_section
+# config.set_section_option(section, "PG_DB", os.environ.get("SNEK_POSTGRES_DB"))
+# config.set_section_option(section, "PG_USER", os.environ.get("SNEK_POSTGRES_USER"))
+# config.set_section_option(section, "PG_PW", os.environ.get("SNEK_POSTGRES_PW"))
+#
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
