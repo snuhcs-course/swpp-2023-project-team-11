@@ -8,6 +8,7 @@ abstract class Routes {
   static const String PASSWORD = "/password";
   static const String MAKE_PROFILE = "/make_profile";
   static const String MAIN = "/main";
+  static const String CHAT_REQUESTS = "/chat_requests";
 
   static String Maker({
     required String nextRoute,

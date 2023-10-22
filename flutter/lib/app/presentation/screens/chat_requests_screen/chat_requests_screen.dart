@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/app/domain/models/chatting_room.dart';
-import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
-import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'dart:math' as math;
 
 // ignore: unused_import
-import 'chatting_rooms_screen_controller.dart';
+import '../../../domain/models/chatting_room.dart';
+import '../../widgets/app_bars.dart';
+import '../../widgets/buttons.dart';
+import 'chat_requests_screen_controller.dart';
 
-class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
-  const ChattingRoomsScreen({Key? key}) : super(key: key);
+class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
+  const ChatRequestsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,43 +17,14 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         backgroundColor: Colors.white,
         appBar: NotiAppBar(
           title: Text(
-            " 채팅",
+            "채팅 요청",
             style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff2d3a45)),
           ),
-          additionalAction: Obx(() {
-            return _buildNewRequestButton();
-          }),
         ),
         body: Obx(() => _buildChatroomList()));
-  }
-
-  Widget _buildNewRequestButton() {
-    return Stack(children: [
-            GestureDetector(
-              onTap: () {
-                controller.onNewChatRequestTap();
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  "새로운 채팅 요청",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xff9f75d1)),
-                ),
-              ),
-            ),
-            if (controller.newChatRequestExists.value == true) Positioned(  // draw a red marble
-              top: 4,
-              right: 0,
-              child: new Icon(Icons.brightness_1, size: 14,
-                  color: Color(0xffff733d)),
-            )
-          ]);
   }
 
   Widget _buildChatroomList() {
@@ -64,25 +35,12 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              "아직 아무도 친구가 되지 않았어요!",
+              "새로운 채팅 요청이 지금은 없어요!",
               style: TextStyle(
                   color: Color(0xff9f75d1),
                   fontWeight: FontWeight.w600,
                   fontSize: 18),
             ),
-            SizedBox(
-              height: 10,
-            ),
-            Text("친구 신청을 보내고",
-                style: TextStyle(
-                    color: Color(0xff2d3a45).withOpacity(0.64),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14)),
-            Text("새로운 친구를 만들어보세요",
-                style: TextStyle(
-                    color: Color(0xff2d3a45).withOpacity(0.64),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14)),
             SizedBox(
               height: 36,
             ),
@@ -112,7 +70,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.grey.withOpacity(0.4),
-                border: Border.all(width: 1.5, color: Color(0xffff9162))),
+                border: Border.all(width: 1.5, color: Color(0xff9f75d1))),
             width: 54,
             height: 54,
           ),
@@ -141,12 +99,12 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xff9f75d1)))
+                            color: Color(0xffff9162)))
                   ],
                 ),
                 SizedBox(height: 4),
                 Text(
-                  "채팅룸의 가장 최근 대화",
+                  "상대(아직 친구가 아닌 사람)가 보낸 메세지",
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -184,6 +142,6 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
 
 // GetPage(
 //   name: ,
-//   page: () => const ChattingRoomsScreen(),
-//   binding: ChattingRoomsScreenBinding(),
+//   page: () => const ChatRequestsScreen(),
+//   binding: ChatRequestsScreenBinding(),
 // )
