@@ -1,3 +1,5 @@
+import 'package:mobile_app/core/themes/color_theme.dart';
+
 abstract class User {
   final String id;
   final String name;
@@ -156,26 +158,33 @@ enum MovieGenre {
 }
 
 enum Hobby {
-  painting,
-  gardening,
-  hiking,
-  reading,
-  cooking,
-  photography,
-  dancing,
-  swimming,
-  cycling,
-  traveling,
-  gaming,
-  fishing,
-  knitting,
-  music,
-  yoga,
-  writing,
-  shopping,
-  teamSports,
-  fitness,
-  movie,
+  painting("그림 그리기"),
+  gardening("정원 가꾸기"),
+  hiking("등산"),
+  reading("독서"),
+  cooking("요리"),
+  photography("사진 찍기"),
+  dancing("춤추기"),
+  swimming("수영"),
+  cycling("자전거 타기"),
+  traveling("여행"),
+  gaming("게임"),
+  fishing("낚시"),
+  knitting("뜨개질"),
+  music("노래"),
+  yoga("요가"),
+  writing("글쓰기"),
+  shopping("쇼핑"),
+  teamSports("팀 운동"),
+  fitness("헬스"),
+  movie("영화 보기");
+  final String krName;
+  const Hobby(this.krName);
+
+  @override
+  String toString() {
+    return krName;
+  }
 }
 
 enum Location {
