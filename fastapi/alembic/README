@@ -4,6 +4,9 @@ Generic single-database configuration.
 # if you want to create new revision
 $ alembic revision -m {version_name}
 
+# if you want to autogenerate new revision based on env.py
+$ alembic revision --autogenerate -m {revision_name}
+
 # if you want to start newest version
 $ alembic upgrade head
 
