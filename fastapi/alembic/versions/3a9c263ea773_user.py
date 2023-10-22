@@ -5,9 +5,6 @@ Revises:
 Create Date: 2023-10-21 17:06:13.432583
 
 """
-import sys
-
-sys.path = ['', '..'] + sys.path[1:]
 
 from typing import Sequence, Union
 from alembic import op

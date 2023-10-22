@@ -6,9 +6,6 @@ from sqlalchemy import pool
 from sqlalchemy.ext.declarative import declarative_base
 
 from alembic import context
-import sys
-
-sys.path.append("..")
 
 
 # this is the Alembic Config object, which provides
@@ -31,11 +28,10 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-# section = config.config_ini_section
-# config.set_section_option(section, "PG_DB", os.environ.get("SNEK_POSTGRES_DB"))
-# config.set_section_option(section, "PG_USER", os.environ.get("SNEK_POSTGRES_USER"))
-# config.set_section_option(section, "PG_PW", os.environ.get("SNEK_POSTGRES_PW"))
-#
+PG_DB = os.environ.get('SNEK_POSTGRES_DB')
+PG_USER = os.environ.get('SNEK_POSTGRES_USER')
+PG_PW = os.environ.get('SNEK_POSTGRES_PW')
+config.set_main_option('sqlalchemy.url', f'postgresql://{PG_USER}:{PG_PW}@localhost/{PG_DB}')
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

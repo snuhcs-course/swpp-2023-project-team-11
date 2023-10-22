@@ -5,8 +5,6 @@ Revises: 3a9c263ea773
 Create Date: 2023-10-21 17:38:00.028255
 
 """
-import sys
-sys.path = ['', '..'] + sys.path[1:]
 
 from typing import Sequence, Union
 from alembic import op
@@ -18,7 +16,6 @@ revision: str = '4616a5d787b1'
 down_revision: Union[str, None] = '3a9c263ea773'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
-
 
 
 def upgrade() -> None:
