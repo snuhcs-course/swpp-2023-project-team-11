@@ -8,6 +8,7 @@ env:
   SNEK_POSTGRES_DB: postgres
   SNEK_POSTGRES_USER: postgres
   SNEK_POSTGRES_PW: postgres
+  SNEK_POSTGRES_HOST: localhost
 
 jobs:
   unit-test:
