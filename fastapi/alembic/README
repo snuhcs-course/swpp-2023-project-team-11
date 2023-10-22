@@ -1,1 +1,21 @@
 Generic single-database configuration.
+
+```sh
+# if you want to create new revision
+$ alembic revision -m {version_name}
+
+# if you want to start newest version
+$ alembic upgrade head
+
+# if you want to run specific version
+$ alembic upgrade {revision_id}
+
+# if you want to downgrade, you cannot use HEAD;
+# instead, you can do downgrade following two ways.
+
+# 1. downgrade with absolute revision_id
+$ alembic downgrade {revision_id}
+
+# 2. downgrade with relative location
+$ alembic downgrade -1
+```
