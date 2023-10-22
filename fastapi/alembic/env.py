@@ -31,7 +31,8 @@ target_metadata = Base.metadata
 PG_DB = os.environ.get('SNEK_POSTGRES_DB')
 PG_USER = os.environ.get('SNEK_POSTGRES_USER')
 PG_PW = os.environ.get('SNEK_POSTGRES_PW')
-config.set_main_option('sqlalchemy.url', f'postgresql://{PG_USER}:{PG_PW}@localhost/{PG_DB}')
+PG_HOST = os.environ.get('SNEK_POSTGRES_HOST')
+config.set_main_option('sqlalchemy.url', f'postgresql://{PG_USER}:{PG_PW}@{PG_HOST}/{PG_DB}')
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
