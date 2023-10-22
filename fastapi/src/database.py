@@ -14,7 +14,8 @@ class DbConnector:
     PG_DB = os.environ.get('SNEK_POSTGRES_DB')
     PG_USER = os.environ.get('SNEK_POSTGRES_USER')
     PG_PW = os.environ.get('SNEK_POSTGRES_PW')
-    PG_URL: str = f"postgresql://{PG_USER}:{PG_PW}@localhost:5432/{PG_DB}"
+    PG_HOST = os.environ.get('SNEK_POSTGRES_HOST')
+    PG_URL: str = f"postgresql://{PG_USER}:{PG_PW}@{PG_HOST}:5432/{PG_DB}"
 
     engine: Engine = create_engine(PG_URL)
     SessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
