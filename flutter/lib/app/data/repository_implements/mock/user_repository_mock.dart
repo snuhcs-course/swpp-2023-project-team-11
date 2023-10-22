@@ -68,7 +68,7 @@ class UserRepositoryMock implements UserRepository {
   @override
   Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic() async{
 
-    List<User> users = await Future.delayed(Duration(seconds: 5)).then((value) => generateRandomUsers(6));
+    List<User> users = await Future.delayed(Duration(seconds: 2)).then((value) => generateRandomUsers(6));
 
     return Result.success(users);
   }

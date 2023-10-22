@@ -33,8 +33,9 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? title;
+  final Widget? additionalAction;
 
-  const NotiAppBar({super.key, this.title});
+  const NotiAppBar({super.key, this.title, this.additionalAction});
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +46,7 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: (title != null) ? title : null,
       centerTitle: false,
       actions: [
+        if(additionalAction != null) additionalAction!,
         ElevatedButton(
           onPressed: () => {print("!")},
           child: Icon(
