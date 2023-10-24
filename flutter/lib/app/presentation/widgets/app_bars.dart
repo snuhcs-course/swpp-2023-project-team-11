@@ -15,7 +15,9 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Text(
               title!,
               style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff2d3a45)),
             )
           : null,
       leading: BackButton(
@@ -55,4 +57,40 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
     required this.title,
     super.key,
   });
+}
+
+class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final Widget? title;
+  final Widget? additionalAction;
+
+  const NotiAppBar({super.key, this.title, this.additionalAction});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      toolbarHeight: 64,
+      title: (title != null) ? title : null,
+      centerTitle: false,
+      actions: [
+        if(additionalAction != null) additionalAction!,
+        ElevatedButton(
+          onPressed: () => {print("!")},
+          style: ElevatedButton.styleFrom(
+              shape: CircleBorder(),
+              backgroundColor: Color(0xfff8f1fb),
+              foregroundColor: Colors.white),
+          child: const Icon(
+            Icons.notifications_none_rounded,
+            color: Color(0xff9f75d1),
+            size: 30,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize =>const  Size.fromHeight(64);
 }
