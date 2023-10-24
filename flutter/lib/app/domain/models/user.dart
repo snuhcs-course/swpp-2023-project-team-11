@@ -14,6 +14,10 @@ abstract class User {
     required this.email,
     required this.profile,
   });
+
+  int get getNationCode;
+  Language get getMainLanguage;
+  List<Language> get getLanguages;
 }
 
 class KoreanUser extends User {
@@ -27,6 +31,16 @@ class KoreanUser extends User {
     required this.wantedLanguages,
     required super.profile,
   });
+
+  @override
+  int get getNationCode => 82;
+
+  @override
+  Language get getMainLanguage => Language.korean;
+
+  @override
+  // TODO: implement getLanguages
+  List<Language> get getLanguages => wantedLanguages;
 }
 
 class ForeignUser extends User {
@@ -44,6 +58,17 @@ class ForeignUser extends User {
     required this.subLanguages,
     required super.profile,
   });
+
+  @override
+  int get getNationCode => nationCode;
+
+  @override
+  // TODO: implement getMainLanguage
+  Language get getMainLanguage => mainLanguage;
+
+  @override
+  // TODO: implement getLanguages
+  List<Language> get getLanguages => subLanguages;
 }
 
 enum UserType {
