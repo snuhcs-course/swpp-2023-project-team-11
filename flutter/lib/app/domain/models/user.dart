@@ -1,4 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
+
+part 'user.g.dart';
+
 
 abstract class User {
   final String id;
@@ -15,11 +19,24 @@ abstract class User {
     required this.profile,
   });
 
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    final userType = UserType.values.byName(map["user_type"]);
+    if (userType == UserType.korean) {
+      return KoreanUser.fromJson(map);
+    } else {
+      return ForeignUser.fromJson(map);
+    }
+  }
+
   int get getNationCode;
+
   Language get getMainLanguage;
+
   List<Language> get getLanguages;
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class KoreanUser extends User {
   final List<Language> wantedLanguages;
 
@@ -32,6 +49,10 @@ class KoreanUser extends User {
     required super.profile,
   });
 
+  factory KoreanUser.fromJson(Map<String, dynamic> json) => _$KoreanUserFromJson(json);
+  Map<String, dynamic> toJson() => _$KoreanUserToJson(this);
+
+
   @override
   int get getNationCode => 82;
 
@@ -42,7 +63,7 @@ class KoreanUser extends User {
   // TODO: implement getLanguages
   List<Language> get getLanguages => wantedLanguages;
 }
-
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ForeignUser extends User {
   final int nationCode;
   final Language mainLanguage;
@@ -58,6 +79,9 @@ class ForeignUser extends User {
     required this.subLanguages,
     required super.profile,
   });
+
+  factory ForeignUser.fromJson(Map<String, dynamic> json) => _$ForeignUserFromJson(json);
+  Map<String, dynamic> toJson() => _$ForeignUserToJson(this);
 
   @override
   int get getNationCode => nationCode;
@@ -118,7 +142,7 @@ enum Mbti {
   esfp,
   unknown,
 }
-
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Profile {
   final DateTime birth;
   final Sex sex;
@@ -131,6 +155,7 @@ class Profile {
   final List<MovieGenre> movieGenres;
   final List<Location> locations;
   final String? imgUrl;
+
 
   const Profile({
     required this.birth,
@@ -145,6 +170,9 @@ class Profile {
     required this.locations,
     this.imgUrl,
   });
+
+  factory Profile.fromJson(Map<String, dynamic> json) => _$ProfileFromJson(json);
+  Map<String, dynamic> toJson() => _$ProfileToJson(this);
 }
 
 enum Sex {
@@ -203,7 +231,9 @@ enum Hobby {
   teamSports("팀 운동"),
   fitness("헬스"),
   movie("영화 보기");
+
   final String krName;
+
   const Hobby(this.krName);
 
   @override

@@ -10,7 +10,7 @@ abstract class UserRepository {
   ///
   /// <response>
   /// User 를 리턴한다.
-  Future<User> readUserBySessionId();
+  Future<Result<User, DefaultIssue>> readUserBySessionId();
 
   /// API : 현재 헤더에 자동으로 담겨있는 세션을 바탕으로 유저목록을 불러온다
   /// 혹시 리퀘스트에서 유저 Profile 정보를 담는 것이 쿼리상 효율을 올려주신다면 포함하겠습니다

@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'chat.g.dart';
+
 abstract class Chat {
   final ChatType messageType;
   final String id;
@@ -20,7 +24,7 @@ abstract class Chat {
     required String senderId,
     required DateTime sentAt,
   }) {
-    return NormalChat._(
+    return NormalChat(
       messageType: ChatType.normal,
       id: id,
       text: text,
@@ -30,14 +34,19 @@ abstract class Chat {
   }
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class NormalChat extends Chat {
-  NormalChat._({
+  NormalChat({
     required super.messageType,
     required super.id,
     required super.text,
     required super.senderId,
     required super.sentAt,
   });
+
+  factory NormalChat.fromJson(Map<String, dynamic> json) => _$NormalChatFromJson(json);
+
+  Map<String, dynamic> toJson() => _$NormalChatToJson(this);
 }
 
 

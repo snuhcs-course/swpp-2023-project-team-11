@@ -89,8 +89,33 @@ class AuthServiceImpl implements AuthService {
   }
 
   @override
-  Future<String> signIn({required String email, required String password}) {
-    // TODO: implement signIn
-    throw UnimplementedError();
+  Future<Result<AccessResult, DefaultIssue>> signIn({required String email, required String password,}) async {
+    final Dio dio = DioInstance.getDio;
+    const path = "/user/sign_in";
+
+    final response = await dio.post<Map<String, dynamic>>(
+      baseUrl + path,
+      data: {
+        "username": email,
+        "password": password
+      }
+    );
+
+    try {
+      final data = response.data;
+      if (data == null) throw Exception();
+      final accessToken = data["access_token"];
+      final tokenType = data["token_type"];
+      final accessResult =
+          AccessResult(accessToken: accessToken, tokenType: tokenType);
+      return Result.success(accessResult);
+    } on DioException catch(e){
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    } catch (e){
+      print("알 수 없는 에러 발생");
+      return Result.fail(DefaultIssue.badRequest);
+    }
   }
 }
