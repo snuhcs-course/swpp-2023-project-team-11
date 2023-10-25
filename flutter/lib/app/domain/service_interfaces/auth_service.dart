@@ -36,7 +36,7 @@ abstract class AuthService {
 
   /// 내부 로직
   /// - expireSession 실행 이후 내부 로컬에 저장된 세션 아이디를 삭제한다
-  Future<void> deleteSessionIdInLocal();
+  Future<void> setUnauthorized();
 
   /// 내부 로직
   /// - sign in 혹은 sign up으로 리턴된 session Id를 앞으로 보내는 request에 자동으로 Authroization Header에

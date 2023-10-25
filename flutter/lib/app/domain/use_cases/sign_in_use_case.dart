@@ -22,9 +22,7 @@ class SignInUseCase {
       case Success(:final data):
         {
           await _authService.setAuthorized(accessToken: data.accessToken);
-          // header에 토큰 담김
-          // result로 감싸줘야하나요?
-          final result = await _userRepository.readUserBySessionId(); // !
+          final result = await _userRepository.readUserBySessionId();
           switch(result) {
             case Success(data : final user) : {
               Get.put(user, permanent: true);

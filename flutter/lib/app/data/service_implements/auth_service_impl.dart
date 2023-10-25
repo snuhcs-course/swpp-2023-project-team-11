@@ -7,7 +7,7 @@ import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 import 'package:mobile_app/core/constants/environment.dart';
 
 class AuthServiceImpl implements AuthService {
-  final _authStorage = const FlutterSecureStorage();
+  static const _authStorage = const FlutterSecureStorage();
 
   Future<void> _saveAuthInLocal(String access) async {
     await _authStorage.write(key: "access", value: access);
@@ -18,9 +18,13 @@ class AuthServiceImpl implements AuthService {
   }
 
   @override
-  Future<void> deleteSessionIdInLocal() {
-    // TODO: implement deleteSessionIdInLocal
-    throw UnimplementedError();
+  Future<void> setUnauthorized() async {
+    DioInstance.deleteAuthorizationHeader();
+    await _authStorage.delete(key: "accessToken");
+
+
+
+
   }
 
   @override
@@ -31,8 +35,7 @@ class AuthServiceImpl implements AuthService {
 
   @override
   Future<void> setAuthorized({required String accessToken}) async {
-    const secureStorage = FlutterSecureStorage();
-    await secureStorage.write(key: "accessToken", value: accessToken);
+    await _authStorage.write(key: "accessToken", value: accessToken);
     DioInstance.addAuthorizationHeader(accessToken);
   }
 
