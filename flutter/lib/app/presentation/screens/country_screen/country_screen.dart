@@ -28,14 +28,14 @@ class CountryScreen extends GetView<CountryScreenController> {
                 Obx(() => _buildOptionContainer(
                     context: context,
                     firstString: '저는\n한국 학생입니다.',
-                    secondString: "I'm Korean student",
+                    secondString: "I'm a Korean student",
                     buttonId: 1)),
                 SizedBox(
                   height: 16,
                 ),
                 Obx(() => _buildOptionContainer(
                     context: context,
-                    firstString: "I'm\nexchange student",
+                    firstString: "I'm an\nexchange student",
                     secondString: "저는 교환학생입니다.",
                     buttonId: 2))
               ],
