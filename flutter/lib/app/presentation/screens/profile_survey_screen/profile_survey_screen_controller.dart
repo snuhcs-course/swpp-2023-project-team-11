@@ -101,7 +101,7 @@ class ProfileSurveyScreenController extends GetxController {
     Get.dialog(CompleteDialog(onSubmit: _submit));
   }
   void _submit() {
-
+    print(_answers);
   }
 
   @override

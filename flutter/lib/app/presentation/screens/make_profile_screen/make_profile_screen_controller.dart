@@ -4,10 +4,24 @@ import 'package:mobile_app/routes/named_routes.dart';
 
 class MakeProfileScreenController extends GetxController{
   TextEditingController nicknameCon = TextEditingController();
+  final argumentsData = Get.arguments;
   final _nickname = "".obs;
 
   void onNextButtonTap() {
-    Get.offAllNamed(Routes.MAIN);
+    argumentsData["nickname"] = _nickname.value;
+    Get.offAllNamed(Routes.MAIN, arguments: argumentsData);
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    nicknameCon.addListener(() {_nickname(nicknameCon.text);});
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    nicknameCon.dispose();
   }
 
 

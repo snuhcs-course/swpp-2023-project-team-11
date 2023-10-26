@@ -6,30 +6,28 @@ class PasswordScreenController extends GetxController {
   final TextEditingController passwordCon = TextEditingController();
   final TextEditingController passwordAgainCon = TextEditingController();
 
+  final argumentsData = Get.arguments;
   final _password = "".obs;
   final _passwordAgain = "".obs;
 
-  final bool passwordEntered = true; // ?
-  // bool get passwordEntered => _password.value.isNotEmpty;
+  bool get passwordEntered => _password.value.isNotEmpty && (_password.value.length >= 6) && (_password.value.length <= 20);
 
   bool get passwordsEqual =>
       _password.value.isNotEmpty && (_password.value == _passwordAgain.value);
 
   void onNextButtonTap() {
-    Get.toNamed(Routes.Maker(nextRoute: Routes.MAKE_PROFILE));
+    argumentsData["password"] = _password.value;
+    Get.toNamed(Routes.Maker(nextRoute: Routes.MAKE_PROFILE), arguments: argumentsData);
   }
 
   @override
   void onInit() {
-    print("on init!");
     super.onInit();
     passwordCon.addListener(() {
       _password(passwordCon.text);
-      print(_password);
     });
     passwordAgainCon.addListener(() {
       _passwordAgain(passwordAgainCon.text);
-      print(_passwordAgain);
     });
   }
 

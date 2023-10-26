@@ -25,18 +25,23 @@ class PasswordScreen extends GetView<PasswordScreenController> {
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                 )),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Text("*6자 이상, 20자 이하의 영문",
+                style: TextStyle(
+                    color: Color(0xff2d3a45).withOpacity(0.8),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14)),
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 20),
               child: MainTextFormField(
+                obscureText: true,
                 textEditingController: controller.passwordCon,
                 hintText: '비밀번호 입력',
                 textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
             ),
-            if(controller.passwordEntered)
-              _buildPasswordAgainContainer()
+            Obx(() => controller.passwordEntered? _buildPasswordAgainContainer() : Text(""))
           ],
         ),
       ),
@@ -62,6 +67,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: MainTextFormField(
+              obscureText: true,
               textEditingController: controller.passwordAgainCon,
               hintText: "비밀번호 재입력",
               textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),

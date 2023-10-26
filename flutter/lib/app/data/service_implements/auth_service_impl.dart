@@ -22,9 +22,6 @@ class AuthServiceImpl implements AuthService {
     DioInstance.deleteAuthorizationHeader();
     await _authStorage.delete(key: "accessToken");
 
-
-
-
   }
 
   @override

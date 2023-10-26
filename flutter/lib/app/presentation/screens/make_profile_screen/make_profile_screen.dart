@@ -22,7 +22,11 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildProfilePhoto(),
+              // _buildProfilePhoto(),
+              // Image.asset('assets/images/snek_profile_pic/snek_profile_img_1.webp')
+              Container(
+                width: 180, height: 180, decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/images/snek_profile_pic/snek_profile_img_2.webp'), fit: BoxFit.contain)),
+              ),
               SizedBox(height: 10),
               Text("활동할 닉네임을 입력해주세요", style: TextStyle(
                   color: Color(0xff2d3a45),
