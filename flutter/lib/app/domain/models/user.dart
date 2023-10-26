@@ -182,32 +182,44 @@ enum Sex {
 }
 
 enum FoodCategory {
-  korean,
-  spanish,
-  american,
-  italian,
-  thai,
-  chinese,
-  japanese,
-  indian,
-  mexican,
-  vegan,
-  dessert,
+  korean("한식"),
+  spanish("스페인 음식"),
+  american("미국식 음식"),
+  italian("양식"),
+  thai("동남아 음식"),
+  chinese("중식"),
+  japanese("일식"),
+  indian("인도 음식"),
+  mexican("멕시코 음식"),
+  vegan("채식"),
+  dessert("디저트 류");
+
+  final String krName;
+  const FoodCategory(this.krName);
+
+  @override
+  String toString() => krName;
 }
 
 enum MovieGenre {
-  action,
-  adventure,
-  animation,
-  comedy,
-  drama,
-  fantasy,
-  horror,
-  mystery,
-  romance,
-  scienceFiction,
-  thriller,
-  western,
+  action("액션"),
+  adventure("어드벤처"),
+  animation("애니"),
+  comedy("코미디"),
+  drama("드라마"),
+  fantasy("판타지"),
+  horror("공포"),
+  mystery("미스터리"),
+  romance("로맨스"),
+  scienceFiction("SF"),
+  thriller("스릴러"),
+  western("서부극");
+
+  final String krName;
+  const MovieGenre(this.krName);
+
+  @override
+  String toString() => krName;
 }
 
 enum Hobby {
@@ -243,18 +255,26 @@ enum Hobby {
 }
 
 enum Location {
-  humanity,
-  naturalScience,
-  dormitory,
-  socialScience,
-  humanEcology,
-  agriculture,
-  highEngineering,
-  lowEngineering,
-  business,
-  jahayeon,
-  studentUnion,
-  seolYeep,
-  nockDoo,
-  bongcheon,
+  humanity("인문대"),
+  naturalScience("자연대"),
+  dormitory("기숙사"),
+  socialScience("사회과학대"),
+  humanEcology("생활대"),
+  agriculture("농대"),
+  highEngineering("윗 공대"),
+  lowEngineering("아랫 공대"),
+  business("경영대"),
+  jahayeon("자하연"),
+  studentUnion("학생회관"),
+  seolYeep("설입"),
+  nockDoo("녹두"),
+  bongcheon("봉천");
+
+  final String krName;
+
+  const Location(this.krName);
+
+  @override
+  String toString() => krName;
 }
+

@@ -8,4 +8,5 @@ class QuestionBundle<E extends Enum> {
     required this.questions,
     required this.answerOptions,
   });
+  Type get getAnswerType => E;
 }

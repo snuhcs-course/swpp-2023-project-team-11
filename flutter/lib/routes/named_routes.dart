@@ -10,6 +10,8 @@ abstract class Routes {
   static const String MAIN = "/main";
   static const String CHAT_REQUESTS = "/chat_requests";
 
+  static const String PROFILE_SURVEY = "/profile_survey";
+
   static String Maker({
     required String nextRoute,
     Map<String, String>? parameters,

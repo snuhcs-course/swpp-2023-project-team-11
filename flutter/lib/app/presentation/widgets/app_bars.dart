@@ -39,6 +39,7 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
     return AppBar(
       backgroundColor: const Color(0xff9F75D1),
       centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.white),
       title: Text(
         title,
         style: const TextStyle(

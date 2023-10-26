@@ -8,6 +8,8 @@ import 'package:mobile_app/app/presentation/screens/friends_screen/friends_scree
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen.dart';
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/profile_screen/profile_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen.dart';
+import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen_binding.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 import '../app/presentation/screens/chat_requests_screen/chat_requests_screen.dart';
@@ -42,23 +44,27 @@ abstract class GetPages {
           binding: PasswordScreenBinding(),
         ),
         GetPage(
-          name: Routes.ENTRY +
-              Routes.COUNTRY +
-              Routes.EMAIL +
-              Routes.PASSWORD +
-              Routes.MAKE_PROFILE,
+          name:
+              Routes.ENTRY + Routes.COUNTRY + Routes.EMAIL + Routes.PASSWORD + Routes.MAKE_PROFILE,
           page: () => const MakeProfileScreen(),
           binding: MakeProfileScreenBinding(),
         ),
         GetPage(
-            name: Routes.MAIN,
-            page: () => const MainIndexedScreen(),
-            bindings: [
-              MainIndexedScreenBinding(),
-              FriendsScreenBinding(),
-              ChattingRoomsScreenBinding(),
-              ProfileScreenBinding(),
-            ]),
+          name: Routes.ENTRY +
+              Routes.COUNTRY +
+              Routes.EMAIL +
+              Routes.PASSWORD +
+              Routes.MAKE_PROFILE +
+              Routes.PROFILE_SURVEY,
+          page: () => const ProfileSurveyScreen(),
+          binding: ProfileSurveyScreenBinding(),
+        ),
+        GetPage(name: Routes.MAIN, page: () => const MainIndexedScreen(), bindings: [
+          MainIndexedScreenBinding(),
+          FriendsScreenBinding(),
+          ChattingRoomsScreenBinding(),
+          ProfileScreenBinding(),
+        ]),
         GetPage(
           name: Routes.MAIN + Routes.CHAT_REQUESTS,
           page: () => const ChatRequestsScreen(),

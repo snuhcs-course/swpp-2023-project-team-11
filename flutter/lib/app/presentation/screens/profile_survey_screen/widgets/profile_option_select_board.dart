@@ -33,7 +33,6 @@ class _ProfileOptionSelectBoardState extends State<ProfileOptionSelectBoard> {
 
   @override
   void didUpdateWidget(covariant ProfileOptionSelectBoard oldWidget) {
-    // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
     if (isActive!= widget.active) {
       isActive = widget.active;
@@ -44,7 +43,6 @@ class _ProfileOptionSelectBoardState extends State<ProfileOptionSelectBoard> {
   }
   @override
   Widget build(BuildContext context) {
-    print(selectedEnums);
     return Container(
       decoration: const BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(10))),

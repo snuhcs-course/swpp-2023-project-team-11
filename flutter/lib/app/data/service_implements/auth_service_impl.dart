@@ -7,15 +7,7 @@ import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 import 'package:mobile_app/core/constants/environment.dart';
 
 class AuthServiceImpl implements AuthService {
-  static const _authStorage = const FlutterSecureStorage();
-
-  Future<void> _saveAuthInLocal(String access) async {
-    await _authStorage.write(key: "access", value: access);
-  }
-
-  Future<void> _deleteAuthInLocal() async {
-    await _authStorage.delete(key: 'access');
-  }
+  static const _authStorage = FlutterSecureStorage();
 
   @override
   Future<void> setUnauthorized() async {

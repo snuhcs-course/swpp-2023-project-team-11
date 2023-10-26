@@ -14,7 +14,6 @@ class DioInstance {
       },
     ));
   }
-
   static deleteAuthorizationHeader() {
     _dio.interceptors
         .removeWhere((element) => element is AuthorizationInterceptorsWrapper);

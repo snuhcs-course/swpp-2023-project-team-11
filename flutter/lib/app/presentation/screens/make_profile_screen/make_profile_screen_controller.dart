@@ -8,8 +8,8 @@ class MakeProfileScreenController extends GetxController{
   final _nickname = "".obs;
 
   void onNextButtonTap() {
-    argumentsData["nickname"] = _nickname.value;
-    Get.offAllNamed(Routes.MAIN, arguments: argumentsData);
+    // argumentsData["nickname"] = _nickname.value;
+    Get.toNamed(Routes.Maker(nextRoute: Routes.PROFILE_SURVEY));
   }
 
   @override
