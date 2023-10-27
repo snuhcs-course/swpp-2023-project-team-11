@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
 import '../../widgets/text_form_fields.dart';
@@ -22,8 +23,6 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // _buildProfilePhoto(),
-            // Image.asset('assets/images/snek_profile_pic/snek_profile_img_1.webp')
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
@@ -34,6 +33,15 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
               ),
             ),
             SizedBox(height: 20),
+            Center(
+                child: Text(
+              "닉네임과 자기소개 문장은 다른 유저들이 볼 수 있어요",
+              style: TextStyle(
+                  fontSize: 14,
+                  color: MyColor.purple,
+                  fontWeight: FontWeight.w500),
+            )),
+            SizedBox(height: 12),
             Text("활동할 닉네임을 입력해주세요",
                 style: TextStyle(
                     color: Color(0xff2d3a45),
@@ -51,12 +59,33 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 style: TextStyle(
                     color: Color(0xff2d3a45).withOpacity(0.64),
                     fontWeight: FontWeight.w400,
-                    fontSize: 14))
+                    fontSize: 14)),
+            SizedBox(height: 20),
+            Text("자신을 소개하는 문장을 입력해주세요",
+                style: TextStyle(
+                    color: Color(0xff2d3a45),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14)),
+            SizedBox(height: 8),
+            MainTextFormField(
+              textEditingController: controller.aboutMeCon,
+              hintText: "자기소개 입력",
+              textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+              verticalPadding: 15,
+            ),
+            SizedBox(height: 8),
+            Text("프로필은 나중에도 수정이 가능하니 부담 갖지 말고 적어주세요!",
+                style: TextStyle(
+                    color: Color(0xff2d3a45).withOpacity(0.64),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14)),
           ],
         ),
       ),
-      bottomNavigationBar:
-          BottomNextButton(onPressed: controller.onNextButtonTap),
+      bottomNavigationBar: Obx(() {
+        return BottomNextButton(
+            onPressed: controller.notEmpty ? controller.onNextButtonTap : null);
+      }),
     );
   }
 

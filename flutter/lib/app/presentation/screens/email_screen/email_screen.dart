@@ -54,7 +54,7 @@ class EmailScreen extends GetView<EmailScreenController> {
               SizedBox(height: 10),
               Obx(() {
                 if (controller.warningType == 1)
-                  return Text("서울대학교 계정을 사용해주세요:)",
+                  return Text("서울대학교 계정을 사용해주세요 :)",
                       style: TextStyle(
                           color: Color(0xff9f75d1),
                           fontSize: 14,

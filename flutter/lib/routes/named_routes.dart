@@ -6,6 +6,7 @@ abstract class Routes {
   static const String COUNTRY = "/country";
   static const String EMAIL = "/email";
   static const String PASSWORD = "/password";
+  static const String ADDITIONAL_INFO = "/additional_info";
   static const String MAKE_PROFILE = "/make_profile";
   static const String MAIN = "/main";
   static const String CHAT_REQUESTS = "/chat_requests";

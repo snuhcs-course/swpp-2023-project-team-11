@@ -41,12 +41,17 @@ class PasswordScreen extends GetView<PasswordScreenController> {
                 verticalPadding: 15,
               ),
             ),
-            Obx(() => controller.passwordEntered? _buildPasswordAgainContainer() : Text(""))
+            Obx(() => controller.passwordEntered
+                ? _buildPasswordAgainContainer()
+                : Text(""))
           ],
         ),
       ),
-      bottomNavigationBar:
-          BottomNextButton(onPressed: controller.onNextButtonTap),
+      bottomNavigationBar: Obx(() {
+        return BottomNextButton(
+            onPressed:
+                controller.passwordsEqual ? controller.onNextButtonTap : null);
+      }),
     );
   }
 
@@ -75,7 +80,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
             ),
           ),
           controller.passwordsEqual
-              ? Text(
+              ? const Text(
                   "비밀번호가 일치해요!",
                   style: TextStyle(
                       color: Color(0xff9f75d1),
