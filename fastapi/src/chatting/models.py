@@ -12,13 +12,13 @@ class Chatting(Base):
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     initiator_id: Mapped[int] = Column(ForeignKey("users.user_id"))
-    responser_id: Mapped[int] = Column(ForeignKey("users.user_id"))
+    responder_id: Mapped[int] = Column(ForeignKey("users.user_id"))
     is_approved: Mapped[bool] = Column(Boolean, nullable=False, default=False)
     is_terminated: Mapped[bool] = Column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = Column(DateTime, nullable=False)
 
     initiator: Mapped[User] = relationship(foreign_keys=[initiator_id])
-    responser: Mapped[User] = relationship(foreign_keys=[responser_id])
+    responser: Mapped[User] = relationship(foreign_keys=[responder_id])
 
 
 class Text(Base):
