@@ -1,6 +1,7 @@
 import unittest
 
 from src.auth.models import *
+from src.chatting.models import *
 from src.user.models import *
 from src.database import Base, DbConnector
 
