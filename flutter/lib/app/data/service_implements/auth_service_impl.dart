@@ -17,13 +17,27 @@ class AuthServiceImpl implements AuthService {
   }
 
   @override
-  Future<void> expireSession() {
-    // TODO: implement expireSession
-    throw UnimplementedError();
+  Future<void> expireSession() async {
+    final Dio dio = DioInstance.getDio;
+    const path = '/auth/sign_out';
+    try {
+      final response = await dio.delete(
+        baseUrl + path,
+      );
+      final data = response.data;
+      print(data);
+    } on DioException catch(e){
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+    } catch (e){
+      print("로그아웃 시 알 수 없는 에러 발생");
+    }
+
   }
 
   @override
   Future<void> setAuthorized({required String accessToken}) async {
+    print("access token: ${accessToken}"); //
     await _authStorage.write(key: "accessToken", value: accessToken);
     DioInstance.addAuthorizationHeader(accessToken);
   }
@@ -46,22 +60,23 @@ class AuthServiceImpl implements AuthService {
           "password": password,
           "profile": {
             "name": user.name,
-            "birth": user.profile.birth,
-            "sex": user.profile.sex,
+            "birth": user.profile.birth.toString().substring(0, 10),
+            "sex": user.profile.sex.toString(),
             "major": user.profile.major,
             "admission_year": user.profile.admissionYear,
             "about_me": user.profile.aboutMe,
-            "mbti": user.profile.mbti,
+            "mbti": user.profile.mbti.toString(),
             "nation_code": user.getNationCode,
             "foods": user.profile.foodCategories.map((e) => e.name).toList(),
             "movies": user.profile.movieGenres.map((e) => e.name).toList(),
             "hobbies": user.profile.hobbies.map((e) => e.name).toList(),
             "locations": user.profile.locations.map((e) => e.name).toList(),
           },
-          "main_language": user.getMainLanguage,
-          "languages": user.getLanguages,
+          "main_language": user.getMainLanguage.toString(),
+          "languages": user.getLanguages.map((e) => e.toString()).toList(),
         },
       );
+
       final data = response.data;
       if (data==null) throw Exception();
       final accessToken = data["access_token"];
@@ -70,6 +85,27 @@ class AuthServiceImpl implements AuthService {
       return Result.success(accessResult);
     } on DioException catch(e) {
       // 이걸로 분기를 해서 대응해라
+      print({
+        "email": email,
+        "token": emailToken,
+        "password": password,
+        "profile": {
+          "name": user.name,
+          "birth": user.profile.birth.toString().substring(0, 10),
+          "sex": user.profile.sex.toString(),
+          "major": user.profile.major,
+          "admission_year": user.profile.admissionYear,
+          "about_me": user.profile.aboutMe,
+          "mbti": user.profile.mbti.toString(),
+          "nation_code": user.getNationCode,
+          "foods": user.profile.foodCategories.map((e) => e.name).toList(),
+          "movies": user.profile.movieGenres.map((e) => e.name).toList(),
+          "hobbies": user.profile.hobbies.map((e) => e.name).toList(),
+          "locations": user.profile.locations.map((e) => e.name).toList(),
+        },
+        "main_language": user.getMainLanguage.toString(),
+        "languages": user.getLanguages.map((e) => e.toString()).toList(),
+      });
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
@@ -83,17 +119,19 @@ class AuthServiceImpl implements AuthService {
   @override
   Future<Result<AccessResult, DefaultIssue>> signIn({required String email, required String password,}) async {
     final Dio dio = DioInstance.getDio;
-    const path = "/user/sign_in";
-
-    final response = await dio.post<Map<String, dynamic>>(
-      baseUrl + path,
-      data: {
-        "username": email,
-        "password": password
-      }
-    );
+    const path = "/auth/sign_in";
 
     try {
+
+      final response = await dio.post<Map<String, dynamic>>(
+          baseUrl + path,
+          data: {
+            "username": email,
+            "password": password,
+          },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+
       final data = response.data;
       if (data == null) throw Exception();
       final accessToken = data["access_token"];
@@ -102,6 +140,7 @@ class AuthServiceImpl implements AuthService {
           AccessResult(accessToken: accessToken, tokenType: tokenType);
       return Result.success(accessResult);
     } on DioException catch(e){
+
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);

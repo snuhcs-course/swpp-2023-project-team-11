@@ -14,7 +14,6 @@ class UserRepositoryMock implements UserRepository {
     for (var i = 0; i < count; i++) {
       if (random.nextBool()) {
         users.add(KoreanUser(
-          id: 'KoreanUserID$i',
           name: 'KoreanUserName$i',
           userType: UserType.korean,
           email: 'korean.user$i@example.com',
@@ -35,7 +34,6 @@ class UserRepositoryMock implements UserRepository {
         ));
       } else {
         users.add(ForeignUser(
-          id: 'ForeignUserID$i',
           name: 'ForeignUserName$i',
           userType: UserType.foreign,
           email: 'foreign.user$i@example.com',

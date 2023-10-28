@@ -6,7 +6,6 @@ class SignOutUseCase{
   Future<void> call({required void Function() onSuccess}) async {
     await _authService.expireSession();
     await _authService.setUnauthorized();
-
     onSuccess();
 
   }

@@ -1,18 +1,17 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile_app/core/themes/color_theme.dart';
 
 part 'user.g.dart';
 
 
 abstract class User {
-  final String id;
+  // final String id;
   final String name;
   final UserType userType;
   final String email;
   final Profile profile;
 
   const User({
-    required this.id,
+    // required this.id,
     required this.name,
     required this.userType,
     required this.email,
@@ -21,7 +20,7 @@ abstract class User {
 
 
   factory User.fromMap(Map<String, dynamic> map) {
-    final userType = UserType.values.byName(map["user_type"]);
+    final userType = UserType.values.byName(map["type"]);
     if (userType == UserType.korean) {
       return KoreanUser.fromJson(map);
     } else {
@@ -41,7 +40,7 @@ class KoreanUser extends User {
   final List<Language> wantedLanguages;
 
   KoreanUser({
-    required super.id,
+    // required super.id,
     required super.name,
     required super.userType,
     required super.email,
@@ -70,7 +69,7 @@ class ForeignUser extends User {
   final List<Language> subLanguages;
 
   ForeignUser({
-    required super.id,
+    // required super.id,
     required super.name,
     required super.userType,
     required super.email,
@@ -101,46 +100,37 @@ enum UserType {
 }
 
 enum Language {
-  english,
-  spanish,
-  chinese,
-  arabic,
-  french,
-  german,
-  japanese,
-  russian,
-  portuguese,
-  korean,
-  italian,
-  dutch,
-  swedish,
-  turkish,
-  hebrew,
-  hindi,
-  thai,
-  greek,
-  vietnamese,
-  finnish,
+  korean ("korean"), english ("english"), spanish ("spanish"),
+  chinese ("chinese"), arabic ("arabic"), french ("french"),
+  german ("german"), japanese ("japanese"), russian ("russian"),
+  portuguese ("portuguese"), italian ("italian"), dutch ("dutch"),
+  swedish ("swedish"), turkish ("turkish"), hebrew ("hebrew"), hindi ("hindi"),
+  thai ("thai"), greek ("greek"), vietnamese ("vietnamese"), finnish ("finnish");
+
+  final String name;
+
+  const Language(this.name);
+
+  @override
+  String toString() {
+    return name;
+  }
 }
 
 enum Mbti {
-  intj,
-  intp,
-  entj,
-  entp,
-  infj,
-  infp,
-  enfj,
-  enfp,
-  istj,
-  isfj,
-  estj,
-  esfj,
-  istp,
-  isfp,
-  estp,
-  esfp,
-  unknown,
+  intj ("INTJ"), intp ("INTP"), entj ("ENTJ"), entp ("ENTP"),
+  infj ("INFJ"), infp ("INFP"), enfj ("ENFJ"), enfp ("ENFP"),
+  istj ("ISTJ"), isfj ("ISFJ"), estj ("ESTJ"), esfj ("ESFJ"),
+  istp ("ISTP"), isfp ("ISFP"), estp ("ESTP"), esfp ("ESFP"), unknown ("UNKNOWN");
+
+  final String name;
+
+  const Mbti(this.name);
+
+  @override
+  String toString() {
+    return name;
+  }
 }
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Profile {
@@ -176,9 +166,15 @@ class Profile {
 }
 
 enum Sex {
-  male,
-  female,
-  nonBinary,
+  male("male"),
+  female("female"),
+  nonBinary("non_binary");
+
+  final String enName;
+  const Sex(this.enName);
+
+  @override
+  String toString() => enName;
 }
 
 enum FoodCategory {

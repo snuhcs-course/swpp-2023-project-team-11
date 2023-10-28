@@ -7,7 +7,7 @@ class PasswordScreenController extends GetxController {
   final TextEditingController passwordAgainCon = TextEditingController();
 
   final _password = "".obs;
-  String get passwork => _password.value;
+  String get password => _password.value;
   final _passwordAgain = "".obs;
 
   bool get passwordEntered => _password.value.isNotEmpty && (_password.value.length >= 6) && (_password.value.length <= 20);

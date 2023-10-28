@@ -69,6 +69,7 @@ abstract class GetPages {
               Routes.COUNTRY +
               Routes.EMAIL +
               Routes.PASSWORD +
+              Routes.ADDITIONAL_INFO +
               Routes.MAKE_PROFILE +
               Routes.PROFILE_SURVEY,
           page: () => const ProfileSurveyScreen(),

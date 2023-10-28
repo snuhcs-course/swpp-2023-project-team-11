@@ -94,6 +94,7 @@ class CountryScreen extends GetView<CountryScreenController> {
                         controller.tempCountryCode.value = "0";
                       } else {
                         controller.tempCountryCode.value = country.values.first;
+                        controller.countryNotHere.value = false;
                       }
                     },
                     child: Container(
@@ -129,6 +130,7 @@ class CountryScreen extends GetView<CountryScreenController> {
                         controller.tempCountryCode.value = "0";
                       } else {
                         controller.tempCountryCode.value = country.values.first;
+                        controller.countryNotHere.value = false;
                       }
                     },
                     child: Container(
@@ -155,103 +157,6 @@ class CountryScreen extends GetView<CountryScreenController> {
                 )
               ],
             ),
-
-            // SizedBox(
-            //   height: 50,
-            //   child: ListView.separated(
-            //     padding: const EdgeInsets.symmetric(
-            //         horizontal: 12, vertical: 0),
-            //     scrollDirection: Axis.horizontal,
-            //     itemBuilder: (context, index) {
-            //       final targetEnum = controller.countries[index];
-            //       final isSelected = controller.tempCountryCode ==
-            //           controller.countries[index].values.first;
-            //       return Align(
-            //         child: GestureDetector(
-            //           onTap: () {
-            //             if (isSelected) {
-            //               controller.tempCountryCode.value = "0";
-            //             } else {
-            //               controller.tempCountryCode.value =
-            //                   controller.countries[index].values.first;
-            //             }
-            //           },
-            //           child: Container(
-            //             decoration: BoxDecoration(
-            //                 borderRadius: BorderRadius.circular(10),
-            //                 border: Border.all(
-            //                     color: isSelected ? MyColor.orange_1 : Colors
-            //                         .black.withOpacity(0.1), width: 1)),
-            //             padding: EdgeInsets.all(6),
-            //             child: Text(
-            //               controller.countries[index].keys.first,
-            //               style: TextStyle(
-            //                 fontSize: 14,
-            //                 fontWeight: isSelected
-            //                     ? FontWeight.bold
-            //                     : FontWeight.w500,
-            //                 color: isSelected ? MyColor.orange_1 : MyColor
-            //                     .textBaseColor,
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       );
-            //     },
-            //     separatorBuilder: (context, index) {
-            //       return const SizedBox(width: 8);
-            //     },
-            //     itemCount: controller.countries.length,
-            //   ),
-            // ),
-            // SizedBox(
-            //   height: 50,
-            //   child: ListView.separated(
-            //     padding: const EdgeInsets.symmetric(
-            //         horizontal: 12, vertical: 0),
-            //     scrollDirection: Axis.horizontal,
-            //     itemBuilder: (context, index) {
-            //       final targetEnum = controller.countries[index];
-            //       final isSelected = controller.tempCountryCode ==
-            //           controller.countries[index].values.first;
-            //       return Align(
-            //         child: GestureDetector(
-            //           onTap: () {
-            //             if (isSelected) {
-            //               controller.tempCountryCode.value = "0";
-            //             } else {
-            //               controller.tempCountryCode.value =
-            //                   controller.countries[index].values.first;
-            //             }
-            //           },
-            //           child: Container(
-            //             decoration: BoxDecoration(
-            //                 borderRadius: BorderRadius.circular(10),
-            //                 border: Border.all(
-            //                     color: isSelected ? MyColor.orange_1 : Colors
-            //                         .black.withOpacity(0.1), width: 1)),
-            //             padding: EdgeInsets.all(6),
-            //             child: Text(
-            //               controller.countries[index].keys.first,
-            //               style: TextStyle(
-            //                 fontSize: 14,
-            //                 fontWeight: isSelected
-            //                     ? FontWeight.bold
-            //                     : FontWeight.w500,
-            //                 color: isSelected ? MyColor.orange_1 : MyColor
-            //                     .textBaseColor,
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       );
-            //     },
-            //     separatorBuilder: (context, index) {
-            //       return const SizedBox(width: 8);
-            //     },
-            //     itemCount: controller.countries.length,
-            //   ),
-            // ),
           ],
         ),
       );

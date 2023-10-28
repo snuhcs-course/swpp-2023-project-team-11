@@ -17,12 +17,10 @@ class UserRepositoryImpl implements UserRepository {
       final data = response.data;
       if (data == null) throw Exception();
 
+      print(response.data);
+
       User user = User.fromMap(data);
       return Result.success(user);
-
-      // 여기서 유저 타입을 체크해서 바로 koreanuser / foreignuser을 부를지 정하나요, 아니면 다른 방법이 있나요?
-
-
 
     } on DioException catch(e) {
       // 이걸로 분기를 해서 대응해라
@@ -37,9 +35,38 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic() {
-    // TODO: implement readUsersBasedOnLogic
-    throw UnimplementedError();
+  Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic() async {
+    final Dio dio = DioInstance.getDio;
+
+    const path = "/user/all";
+    print(baseUrl + path);
+    try{
+      final response = await dio.get(
+          baseUrl + path
+      );
+      final data = response.data as List;
+      print("fetch${data}");
+      if (data == null) throw Exception();
+
+      List<User> users = [];
+
+      for (var i in data){
+        users.add(User.fromMap(i));
+      }
+
+      return Result.success(users);
+
+    } on DioException catch(e) {
+      // 이걸로 분기를 해서 대응해라
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    } catch (e) {
+      print("알 수 없는 에러 발생");
+      return Result.fail(DefaultIssue.unknown);
+    }
+
+
   }
 
 }

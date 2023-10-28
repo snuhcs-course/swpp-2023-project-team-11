@@ -11,6 +11,7 @@ class CountryScreenController extends GetxController {
   int get countryCode => int.parse(tempCountryCode.value);
   bool get countryCodeNotEmpty => tempCountryCode.isNotEmpty && tempCountryCode.value != "0";
   final countryNotHere = false.obs;
+  bool get isKorean => tempCountryCode.value == "82";
 
   final List<Map<String, String>> countries1 = [
     {"United States 🇺🇸": "1"},
@@ -61,6 +62,7 @@ class CountryScreenController extends GetxController {
 
   void onOptionButtonTap(int tappedButton) {
     this.tappedButton.value = tappedButton;
+    countryNotHere.value = false;
     if (tappedButton == 1) tempCountryCode.value = "82";
     else tempCountryCode.value = "0";
   }
@@ -70,6 +72,7 @@ class CountryScreenController extends GetxController {
   }
 
   void onCountryNotHereButttontap() {
+    tempCountryCode.value = "0";
     this.countryNotHere.value = true;
   }
 

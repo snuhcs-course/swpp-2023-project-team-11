@@ -40,9 +40,10 @@ class SignInBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           MainTextFormField(
-            textEditingController: emailCon,
+            textEditingController: passwordCon,
             hintText: "비밀번호 입력",
             titleText: "비밀번호 (password)",
+            obscureText: true,
           ),
           const SizedBox(height: 28),
           MainButton(
