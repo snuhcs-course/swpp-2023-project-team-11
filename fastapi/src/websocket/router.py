@@ -7,7 +7,7 @@ from src.websocket.dependencies import *
 router = APIRouter(prefix="/ws", tags=["chatting"])
 
 
-@router.websocket("/")
+@router.websocket("/connect")
 async def websocket(socket: WebSocket, manager: WebSocketManager = Depends(get_socket_manager)):
     await socket.accept()
 
