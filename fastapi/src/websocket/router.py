@@ -23,4 +23,4 @@ async def websocket(socket: WebSocket, manager: WebSocketManager = Depends(get_s
             msg = await socket.receive_json()
             await service.handle_message(session.user_id, msg, socket, manager)
     except WebSocketDisconnect:
-        manager.remove_socket(session.user_id, session.session_key, socket)
+        await manager.remove_socket(session.user_id, session.session_key, socket)
