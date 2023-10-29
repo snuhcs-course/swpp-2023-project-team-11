@@ -25,7 +25,9 @@ async def authenticate_socket(socket: WebSocket) -> Session:
 
     try:
         for db in await run_in_threadpool(DbConnector.get_db):
-            return await run_in_threadpool(get_session, session_key, db)
+            session = await run_in_threadpool(get_session, session_key, db)
+            await socket.send_json({"type": "system", "body": {"msg": "authentication succeeded"}})
+            return session
     except InvalidSessionException:
         await socket.close(reason="invalid authentication")
         raise WebSocketDisconnect()
