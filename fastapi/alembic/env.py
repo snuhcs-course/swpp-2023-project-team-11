@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from src.auth.models import *
+from src.chatting.models import *
 from src.user.models import *
 
 
