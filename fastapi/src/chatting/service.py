@@ -7,9 +7,12 @@ from src.chatting.models import *
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
-    return db.query(Chatting).where(
+    query = db.query(Chatting).where(
             or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)
-        ).where(Chatting.is_approved == is_approved).order_by(desc(Chatting.created_at)).all()
+        ).where(Chatting.is_approved == is_approved).order_by(Chatting.is_terminated, desc(Chatting.created_at))
+    if is_approved is False:
+        query = query.where(Chatting.is_terminated == False)
+    return query.all()
 
 
 def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
