@@ -51,18 +51,19 @@ class TestService(unittest.TestCase):
         [0, 2], [0, 2], [0, 3], [0, 3], [1, 2], [1, 2], [1, 3], [1, 3]
     ]
 
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
         for db in DbConnector.get_db():
-            db.execute(insert(Food).values([{"name": name} for name in self.foods]))
-            db.execute(insert(Hobby).values([{"name": name} for name in self.hobbies]))
-            db.execute(insert(Movie).values([{"name": name} for name in self.movies]))
-            db.execute(insert(Location).values([{"name": name} for name in self.locations]))
-            lang_ids = list(db.scalars(insert(Language).values([{"name": name} for name in self.languages]).returning(Language.id)))
+            db.execute(insert(Food).values([{"name": name} for name in cls.foods]))
+            db.execute(insert(Hobby).values([{"name": name} for name in cls.hobbies]))
+            db.execute(insert(Movie).values([{"name": name} for name in cls.movies]))
+            db.execute(insert(Location).values([{"name": name} for name in cls.locations]))
+            lang_ids = list(db.scalars(insert(Language).values([{"name": name} for name in cls.languages]).returning(Language.id)))
 
-            email_ids = db.scalars(insert(Email).values([{"email": email} for email in self.user_emails]).returning(Email.id))
+            email_ids = db.scalars(insert(Email).values([{"email": email} for email in cls.user_emails]).returning(Email.id))
             verification_ids = db.scalars(insert(EmailVerification).values([{
-                    "token": self.token,
+                    "token": cls.token,
                     "email_id": email_id
                 } for email_id in email_ids]).returning(EmailVerification.id))
             profile_ids = list(db.scalars(insert(Profile).values([{
@@ -72,33 +73,36 @@ class TestService(unittest.TestCase):
                     "major": "Hello",
                     "admission_year": 2023,
                     "nation_code": nation_code,
-                } for name, nation_code in zip(self.user_names, self.user_nation_codes)]).returning(Profile.id)))
+                } for name, nation_code in zip(cls.user_names, cls.user_nation_codes)]).returning(Profile.id)))
             db.execute(insert(User).values([{
                     "user_id": profile_id,
                     "verification_id": verification_id,
                     "lang_id": lang_ids[main_lang_idx],
                     "salt": "",
                     "hash": ""
-                } for profile_id, verification_id, main_lang_idx in zip(profile_ids, verification_ids, self.user_main_lang_idxs)]))
+                } for profile_id, verification_id, main_lang_idx in zip(profile_ids, verification_ids, cls.user_main_lang_idxs)]))
             db.execute(insert(user_lang).values([{
                     "user_id": user_id,
                     "lang_id": lang_ids[lang_idx]
-                } for user_id, lang_idxs in zip(profile_ids, self.user_lang_idxs) for lang_idx in lang_idxs]))
+                } for user_id, lang_idxs in zip(profile_ids, cls.user_lang_idxs) for lang_idx in lang_idxs]))
             db.commit()
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(cls) -> None:
         for db in DbConnector.get_db():
-            db.execute(delete(user_lang))
             db.execute(delete(User))
             db.execute(delete(Profile))
-            db.execute(delete(EmailVerification))
-            db.execute(delete(EmailCode))
             db.execute(delete(Email))
             db.execute(delete(Language))
             db.execute(delete(Location))
             db.execute(delete(Movie))
             db.execute(delete(Hobby))
             db.execute(delete(Food))
+            db.commit()
+
+    def tearDown(self) -> None:
+        for db in DbConnector.get_db():
+            db.execute(delete(Email).where(Email.email == self.email))
             db.commit()
 
     def test_create_verification_code(self):
@@ -136,7 +140,6 @@ class TestService(unittest.TestCase):
     def test_create_verification(self):
         for db in DbConnector.get_db():
             email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
-            db.flush()
 
             self.assertEqual(
                 create_verification(self.email, email_id, db),
@@ -172,6 +175,7 @@ class TestService(unittest.TestCase):
             email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
             verification_id = db.scalar(insert(EmailVerification).values({"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
             db.commit()
+
         for db in DbConnector.get_db():
             req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
                     name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
