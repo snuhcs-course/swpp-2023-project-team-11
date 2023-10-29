@@ -5,6 +5,7 @@ from src.user.mapper import from_user
 
 def from_chatting(chatting: Chatting) -> ChattingResponse:
     return ChattingResponse(
+        chatting_id=chatting.id,
         initiator=from_user(chatting.initiator),
         responder=from_user(chatting.responser),
         is_approved=chatting.is_approved,

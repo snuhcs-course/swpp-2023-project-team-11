@@ -10,6 +10,7 @@ class CreateChattingRequest(BaseModel):
 
 
 class ChattingResponse(BaseModel):
+    chatting_id: int
     initiator: UserResponse
     responder: UserResponse
     is_approved: bool
