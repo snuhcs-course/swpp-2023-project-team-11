@@ -89,6 +89,6 @@ def create_text(sender_id: int, chatting_id: int, msg: str, db: DbSession) -> An
             "sender": text.sender.profile.name,
             "email": text.sender.verification.email.email,
             "msg": text.msg,
-            "timestamp": text.timestamp,
+            "timestamp": str(text.timestamp),
         }
     }
