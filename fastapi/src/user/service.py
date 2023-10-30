@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 from email.message import EmailMessage
 import hmac, hashlib
 import numpy as np
@@ -54,7 +55,7 @@ def check_verification_code(req: VerificationRequest, db: DbSession) -> int:
 
 
 def create_verification(email: str, email_id: int, db: DbSession) -> str:
-    payload = bytes(email, 'utf-8')
+    payload = bytes(email + str(datetime.now()), 'utf-8')
     signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
     token = base64.urlsafe_b64encode(signature).decode('utf-8')
 
