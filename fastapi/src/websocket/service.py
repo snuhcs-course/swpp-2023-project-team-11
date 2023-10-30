@@ -2,7 +2,7 @@ from typing import Any, Tuple
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
-from sqlalchemy import insert, select, or_, and_
+from sqlalchemy import insert
 
 from src.auth.dependencies import *
 from src.auth.models import Session
@@ -81,6 +81,7 @@ def create_text(sender_id: int, chatting_id: int, msg: str, db: DbSession) -> An
         "msg": msg,
         "timestamp": datetime.now(),
     }).returning(Text))
+    db.commit()
     return {
         "type": "message",
         "body": {
