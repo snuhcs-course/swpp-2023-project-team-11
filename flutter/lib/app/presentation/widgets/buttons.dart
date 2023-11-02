@@ -93,7 +93,7 @@ class SmallButton extends StatelessWidget {
 }
 
 class BottomNextButton extends StatelessWidget{
-  final void Function() onPressed;
+  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +110,6 @@ class BottomNextButton extends StatelessWidget{
     );
   }
 
-  BottomNextButton({required this.onPressed});
+  BottomNextButton({this.onPressed});
 
 }

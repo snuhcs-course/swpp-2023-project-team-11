@@ -15,14 +15,6 @@ class MainIndexedScreen extends GetView<MainIndexedScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.to(
-            () => const ProfileSurveyScreen(),
-            binding: ProfileSurveyScreenBinding(),
-          );
-        },
-      ),
       body: Obx(
         () => IndexedStack(
           index: controller.currentIndex.value,

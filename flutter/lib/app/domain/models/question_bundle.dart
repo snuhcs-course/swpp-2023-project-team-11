@@ -1,3 +1,4 @@
+import 'package:json_annotation/json_annotation.dart';
 
 class QuestionBundle<E extends Enum> {
   final List<String> questions;
@@ -7,4 +8,5 @@ class QuestionBundle<E extends Enum> {
     required this.questions,
     required this.answerOptions,
   });
+  Type get getAnswerType => E;
 }

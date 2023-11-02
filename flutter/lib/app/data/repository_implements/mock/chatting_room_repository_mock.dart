@@ -15,7 +15,6 @@ class ChattingRepositoryMock implements ChattingRepository{
 
     for (int i = 0; i < count; i++) {
       final koreanUser = KoreanUser(
-        id: 'KoreanUserID$i',
         name: 'KoreanUserName$i',
         userType: UserType.korean,
         email: 'korean.user$i@example.com',
@@ -38,7 +37,6 @@ class ChattingRepositoryMock implements ChattingRepository{
     );
 
     final foreignUser = ForeignUser(
-    id: 'ForeignUserID$i',
     name: 'ForeignUserName$i',
     userType: UserType.foreign,
     email: 'foreign.user$i@example.com',

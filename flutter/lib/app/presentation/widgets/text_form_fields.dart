@@ -6,6 +6,7 @@ class MainTextFormField extends StatelessWidget {
   final String? titleText;
   final TextStyle? textStyle;
   final double? verticalPadding;
+  final bool obscureText;
 
   const MainTextFormField({
     super.key,
@@ -14,6 +15,7 @@ class MainTextFormField extends StatelessWidget {
     this.titleText,
     this.textStyle,
     this.verticalPadding,
+    this.obscureText = false
   });
 
   @override
@@ -48,6 +50,7 @@ class MainTextFormField extends StatelessWidget {
     return TextFormField(
       controller: textEditingController,
       style: textStyle,
+      obscureText: obscureText,
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 12,vertical: verticalPadding??10),
         filled: true,

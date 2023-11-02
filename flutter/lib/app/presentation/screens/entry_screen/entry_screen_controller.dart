@@ -35,8 +35,12 @@ class EntryScreenController extends GetxController {
     );
   }
 
-  void _signIn() {
+  void onSignInSuccess(){
+    Get.offAllNamed(Routes.MAIN);
+  }
 
+  void _signIn() {
+    _signInUseCase.call(email: emailCon.text, password: passwordCon.text, onFail: (){print("Sign in fail");}, onSuccess: (){onSignInSuccess();});
   }
 
   void _signUp() {

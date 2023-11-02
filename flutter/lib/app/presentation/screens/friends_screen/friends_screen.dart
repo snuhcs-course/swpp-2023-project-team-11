@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: unused_import
 import '../../../domain/models/user.dart';
@@ -7,7 +8,6 @@ import '../../widgets/app_bars.dart';
 import 'friends_screen_controller.dart';
 
 import 'package:flutter/cupertino.dart';
-
 
 class FriendsScreen extends GetView<FriendsScreenController> {
   const FriendsScreen({Key? key}) : super(key: key);
@@ -23,12 +23,17 @@ class FriendsScreen extends GetView<FriendsScreenController> {
             height: 52,
           ),
         ),
-        body: Obx(() => _buildUserList()));
+        body: Obx(() => SmartRefresher(
+            enablePullDown: true,
+            header: WaterDropHeader(),
+            controller: controller.refreshController,
+            onRefresh: controller.onRefresh,
+            child: _buildUserList())));
   }
 
   Widget _buildUserList() {
     if (controller.users.isEmpty) {
-      return Center(child: Text("친구 목록을 불러오는데 실패했어요. 다시 시도해주세요"));
+      return Center(child: Text("친구 목록을 로딩중이에요"));
     }
     return ListView.separated(
         shrinkWrap: true,
@@ -49,12 +54,12 @@ class FriendsScreen extends GetView<FriendsScreenController> {
         child: Row(
           children: [
             Stack(children: [
-              Container(
-                decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(10)),
-                width: 148,
-                height: 148,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox.fromSize(
+                  child: Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
+                  size: Size.fromRadius(72),
+                ),
               ),
               Positioned(
                 left: 84,
@@ -87,13 +92,13 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xff2d3a45))),
                         SizedBox(height: 4),
-                        Text("가나다라마바사",
+                        Text("${user.profile.aboutMe}",
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: Color(0xff2d3a45).withOpacity(0.8))),
                         SizedBox(height: 2),
-                        Text("가나다라마바사",
+                        Text("희망언어: ${user.getLanguages.join(", ")}",
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
@@ -110,7 +115,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                       SizedBox(
                         width: 8,
                       ),
-                      _buildUserInfoBubble("${user.profile.foodCategories}")
+                      _buildUserInfoBubble("${user.profile.mbti}")
                     ],
                   )
                 ],
@@ -151,7 +156,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
       opacityColor: Colors.transparent,
       loadingWidget: Center(
         child: Obx(
-              () => Material(
+          () => Material(
             color: Colors.black54,
             child: Container(
               child: Center(child: loadingWidget),

@@ -14,49 +14,70 @@ class EmailScreen extends GetView<EmailScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-        appBar: const SimpleAppBar(),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 4).copyWith(top: 16),
-                  child: const Text(
-                    '회원가입을 위해\n학교 이메일을 인증해주세요',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+      appBar: const SimpleAppBar(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4).copyWith(top: 16),
+                child: const Text(
+                  '회원가입을 위해\n학교 이메일을 인증해주세요',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: MainTextFormField(
-                        textEditingController: controller.emailCon,
-                        hintText: "학교 이메일 입력",
-                        textStyle: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w400),
-                        verticalPadding: 15,
-                      ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: MainTextFormField(
+                      textEditingController: controller.emailCon,
+                      hintText: "학교 이메일 입력",
+                      textStyle:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                      verticalPadding: 15,
                     ),
-                    const SizedBox(width: 12),
-                    SmallButton(
-                        text: '인증하기', onPressed: () => {},),
-                  ],
-                ),
-                SizedBox(height: 20),
-                if (controller.emailSent) _buildCodeContainer()
-              ],
-            ),
+                  ),
+                  const SizedBox(width: 12),
+                  SmallButton(
+                    text: '인증하기',
+                    onPressed: controller.onAuthButtonTap,
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Obx(() {
+                if (controller.warningType == 1)
+                  return Text("서울대학교 계정을 사용해주세요 :)",
+                      style: TextStyle(
+                          color: Color(0xff9f75d1),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400));
+                else
+                  return Text("");
+              }),
+              SizedBox(height: 10),
+              Obx(() {
+                if (controller.emailSent.value)
+                  return _buildCodeContainer();
+                else
+                  return Text("");
+              })
+            ],
           ),
         ),
-        bottomNavigationBar: BottomNextButton(onPressed: controller.temporaryOnTap),
+      ),
+      bottomNavigationBar: Obx(() {
+        return BottomNextButton(
+            onPressed:
+                controller.certSuccess.value ? controller.onNextTap : null);
+      }),
     );
   }
 
@@ -81,20 +102,29 @@ class EmailScreen extends GetView<EmailScreenController> {
               children: [
                 Expanded(
                   child: MainTextFormField(
-                    textEditingController: controller.emailCon,
-                    hintText: "코드 8자리 입력",
-                    textStyle: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w400),
+                    textEditingController: controller.codeCon,
+                    hintText: "코드 6자리 입력",
+                    textStyle:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                     verticalPadding: 15,
                   ),
                 ),
                 const SizedBox(width: 12),
-                SmallButton(
-                    text: '확인', onPressed: () => {}),
+                SmallButton(text: '확인', onPressed: controller.onCodeButtonTap),
               ],
             ),
           ),
-          if (controller.certSuccess)
+          Obx(() {
+            if (controller.warningType == 2)
+              return Text("잘못된 코드에요. 다시 한번 확인해주세요!",
+                  style: TextStyle(
+                      color: Color(0xff9f75d1),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400));
+            else
+              return Text("");
+          }),
+          if (controller.certSuccess.value)
             Text("성공적으로 인증되었어요!",
                 style: TextStyle(
                     color: Color(0xff9f75d1),

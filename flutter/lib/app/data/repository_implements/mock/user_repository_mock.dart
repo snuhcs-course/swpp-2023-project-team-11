@@ -5,10 +5,7 @@ import 'package:mobile_app/app/domain/result.dart';
 import 'dart:math';
 
 class UserRepositoryMock implements UserRepository {
-  @override
-  Future<User> readUserBySessionId() {
-    throw UnimplementedError();
-  }
+
 
   List<User> generateRandomUsers(int count) {
     final List<User> users = [];
@@ -17,7 +14,6 @@ class UserRepositoryMock implements UserRepository {
     for (var i = 0; i < count; i++) {
       if (random.nextBool()) {
         users.add(KoreanUser(
-          id: 'KoreanUserID$i',
           name: 'KoreanUserName$i',
           userType: UserType.korean,
           email: 'korean.user$i@example.com',
@@ -38,7 +34,6 @@ class UserRepositoryMock implements UserRepository {
         ));
       } else {
         users.add(ForeignUser(
-          id: 'ForeignUserID$i',
           name: 'ForeignUserName$i',
           userType: UserType.foreign,
           email: 'foreign.user$i@example.com',
@@ -71,6 +66,12 @@ class UserRepositoryMock implements UserRepository {
     List<User> users = await Future.delayed(Duration(seconds: 2)).then((value) => generateRandomUsers(6));
 
     return Result.success(users);
+  }
+
+  @override
+  Future<Result<User, DefaultIssue>> readUserBySessionId() {
+    // TODO: implement readUserBySessionId
+    throw UnimplementedError();
   }
 
 }
