@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session as DbSession
 
 from src.chatting.exceptions import *
 from src.chatting.models import *
-
+from src.user.models import Profile
+import requests, json
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
     query = db.query(Chatting).where(
@@ -47,3 +48,35 @@ def get_all_texts(user_id: int, chatting_id: int | None, seq_id: int, limit: int
         query = query.limit(limit=limit)
 
     return query.all()
+
+
+def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> int:
+    
+    recent_text = get_recent_texts(user_id, chatting_id, db)
+    parsed_text = parse_recent_texts(recent_text)
+    sentiment = calculate_sentiment_clova(parsed_text)
+    
+    user_profile = db.query(Profile).filter(Profile.id == user_id).first()
+
+
+def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text]:
+    return db.query(Text).join(Text.chatting).filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)).filter(Text.chatting_id == chatting_id).order_by(desc(Text.id)).limit(20).all()
+
+def parse_recent_texts(texts: List[Text]) -> str:
+    
+    return ".".join(text.msg for text in texts)
+
+def calculate_sentiment_clova(text:str) -> int:
+
+    url="https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
+    headers = {
+    "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
+    "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
+    "Content-Type": "application/json"
+    }
+    content = text
+    data = {
+            "content": content
+    }
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+    pass
