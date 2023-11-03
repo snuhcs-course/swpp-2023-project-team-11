@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session as DbSession
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.user.models import Profile
-import requests, json
+#import requests, json
+from src.chatting.constants import *
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
     query = db.query(Chatting).where(
@@ -50,20 +51,19 @@ def get_all_texts(user_id: int, chatting_id: int | None, seq_id: int, limit: int
     return query.all()
 
 
-def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> int:
+def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     
     recent_text = get_recent_texts(user_id, chatting_id, db)
     parsed_text = parse_recent_texts(recent_text)
     sentiment = calculate_sentiment_clova(parsed_text)
     
     user_profile = db.query(Profile).filter(Profile.id == user_id).first()
-
+    
 
 def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text]:
     return db.query(Text).join(Text.chatting).filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)).filter(Text.chatting_id == chatting_id).order_by(desc(Text.id)).limit(20).all()
 
 def parse_recent_texts(texts: List[Text]) -> str:
-    
     return ".".join(text.msg for text in texts)
 
 def calculate_sentiment_clova(text:str) -> int:
@@ -79,4 +79,77 @@ def calculate_sentiment_clova(text:str) -> int:
             "content": content
     }
     response = requests.post(url, data=json.dumps(data), headers=headers)
-    pass
+    rescode = response.status_code
+    if(rescode!=200):
+        #print("Error Code:" + rescode)
+        return 0
+    
+    confidence_text = response.json["document"]["confidence"]
+    positive = response.json["document"]["confidence"]["positive"]
+    negative = response.json["document"]["confidence"]["negative"]
+    #positive[0~100] negative[0~100] 
+    
+    return positive-negative
+
+def calculate_turn(user_id: int, texts: List[Text], chatting_id: int, db: DbSession) -> float:
+    default = 50
+    for text in texts:
+        if text.sender_id == user_id:
+            turn += 1
+    
+    rate = turn/len(texts)
+    if 0.4 <= rate and rate <= 0.6 :
+        return 100
+    elif 0.3 <= rate and rate <= 0.7 : 
+        return 80
+    elif 0.2 <= rate and rate <= 0.8 : 
+        return 60
+    elif 0.1 <= rate and rate <= 0.9 : 
+        return 40
+    elif 0.0 <= rate and rate <= 1.0 :
+        return 0
+    else:
+        return default
+
+def get_recent_frequency(user_id: int, chatting_id:int, db:DbSession) -> float:
+    default = 50
+    texts = get_recent_texts(user_id, chatting_id, db)
+    
+    frequency = datetime.now() - texts[-1].timestamp
+    seconds = frequency.seconds
+    if 3600 <= seconds :
+        return 0
+    elif 3000 <= seconds :
+        return 20
+    elif 2400 <= seconds :
+        return 40
+    elif 1800 <= seconds :
+        return 60
+    elif 1200 <= seconds :
+        return 80
+    elif 600 <= seconds :
+        return 100
+    else:
+        return default
+
+
+def get_recent_length(user_id: int, chatting_id:int, db:DbSession) -> float:
+    default = 50
+    texts = get_recent_texts(user_id, chatting_id, db)
+    avg_len = 0
+    for text in texts:
+        avg_len += len(text.msg)
+    avg_len /= len(texts)
+    
+    if avg_len >= 40 : 
+        return 100
+    elif avg_len >= 30 :
+        return 80
+    elif avg_len >= 20 :
+        return 60
+    elif avg_len >= 10 :
+        return 40
+    elif avg_len >= 0 :
+        return 20
+    else:
+        return default

@@ -32,3 +32,16 @@ class Text(Base):
 
     chatting: Mapped[Chatting] = relationship()
     sender: Mapped[User] = relationship()
+
+
+class Intimacy(Base):
+    __tablename__ = "intimacy"
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
+    chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
+    intimacy: Mapped[int] = Column(Integer, nullable=False)
+    timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
+
+    chatting: Mapped[Chatting] = relationship()
+    user: Mapped[User] = relationship()
