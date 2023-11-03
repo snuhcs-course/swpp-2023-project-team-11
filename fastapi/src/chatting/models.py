@@ -35,7 +35,7 @@ class Text(Base):
 
 
 class Intimacy(Base):
-    __tablename__ = "intimacy"
+    __tablename__ = "user_intimacy"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)

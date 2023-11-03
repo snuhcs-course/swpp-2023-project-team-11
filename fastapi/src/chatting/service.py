@@ -1,7 +1,7 @@
+import numpy as np
 from typing import List
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
-
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.user.models import Profile
@@ -82,36 +82,50 @@ def get_all_texts(
 
 
 def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
-    intimacy = (
+    # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
+    default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
+    weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
+
+    curr_texts = parse_recent_texts(get_recent_texts(user_id, chatting_id, DbSession))
+
+    #every parameters we use
+    sentiment = calculate_sentiment_clova(curr_texts)
+    frequency = score_frequency(curr_texts)
+    length = score_avg_length(curr_texts)
+    turn = score_turn(curr_texts)
+    frequency_delta = length_delta = turn_delta = 0
+
+    user_intimacy_info = (
         db.query(Intimacy)
         .filter(Intimacy.user_id == user_id, Intimacy.chatting_id == chatting_id)
         .first()
     )
-    is_default = intimacy.is_default
-    if is_default == True:
-        intimacy.is_default = False
+    #if intimacy value is initial value
+    is_default = user_intimacy_info.is_default
+    timestamp = user_intimacy_info.timestamp
 
-    timestamp = intimacy.timestamp
-
-    recent_text = get_recent_texts(user_id, chatting_id, db)
-    parsed_text = parse_recent_texts(recent_text)
-
-    # Basic parameters, Not Scaled, for scaling, use score_XXX function
-    sentiment = calculate_sentiment_clova(parsed_text)
-
-    # used for weight(ex. w1 w2 w3 w4 w5...)
-    user_profile = db.query(Profile).filter(Profile.id == user_id).first()
-
-    # default => exclude delta parameter
+    
     if is_default:
-        pass
-    # none default => get delta result and put every parameter altogether
+        user_intimacy_info.is_default = False
+        ## todo: get timestamp from db, update intimacy
+        
+        parameter_arr = np.array([sentiment, frequency, frequency_delta, 
+                             length, length_delta, turn, turn_delta])
+        intimacy = default_weight.dot(parameter_arr.transpose())
+
     else:
-        previous_text = get_previous_texts(user_id, chatting_id, timestamp, db)
+   
+        prev_texts = parse_recent_texts(get_previous_texts(user_id, chatting_id,timestamp, DbSession))
+        frequency_delta = score_frequency_delta(prev_texts, curr_texts)
+        length_delta = score_avg_length_delta(prev_texts, curr_texts)
+        turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
+    
+        parameter_arr = np.array([sentiment, frequency, frequency_delta, 
+                             length, length_delta, turn, turn_delta])
+    
+        intimacy = weight.dot(parameter_arr.transpose())
 
-        pass
-
-    return
+    return intimacy
 
 
 def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text]:
@@ -156,6 +170,7 @@ def calculate_sentiment_clova(text: str) -> int:
     data = {"content": content}
     response = requests.post(url, data=json.dumps(data), headers=headers)
     rescode = response.status_code
+
     if rescode != 200:
         # print("Error Code:" + rescode)
         return 0
@@ -168,131 +183,85 @@ def calculate_sentiment_clova(text: str) -> int:
     return positive - negative
 
 
-# scope of rate[0,1]
-def get_turn(texts: List[Text], user_id: int) -> float:
-    default = 50
-    turn = 0
-    for text in texts:
-        if text.sender_id == user_id:
-            turn += 1
-
-    rate = turn / len(texts)
-    return rate
-
-def get_turn_delta(prev_texts: List[Text],curr_texts:List[Text], user_id: int) -> float:
-    return get_turn(curr_texts, user_id) - get_turn(prev_texts, user_id)
-
-def score_turn(texts: List[Text], user_id: int) -> int:
-    rate = get_turn(texts, user_id)
-    default = 50
-    if 0.4 <= rate and rate <= 0.6:
-        return 100
-    elif 0.3 <= rate and rate <= 0.7:
-        return 80
-    elif 0.2 <= rate and rate <= 0.8:
-        return 60
-    elif 0.1 <= rate and rate <= 0.9:
-        return 40
-    elif 0.0 <= rate and rate <= 1.0:
-        return 0
-    else:
-        return default
-
-
-def score_turn_delta(prev_texts: List[Text], curr_texts: List[Text], user_id: int) -> int:
-    rate = get_turn_delta(prev_texts, curr_texts, user_id)
-    default = 50
-    if 0.4 <= rate and rate <= 0.6:
-        return 100
-    elif 0.3 <= rate and rate <= 0.7:
-        return 80
-    elif 0.2 <= rate and rate <= 0.8:
-        return 60
-    elif 0.1 <= rate and rate <= 0.9:
-        return 40
-    elif 0.0 <= rate and rate <= 1.0:
-        return 0
-    else:
-        return default
-
-
 def get_frequency(texts: List[Text]) -> float:
     default = 50
     frequency = datetime.now() - texts[-1].timestamp
     seconds = frequency.seconds
     return seconds
 
+
 def get_frequency_delta(prev_text: List(Text), curr_text: List(Text)) -> float:
     return get_frequency(curr_text) - get_frequency(prev_text)
-    
+
 
 def score_frequency(texts: List[Text]) -> int:
     seconds = get_frequency(texts)
-    default = 50
+    default = 0
     if 3600 <= seconds:
-        return 0
+        return -5
     elif 3000 <= seconds:
-        return 20
+        return -4
     elif 2400 <= seconds:
-        return 40
+        return -2
     elif 1800 <= seconds:
-        return 60
+        return 0
     elif 1200 <= seconds:
-        return 80
+        return 3
     elif 600 <= seconds:
-        return 100
+        return 5
+    elif 0 <= seconds:
+        return 10
     else:
         return default
 
 
 def score_frequency_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float:
     seconds = get_frequency_delta(prev_texts, curr_texts)
-    default = 50
-    if 3600 <= seconds:
-        return 0
-    elif 3000 <= seconds:
-        return 20
-    elif 2400 <= seconds:
-        return 40
-    elif 1800 <= seconds:
-        return 60
+    if 1800 <= seconds:
+        return -5
     elif 1200 <= seconds:
-        return 80
+        return -3
     elif 600 <= seconds:
-        return 100
+        return -1
+    elif -600 <= seconds:
+        return 0
+    elif -1200 <= seconds:
+        return 3
+    elif -1800 <= seconds:
+        return 5
     else:
-        return default
+        return 10
 
 
 def score_avg_length(texts: List[Text]) -> int:
-    default = 50
     avg_len = get_avg_length(texts)
-    if avg_len >= 40:
-        return 100
-    elif avg_len >= 30:
-        return 80
+    if avg_len >= 30:
+        return 10
     elif avg_len >= 20:
-        return 60
+        return 7
     elif avg_len >= 10:
-        return 40
+        return 4
+    elif avg_len >= 5:
+        return 0
     elif avg_len >= 0:
-        return 20
+        return -5
     else:
-        return default
+        return 0
 
-def score_avg_length_delta(prev_texts: List[Text],curr_texts: List[Text]) -> int:
-    default = 50
-    avg_len = get_avg_length_delta(prev_texts,curr_texts)
-    if avg_len >= 40:
-        return 100
-    elif avg_len >= 30:
-        return 80
-    elif avg_len >= 20:
-        return 60
+
+def score_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> int:
+    default = 0
+    avg_len = get_avg_length_delta(prev_texts, curr_texts)
+    if avg_len >= 15:
+        return 10
     elif avg_len >= 10:
-        return 40
-    elif avg_len >= 0:
-        return 20
+        return 5
+    elif avg_len >= -10:
+        return 0
+    elif avg_len >= -20:
+        return -3
+    elif avg_len < -20:
+        return -5
     else:
         return default
 
@@ -307,3 +276,60 @@ def get_avg_length(texts: List[Text]) -> float:
 
 def get_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float:
     return get_avg_length(curr_texts) - get_avg_length(prev_texts)
+
+
+# scope of rate[0,1]
+def get_turn(texts: List[Text], user_id: int) -> float:
+    default = 50
+    turn = 0
+    for text in texts:
+        if text.sender_id == user_id:
+            turn += 1
+
+    rate = turn / len(texts)
+    return rate
+
+
+def get_turn_delta(
+    prev_texts: List[Text], curr_texts: List[Text], user_id: int
+) -> float:
+    # 작을수록 개선된 것(0.5에 가까워졌으므로)
+    return np.abs(get_turn(curr_texts, user_id)-0.5) - np.abs(get_turn(prev_texts, user_id)-0.5)
+
+
+def score_turn(texts: List[Text], user_id: int) -> int:
+    rate = get_turn(texts, user_id)
+    default = 0
+    if 0.4 <= rate and rate <= 0.6:
+        return 10
+    elif 0.3 <= rate and rate <= 0.7:
+        return 5
+    elif 0.2 <= rate and rate <= 0.8:
+        return 0
+    elif 0.1 <= rate and rate <= 0.9:
+        return -3
+    elif 0.0 <= rate and rate <= 1.0:
+        return -5
+    else:
+        return default
+
+
+def score_turn_delta(
+    prev_texts: List[Text], curr_texts: List[Text], user_id: int
+) -> int:
+    rate = get_turn_delta(prev_texts, curr_texts, user_id)
+    default = 0
+    if 0.3 <= rate :
+        return -5
+    elif 0.1 < rate :
+        return -3
+    elif 0.0 < rate :
+        return 0
+    elif -0.5<= rate :
+        return 10
+    else:
+        return default
+
+def change_weight(weight: List[float]) -> List[float]:
+    
+    return weight
