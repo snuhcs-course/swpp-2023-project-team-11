@@ -73,7 +73,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
   }
 
   @override
-  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required String chattingRoomId}) async {
+  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required int chattingRoomId}) async {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try {

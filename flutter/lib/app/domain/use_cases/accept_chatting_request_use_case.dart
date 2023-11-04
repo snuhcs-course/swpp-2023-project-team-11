@@ -6,7 +6,7 @@ class AcceptChattingRequestUseCase {
   final ChattingRepository _chattingRepository;
 
   Future<void> call({
-    required String chattingRoomId,
+    required int chattingRoomId,
     required void Function(ChattingRoom chattingRoom) whenSuccess,
     required void Function() whenFail,
   }) async {

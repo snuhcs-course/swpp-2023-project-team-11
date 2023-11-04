@@ -17,5 +17,5 @@ abstract class ChattingRepository {
 
   Future<Result<ChattingRoom, DefaultIssue>> createChattingRoom({required String counterPartEmail});
 
-  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required String chattingRoomId});
+  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required int chattingRoomId});
 }

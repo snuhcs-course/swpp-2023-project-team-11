@@ -24,10 +24,10 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
       ),
       body: controller.chattingRoomController.obx(
         (state) {
-          if (state!.roomForReqeusted.isEmpty) {
+          if (state!.roomForRequested.isEmpty) {
             return _buildEmptyChattingRoomResponse();
           } else {
-            return _buildChatroomList(state.roomForReqeusted);
+            return _buildChatroomList(state.roomForRequested);
           }
         },
           onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
@@ -122,7 +122,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                 if (value == 0) {
                   print("삭제");
                 } else if (value == 1) {
-                  print("수락");
+                  controller.onAcceptButtonTap(chatroom);
                 }
               },
               color: const Color(0xff2d3a45).withOpacity(0.4),

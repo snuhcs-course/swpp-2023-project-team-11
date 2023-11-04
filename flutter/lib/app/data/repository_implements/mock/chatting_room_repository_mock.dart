@@ -103,7 +103,7 @@ class ChattingRepositoryMock implements ChattingRepository {
   }
 
   @override
-  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required String chattingRoomId}) {
+  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required int chattingRoomId}) {
     // TODO: implement updateChattingRoom
     throw UnimplementedError();
   }
