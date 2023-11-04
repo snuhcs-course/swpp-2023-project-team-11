@@ -212,7 +212,7 @@ def get_frequency(texts: List[Text]) -> float:
     return seconds
 
 
-def get_frequency_delta(prev_text: List(Text), curr_text: List(Text)) -> float:
+def get_frequency_delta(prev_text: List[Text], curr_text: List[Text]) -> float:
     return get_frequency(curr_text) - get_frequency(prev_text)
 
 
