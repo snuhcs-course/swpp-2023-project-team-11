@@ -36,18 +36,6 @@ def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
 
 
 def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
-
-    default_intimacy = 36.5
-    #Set default intimacy(유저별)
-    db.execute(
-        insert(Intimacy)
-        .values({
-            "user_id": user_id,
-            "chatting_id": chatting_id,
-            "intimacy": default_intimacy,
-            "timestamp": datetime.now(),
-        })
-    )
     chatting = db.scalar(
         update(Chatting)
         .values(is_approved=True)
@@ -58,6 +46,17 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
     if chatting is None:
         raise InvalidChattingException()
 
+    default_intimacy = 36.5
+    # Set default intimacy(유저별)
+    db.execute(
+        insert(Intimacy)
+        .values({
+            "user_id": user_id,
+            "chatting_id": chatting_id,
+            "intimacy": default_intimacy,
+            "timestamp": datetime.now(),
+        })
+    )
     return chatting
 
 
