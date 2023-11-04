@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -16,41 +17,47 @@ class FriendsScreen extends GetView<FriendsScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: NotiAppBar(
-          title: Image.asset(
-            'assets/images/SNEK_LOGO_small.png',
-            fit: BoxFit.fill,
-            height: 52,
-          ),
+      backgroundColor: Colors.white,
+      appBar: NotiAppBar(
+        title: Image.asset(
+          'assets/images/SNEK_LOGO_small.png',
+          fit: BoxFit.fill,
+          height: 52,
         ),
-        body: Obx(() => SmartRefresher(
-            enablePullDown: true,
-            header: const WaterDropHeader(),
-            controller: controller.refreshController,
-            onRefresh: controller.onRefresh,
-            child: _buildUserList())));
+      ),
+      body: controller.obx(
+        (state) {
+          if (state!.isEmpty) {
+            return const Center(child: Text("현재 검색되는 유저가 존재하지 않습니다"));
+          }
+          return SmartRefresher(
+              enablePullDown: true,
+              header: const WaterDropHeader(),
+              controller: controller.refreshController,
+              onRefresh: controller.onRefresh,
+              child: _buildUserList(state));
+        },
+        onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
+      ),
+    );
   }
 
-  Widget _buildUserList() {
-    if (controller.users.isEmpty) {
-      return const Center(child: Text("친구 목록을 로딩중이에요"));
-    }
+  Widget _buildUserList(List<User> users) {
     return ListView.separated(
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, index) {
-          return _buildUserContainer(controller.users[index]);
+          return _buildUserContainer(users[index]);
         },
         separatorBuilder: (context, index) {
           return const SizedBox(height: 0);
         },
-        itemCount: controller.users.length);
+        itemCount: users.length);
   }
 
   Widget _buildUserContainer(User user) {
     return GestureDetector(
-      onTap:() {
+      onTap: () {
         controller.onUserContainerTap(user);
       },
       child: Padding(
@@ -62,7 +69,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
                   size: const Size.fromRadius(72),
-                  child: Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
+                  child: Image.asset(
+                      'assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
                 ),
               ),
               Positioned(
@@ -87,27 +95,23 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(user.name,
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xff2d3a45))),
-                        const SizedBox(height: 4),
-                        Text(user.profile.aboutMe,
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff2d3a45).withOpacity(0.8))),
-                        const SizedBox(height: 2),
-                        Text("희망언어: ${user.getLanguages.join(", ")}",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff2d3a45).withOpacity(0.8))),
-                      ]),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(user.name,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
+                    const SizedBox(height: 4),
+                    Text(user.profile.aboutMe,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xff2d3a45).withOpacity(0.8))),
+                    const SizedBox(height: 2),
+                    Text("희망언어: ${user.getLanguages.join(", ")}",
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xff2d3a45).withOpacity(0.8))),
+                  ]),
                   const SizedBox(height: 4),
                   Wrap(
                     children: [
@@ -135,8 +139,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Container(
-        decoration: BoxDecoration(
-            color: const Color(0xffF8F1FB), borderRadius: BorderRadius.circular(10)),
+        decoration:
+            BoxDecoration(color: const Color(0xffF8F1FB), borderRadius: BorderRadius.circular(10)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
           child: Text(info,

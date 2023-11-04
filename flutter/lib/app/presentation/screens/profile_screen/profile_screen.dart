@@ -39,7 +39,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(controller.user.name,
+                    Text(controller.userController.userName,
                         style: const TextStyle(
                             color: Color(0xff2d3a45),
                             fontWeight: FontWeight.w700,
@@ -51,7 +51,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                           width: 120,
                           decoration: BoxDecoration(border: Border.all(color: Colors.white, width: 2), borderRadius: BorderRadius.circular(10)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Text(controller.user.profile.aboutMe,
+                          child: Text(controller.userController.userAboutMe,
                               style: const TextStyle(
                                   color: Color(0xff2d3a45),
                                   fontWeight: FontWeight.w700,

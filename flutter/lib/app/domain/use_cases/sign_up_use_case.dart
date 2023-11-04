@@ -12,7 +12,7 @@ class SignUpUseCase {
     required User user,
     required String emailToken,
     required void Function() onFail,
-    required void Function() onSuccess,
+    required void Function(User user) onSuccess,
 }) async {
     final signUpResult = await _authService.signUp(
       email: email,
@@ -23,8 +23,7 @@ class SignUpUseCase {
     switch(signUpResult) {
       case Success(:final data) : {
         await _authService.setAuthorized(accessToken: data.accessToken);
-        Get.put<User>(user,permanent: true);
-        onSuccess();
+        onSuccess(user);
       }
       case Fail(:final issue) :{
         onFail();

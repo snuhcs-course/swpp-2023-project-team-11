@@ -1,0 +1,13 @@
+import 'package:get/get.dart';
+import 'package:mobile_app/app/domain/models/user.dart';
+
+class UserController extends GetxController {
+  final User _user;
+
+  UserController({
+    required User user,
+  }) : _user = user;
+
+  String get userName => _user.name;
+  String get userAboutMe => _user.profile.aboutMe;
+}

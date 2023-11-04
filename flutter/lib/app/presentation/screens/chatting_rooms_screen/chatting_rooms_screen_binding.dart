@@ -7,8 +7,6 @@ import 'chatting_rooms_screen_controller.dart';
 class ChattingRoomsScreenBinding implements Bindings {
   @override
   void dependencies() {
-    Get.put(ChattingRoomsScreenController(
-        fetchChatroomsUseCase: FetchChatroomsUseCase(
-            chattingRepository: ChattingRepositoryImpl())));
+    Get.put(ChattingRoomsScreenController());
   }
 }

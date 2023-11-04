@@ -14,6 +14,7 @@ import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_scr
 import 'package:mobile_app/app/presentation/screens/profile_screen/profile_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen_binding.dart';
+import 'package:mobile_app/routes/middle_ware.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 import '../app/presentation/screens/chat_requests_screen/chat_requests_screen.dart';
@@ -26,8 +27,7 @@ import '../app/presentation/screens/password_screen/password_screen.dart';
 import '../app/presentation/screens/password_screen/password_screen_binding.dart';
 
 abstract class GetPages {
-  static get pages =>
-      [
+  static get pages => [
         GetPage(
           name: Routes.ENTRY,
           page: () => const EntryScreen(),
@@ -79,16 +79,20 @@ abstract class GetPages {
           binding: ProfileSurveyScreenBinding(),
         ),
         GetPage(
-            name: Routes.MAIN,
-            page: () => const MainIndexedScreen(),
-            bindings: [
-              MainIndexedScreenBinding(),
-              FriendsScreenBinding(),
-              ChattingRoomsScreenBinding(),
-              ProfileScreenBinding(),
-            ]),
+          name: Routes.MAIN,
+          page: () => const MainIndexedScreen(),
+          bindings: [
+            MainIndexedScreenBinding(),
+            FriendsScreenBinding(),
+            ChattingRoomsScreenBinding(),
+            ProfileScreenBinding(),
+          ],
+          middlewares: [
+            MainMiddleWare(),
+          ],
+        ),
         GetPage(
-        name: Routes.MAIN + Routes.FRIEND_DETAIL,
+          name: Routes.MAIN + Routes.FRIEND_DETAIL,
           page: () => const FriendDetailScreen(),
           binding: FriendDetailScreenBinding(),
         ),

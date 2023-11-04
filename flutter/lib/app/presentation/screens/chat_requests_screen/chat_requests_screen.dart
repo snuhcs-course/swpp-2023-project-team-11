@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 import 'dart:math' as math;
 
 // ignore: unused_import
@@ -14,50 +15,55 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: const NotiAppBar(
-          title: Text(
-            "채팅 요청",
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff2d3a45)),
-          ),
+      backgroundColor: Colors.white,
+      appBar: const NotiAppBar(
+        title: Text(
+          "채팅 요청",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
-        body: Obx(() => _buildChatroomList()));
+      ),
+      body: controller.chattingRoomController.obx(
+        (state) {
+          if (state!.roomForReqeusted.isEmpty) {
+            return _buildEmptyChattingRoomResponse();
+          } else {
+            return _buildChatroomList(state.roomForReqeusted);
+          }
+        },
+          onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
+      ),
+    );
   }
 
-  Widget _buildChatroomList() {
-    if (controller.chatrooms.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              "새로운 채팅 요청이 지금은 없어요!",
-              style: TextStyle(
-                  color: Color(0xff9f75d1),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18),
-            ),
-            const SizedBox(
-              height: 36,
-            ),
-            SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기")
-          ],
-        ),
-      );
-    }
+  Widget _buildEmptyChattingRoomResponse() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            "새로운 채팅 요청이 지금은 없어요!",
+            style: TextStyle(color: Color(0xff9f75d1), fontWeight: FontWeight.w600, fontSize: 18),
+          ),
+          const SizedBox(
+            height: 36,
+          ),
+          SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기")
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatroomList(List<ChattingRoom> chattingRooms) {
     return ListView.separated(
         shrinkWrap: true,
         itemBuilder: (context, index) {
-          return _buildChatroomContainer(controller.chatrooms[index], context);
+          return _buildChatroomContainer(chattingRooms[index], context);
         },
         separatorBuilder: (context, index) {
           return const SizedBox(height: 0);
         },
-        itemCount: controller.chatrooms.length);
+        itemCount: chattingRooms.length);
   }
 
   Widget _buildChatroomContainer(ChattingRoom chatroom, BuildContext context) {
@@ -81,24 +87,14 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
               children: [
                 Row(
                   children: [
-                     Text(chatroom.initiator.name,
+                    Text(chatroom.initiator.name,
                         style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff2d3a45))),
+                            fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                     const SizedBox(width: 8),
                     Text(
-                        "${chatroom.createdAt
-                            .toLocal()
-                            .year}년 ${chatroom.createdAt
-                            .toLocal()
-                            .month}월 ${chatroom.createdAt
-                            .toLocal()
-                            .day}일",
+                        "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일",
                         style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xffff9162)))
+                            fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xffff9162)))
                   ],
                 ),
                 const SizedBox(height: 4),

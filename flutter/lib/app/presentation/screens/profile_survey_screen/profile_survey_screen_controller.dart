@@ -32,12 +32,9 @@ class ProfileSurveyScreenController extends GetxController {
   int _bundleIndex = -1;
 
   QuestionBundle? get getCurrentQuestionBundle =>
-      _bundleIndex >= _questionBundleList.length
-          ? null
-          : _questionBundleList[_bundleIndex];
+      _bundleIndex >= _questionBundleList.length ? null : _questionBundleList[_bundleIndex];
 
-  List<Enum> get getCurrentQuestionOptions =>
-      getCurrentQuestionBundle?.answerOptions ?? [];
+  List<Enum> get getCurrentQuestionOptions => getCurrentQuestionBundle?.answerOptions ?? [];
   final chatTextList = <(String, SenderType)>[].obs;
 
   final openKeywordBoard = false.obs;
@@ -46,8 +43,7 @@ class ProfileSurveyScreenController extends GetxController {
   final StreamController<QuestionBundle> _bundleStreamController =
       StreamController<QuestionBundle>();
 
-  Stream<QuestionBundle> get getQuestionBundleStream =>
-      _bundleStreamController.stream;
+  Stream<QuestionBundle> get getQuestionBundleStream => _bundleStreamController.stream;
 
   @override
   void onInit() {
@@ -80,8 +76,7 @@ class ProfileSurveyScreenController extends GetxController {
 
   final Map<Type, List<Enum>> answerMap = {};
 
-  Stream<String?> getIntervalQuestionStream(
-      QuestionBundle questionBundle) async* {
+  Stream<String?> getIntervalQuestionStream(QuestionBundle questionBundle) async* {
     await Future.delayed(const Duration(milliseconds: 50));
     for (final question in questionBundle.questions) {
       yield question;
@@ -109,8 +104,7 @@ class ProfileSurveyScreenController extends GetxController {
   }
 
   Future<void> _answerInChat() async {
-    final answerForPriorIndex =
-        answerMap[getCurrentQuestionBundle!.getAnswerType]!;
+    final answerForPriorIndex = answerMap[getCurrentQuestionBundle!.getAnswerType]!;
     final parsedAnswerText = answerForPriorIndex.join(", ");
     chatTextList.add((parsedAnswerText, SenderType.me));
     scrollToBottom();
@@ -123,8 +117,8 @@ class ProfileSurveyScreenController extends GetxController {
     );
   }
 
-  void toMainScreen(){
-    Get.offAllNamed(Routes.MAIN);
+  void toMainScreen(User user) {
+    Get.offAllNamed(Routes.MAIN, arguments: user);
   }
 
   void _submit() async {
@@ -134,27 +128,48 @@ class ProfileSurveyScreenController extends GetxController {
     final String password = Get.find<PasswordScreenController>().password;
     final emailInfo = Get.find<EmailScreenController>();
     Profile profile = Profile(
-        birth: additionalInfo.birth,
-        sex: additionalInfo.sex,
-        major: additionalInfo.department,
-        admissionYear: additionalInfo.admissionYear,
-        aboutMe: profileInfo.aboutMe,
-        mbti: additionalInfo.mbti,
-        hobbies: answerMap[Hobby]!.cast<Hobby>(),
-        foodCategories: answerMap[FoodCategory]!.cast<FoodCategory>(),
-        movieGenres: answerMap[MovieGenre]!.cast<MovieGenre>(),
-        locations: answerMap[Location]!.cast<Location>(),
-        nationCode: countryInfo.countryCode,
+      birth: additionalInfo.birth,
+      sex: additionalInfo.sex,
+      major: additionalInfo.department,
+      admissionYear: additionalInfo.admissionYear,
+      aboutMe: profileInfo.aboutMe,
+      mbti: additionalInfo.mbti,
+      hobbies: answerMap[Hobby]!.cast<Hobby>(),
+      foodCategories: answerMap[FoodCategory]!.cast<FoodCategory>(),
+      movieGenres: answerMap[MovieGenre]!.cast<MovieGenre>(),
+      locations: answerMap[Location]!.cast<Location>(),
+      nationCode: countryInfo.countryCode,
     );
-    
-    User user = countryInfo.isKorean? KoreanUser(name: profileInfo.nickname, mainLanguage: Language.korean, type: UserType.korean, email: emailInfo.email, wantedLanguages: profileInfo.selectedLanguages.value, profile: profile) :
-    ForeignUser(name: profileInfo.nickname, type: UserType.foreign, email: emailInfo.email,  mainLanguage: profileInfo.mainLanguage, subLanguages: profileInfo.selectedLanguages.value, profile: profile);
 
-    Get.put(user, permanent: true);
+    User user = countryInfo.isKorean
+        ? KoreanUser(
+            name: profileInfo.nickname,
+            mainLanguage: Language.korean,
+            type: UserType.korean,
+            email: emailInfo.email,
+            wantedLanguages: profileInfo.selectedLanguages.value,
+            profile: profile)
+        : ForeignUser(
+            name: profileInfo.nickname,
+            type: UserType.foreign,
+            email: emailInfo.email,
+            mainLanguage: profileInfo.mainLanguage,
+            subLanguages: profileInfo.selectedLanguages.value,
+            profile: profile);
+
     [user.name, user.email, user.profile.toJson(), user.type].forEach(print);
 
-    await _signUpUseCase(email: emailInfo.email, emailToken: emailInfo.emailToken, password: password, user: user,
-        onFail: (){print("Fail on creating user");}, onSuccess: (){toMainScreen();});
+    await _signUpUseCase(
+        email: emailInfo.email,
+        emailToken: emailInfo.emailToken,
+        password: password,
+        user: user,
+        onFail: () {
+          print("Fail on creating user");
+        },
+        onSuccess: (user) {
+          toMainScreen(user);
+        });
 
     // 로직 성공한 뒤, Get.offNamed(Routes.MAIN);
   }

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/domain/repository_interfaces/user_repository.dart';
 import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 
@@ -12,7 +13,7 @@ class SignInUseCase {
     required String email,
     required String password,
     required void Function() onFail,
-    required void Function() onSuccess,
+    required void Function(User user) onSuccess,
   }) async {
     final signInResult =
         await _authService.signIn(email: email, password: password);
@@ -24,8 +25,7 @@ class SignInUseCase {
           final result = await _userRepository.readUserBySessionId();
           switch(result) {
             case Success(data : final user) : {
-              Get.put(user, permanent: true);
-              onSuccess();
+              onSuccess(user);
             }
             case Fail() : {
               onFail();

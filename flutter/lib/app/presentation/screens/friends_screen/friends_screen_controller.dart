@@ -6,9 +6,8 @@ import 'dart:math';
 
 import '../../../domain/models/user.dart';
 
-class FriendsScreenController extends GetxController {
+class FriendsScreenController extends GetxController with StateMixin<List<User>> {
   final FetchUsersUseCase _fetchUsersUseCase;
-  final users = <User>[].obs;
   RefreshController refreshController = RefreshController(initialRefresh: false);
 
 
@@ -20,10 +19,9 @@ class FriendsScreenController extends GetxController {
   }) : _fetchUsersUseCase = fetchUsersUseCase;
 
   void onRefresh() async{
-
     _fetchUsersUseCase.basedOnLogic(whenSuccess: (List<User> users) {
-      this.users(users);
-    }, whenFail: () => {});
+      change(users, status: RxStatus.success());
+    }, whenFail: () => {print("friend fetch 실패")});
 
     // if failed,use refreshFailed()
     refreshController.refreshCompleted();
@@ -37,9 +35,10 @@ class FriendsScreenController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    change(null, status: RxStatus.loading());
     _fetchUsersUseCase.basedOnLogic(
         whenSuccess: (List<User> users) {
-          this.users(users);
+          change(users, status: RxStatus.success());
         },
         whenFail: () => {});
   }
