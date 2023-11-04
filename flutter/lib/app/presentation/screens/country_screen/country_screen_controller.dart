@@ -63,8 +63,11 @@ class CountryScreenController extends GetxController {
   void onOptionButtonTap(int tappedButton) {
     this.tappedButton.value = tappedButton;
     countryNotHere.value = false;
-    if (tappedButton == 1) tempCountryCode.value = "82";
-    else tempCountryCode.value = "0";
+    if (tappedButton == 1) {
+      tempCountryCode.value = "82";
+    } else {
+      tempCountryCode.value = "0";
+    }
   }
 
   void onNextButtonTap() {
@@ -73,7 +76,7 @@ class CountryScreenController extends GetxController {
 
   void onCountryNotHereButttontap() {
     tempCountryCode.value = "0";
-    this.countryNotHere.value = true;
+    countryNotHere.value = true;
   }
 
   @override

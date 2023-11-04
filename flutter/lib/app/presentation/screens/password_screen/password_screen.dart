@@ -28,7 +28,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
             const SizedBox(height: 8),
             Text("*6자 이상, 20자 이하의 영문",
                 style: TextStyle(
-                    color: Color(0xff2d3a45).withOpacity(0.8),
+                    color: const Color(0xff2d3a45).withOpacity(0.8),
                     fontWeight: FontWeight.w400,
                     fontSize: 14)),
             Padding(
@@ -37,13 +37,13 @@ class PasswordScreen extends GetView<PasswordScreenController> {
                 obscureText: true,
                 textEditingController: controller.passwordCon,
                 hintText: '비밀번호 입력',
-                textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
             ),
             Obx(() => controller.passwordEntered
                 ? _buildPasswordAgainContainer()
-                : Text(""))
+                : const Text(""))
           ],
         ),
       ),
@@ -63,10 +63,10 @@ class PasswordScreen extends GetView<PasswordScreenController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text("비밀번호를 재입력해주세요.",
               style: TextStyle(
-                  color: Color(0xff2d3a45).withOpacity(0.8),
+                  color: const Color(0xff2d3a45).withOpacity(0.8),
                   fontWeight: FontWeight.w500,
                   fontSize: 14)),
           Padding(
@@ -75,7 +75,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
               obscureText: true,
               textEditingController: controller.passwordAgainCon,
               hintText: "비밀번호 재입력",
-              textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
               verticalPadding: 15,
             ),
           ),
@@ -90,7 +90,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
               : Text(
                   "비밀번호가 일치하지 않아요",
                   style: TextStyle(
-                      color: Color(0xff2d3a45).withOpacity(0.36),
+                      color: const Color(0xff2d3a45).withOpacity(0.36),
                       fontWeight: FontWeight.w600,
                       fontSize: 14),
                 )

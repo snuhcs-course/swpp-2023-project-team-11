@@ -42,13 +42,13 @@ class EntryScreen extends GetView<EntryScreenController> {
           const SizedBox(height: 8),
           const Text(
             "일이삼사오육칠팔구십이삼사",
-            style: TextStyle(fontSize: 16, color: const Color(0xff9f75d1)),
+            style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(
             "SNEK",
             style: TextStyle(
               fontSize: 30,
-              color: const Color(0xffff733d),
+              color: Color(0xffff733d),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -98,7 +98,7 @@ class EntryScreen extends GetView<EntryScreenController> {
       child: Container(
         width: double.maxFinite,
         height: 52,
-        padding: EdgeInsets.fromLTRB(24, 0, 24, 0),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: color,
@@ -106,7 +106,7 @@ class EntryScreen extends GetView<EntryScreenController> {
         alignment: Alignment.center,
         child: Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
           ),
         ),

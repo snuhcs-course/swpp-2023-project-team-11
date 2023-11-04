@@ -25,7 +25,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
         ),
         body: Obx(() => SmartRefresher(
             enablePullDown: true,
-            header: WaterDropHeader(),
+            header: const WaterDropHeader(),
             controller: controller.refreshController,
             onRefresh: controller.onRefresh,
             child: _buildUserList())));
@@ -33,7 +33,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
 
   Widget _buildUserList() {
     if (controller.users.isEmpty) {
-      return Center(child: Text("친구 목록을 로딩중이에요"));
+      return const Center(child: Text("친구 목록을 로딩중이에요"));
     }
     return ListView.separated(
         shrinkWrap: true,
@@ -42,7 +42,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
           return _buildUserContainer(controller.users[index]);
         },
         separatorBuilder: (context, index) {
-          return SizedBox(height: 0);
+          return const SizedBox(height: 0);
         },
         itemCount: controller.users.length);
   }
@@ -57,8 +57,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
+                  size: const Size.fromRadius(72),
                   child: Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
-                  size: Size.fromRadius(72),
                 ),
               ),
               Positioned(
@@ -66,18 +66,18 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 top: 96,
                 child: ElevatedButton(
                   onPressed: () => {print("!")},
+                  style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.white),
                   child: Icon(
                     Icons.favorite_outline,
                     color: Colors.black.withOpacity(0.4),
                   ),
-                  style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.white),
                 ),
               ),
             ]),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,32 +87,32 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(user.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xff2d3a45))),
-                        SizedBox(height: 4),
-                        Text("${user.profile.aboutMe}",
+                        const SizedBox(height: 4),
+                        Text(user.profile.aboutMe,
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: Color(0xff2d3a45).withOpacity(0.8))),
-                        SizedBox(height: 2),
+                                color: const Color(0xff2d3a45).withOpacity(0.8))),
+                        const SizedBox(height: 2),
                         Text("희망언어: ${user.getLanguages.join(", ")}",
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: Color(0xff2d3a45).withOpacity(0.8))),
+                                color: const Color(0xff2d3a45).withOpacity(0.8))),
                       ]),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Wrap(
                     children: [
                       _buildUserInfoBubble(user.profile.major),
-                      SizedBox(
+                      const SizedBox(
                         width: 8,
                       ),
                       _buildUserInfoBubble("${user.profile.admissionYear}"),
-                      SizedBox(
+                      const SizedBox(
                         width: 8,
                       ),
                       _buildUserInfoBubble("${user.profile.mbti}")
@@ -131,17 +131,17 @@ class FriendsScreen extends GetView<FriendsScreenController> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Container(
+        decoration: BoxDecoration(
+            color: const Color(0xffF8F1FB), borderRadius: BorderRadius.circular(10)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
           child: Text(info,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Color(0xff2d3a45).withOpacity(0.8),
+                color: const Color(0xff2d3a45).withOpacity(0.8),
               )),
         ),
-        decoration: BoxDecoration(
-            color: Color(0xffF8F1FB), borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

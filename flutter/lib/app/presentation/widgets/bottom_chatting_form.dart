@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:mobile_app/app/presentation/widgets/text_form_fields.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 

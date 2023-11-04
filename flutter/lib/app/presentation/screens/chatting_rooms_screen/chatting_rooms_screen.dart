@@ -16,7 +16,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: NotiAppBar(
-          title: Text(
+          title: const Text(
             " 채팅",
             style: TextStyle(
                 fontSize: 20,
@@ -36,8 +36,8 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
               onTap: () {
                 controller.onNewChatRequestTap();
               },
-              child: Padding(
-                padding: const EdgeInsets.all(8),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
                 child: Text(
                   "새로운 채팅 요청",
                   style: TextStyle(
@@ -47,10 +47,10 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                 ),
               ),
             ),
-            if (controller.newChatRequestExists.value == true) Positioned(  // draw a red marble
+            if (controller.newChatRequestExists.value == true) const Positioned(  // draw a red marble
               top: 4,
               right: 0,
-              child: new Icon(Icons.brightness_1, size: 14,
+              child: Icon(Icons.brightness_1, size: 14,
                   color: Color(0xffff733d)),
             )
           ]);
@@ -70,20 +70,20 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                   fontWeight: FontWeight.w600,
                   fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Text("친구 신청을 보내고",
                 style: TextStyle(
-                    color: Color(0xff2d3a45).withOpacity(0.64),
+                    color: const Color(0xff2d3a45).withOpacity(0.64),
                     fontWeight: FontWeight.w400,
                     fontSize: 14)),
             Text("새로운 친구를 만들어보세요",
                 style: TextStyle(
-                    color: Color(0xff2d3a45).withOpacity(0.64),
+                    color: const Color(0xff2d3a45).withOpacity(0.64),
                     fontWeight: FontWeight.w400,
                     fontSize: 14)),
-            SizedBox(
+            const SizedBox(
               height: 36,
             ),
             SmallButton(onPressed: () => {}, text: "친구 둘러보기")
@@ -97,7 +97,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           return _buildChatroomContainer(controller.chatrooms[index], context);
         },
         separatorBuilder: (context, index) {
-          return SizedBox(height: 0);
+          return const SizedBox(height: 0);
         },
         itemCount: controller.chatrooms.length);
   }
@@ -112,68 +112,71 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.grey.withOpacity(0.4),
-                border: Border.all(width: 1.5, color: Color(0xffff9162))),
+                border: Border.all(width: 1.5, color: const Color(0xffff9162))),
             width: 54,
             height: 54,
           ),
-          SizedBox(width: 16),
-          Container(
-            width: 260,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text("상대 이름",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff2d3a45))),
-                    SizedBox(width: 8),
-                    Text(
-                        "${chatroom.createdAt
-                            .toLocal()
-                            .year}년 ${chatroom.createdAt
-                            .toLocal()
-                            .month}월 ${chatroom.createdAt
-                            .toLocal()
-                            .day}일",
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xff9f75d1)))
-                  ],
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "채팅룸의 가장 최근 대화",
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff2d3a45).withOpacity(0.8)),
-                )
-              ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: SizedBox(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text("상대 이름",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xff2d3a45))),
+                      const SizedBox(width: 8),
+                      Text(
+                          "${chatroom.createdAt
+                              .toLocal()
+                              .year}년 ${chatroom.createdAt
+                              .toLocal()
+                              .month}월 ${chatroom.createdAt
+                              .toLocal()
+                              .day}일",
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff9f75d1)))
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "채팅룸의 가장 최근 대화",
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xff2d3a45).withOpacity(0.8)),
+                  )
+                ],
+              ),
             ),
           ),
-          SizedBox(width: 12),
+          // const SizedBox(width: 12),
           Transform.rotate(
             angle: -math.pi / 2,
             child: PopupMenuButton(
               itemBuilder: (context) {
                 return [
-                  PopupMenuItem<int>(value: 0, child: Text("퇴장")),
-                  PopupMenuItem<int>(value: 1, child: Text("읽음 처리")),
-                  PopupMenuItem<int>(value: 2, child: Text("차단"))
+                  const PopupMenuItem<int>(value: 0, child: Text("퇴장")),
+                  const PopupMenuItem<int>(value: 1, child: Text("읽음 처리")),
+                  const PopupMenuItem<int>(value: 2, child: Text("차단"))
                 ];
               },
               onSelected: (value) {
-                if (value == 0)
+                if (value == 0) {
                   print("퇴장");
-                else if (value == 1)
+                } else if (value == 1) {
                   print("읽음으로 처리");
-                else if (value == 2) print("차단");
+                } else if (value == 2) {
+                  print("차단");
+                }
               },
-              color: Color(0xff2d3a45).withOpacity(0.4),
+              color: const Color(0xff2d3a45).withOpacity(0.4),
             ),
           )
         ],

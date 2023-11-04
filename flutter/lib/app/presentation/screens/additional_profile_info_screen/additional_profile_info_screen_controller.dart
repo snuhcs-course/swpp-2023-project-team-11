@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -55,23 +54,23 @@ class AdditionalProfileInfoScreenController extends GetxController{
   final selectedMbti = "mbti 선택".obs;
   Map<String, Mbti?> mbtiMap = {
     "mbti 선택": null,
-    "INTJ": Mbti.intj,
-    "INTP": Mbti.intp,
-    "ENTJ": Mbti.entj,
-    "ENTP": Mbti.entp,
-    "INFJ": Mbti.infj,
-    "INFP": Mbti.infp,
-    "ENFJ": Mbti.enfj,
-    "ENFP": Mbti.enfp,
-    "ISTJ": Mbti.istj,
-    "ISFJ": Mbti.isfj,
-    "ESTJ": Mbti.estj,
-    "ESFJ": Mbti.esfj,
-    "ISTP": Mbti.istp,
-    "ISFP": Mbti.isfp,
-    "ESTP": Mbti.estp,
-    "ESFP": Mbti.esfp,
-    "잘 모르겠어요": Mbti.unknown};
+    "INTJ": Mbti.INTJ,
+    "INTP": Mbti.INTP,
+    "ENTJ": Mbti.ENTJ,
+    "ENTP": Mbti.ENTP,
+    "INFJ": Mbti.INFJ,
+    "INFP": Mbti.INFP,
+    "ENFJ": Mbti.ENFJ,
+    "ENFP": Mbti.ENFP,
+    "ISTJ": Mbti.ISTJ,
+    "ISFJ": Mbti.ISFJ,
+    "ESTJ": Mbti.ESTJ,
+    "ESFJ": Mbti.ESFJ,
+    "ISTP": Mbti.ISTP,
+    "ISFP": Mbti.ISFP,
+    "ESTP": Mbti.ESTP,
+    "ESFP": Mbti.ESFP,
+    "잘 모르겠어요": Mbti.UNKNOWN};
   Mbti get mbti => mbtiMap[selectedMbti.value]!;
 
 

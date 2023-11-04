@@ -5,24 +5,30 @@ import 'package:mobile_app/app/domain/models/user.dart';
 part 'chatting_room.g.dart';
 
 
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true, createToJson: false)
 class ChattingRoom {
 
 	factory ChattingRoom.fromJson(Map<String, dynamic> json) => _$ChattingRoomFromJson(json);
-	Map<String, dynamic> toJson( instance) => _$ChattingRoomToJson(this);
+	// Map<String, dynamic> toJson( instance) => _$ChattingRoomToJson(this);
 
+  @JsonKey(name: "chatting_id")
   final String id;
-  final KoreanUser koreanUser;
-  final ForeignUser foreignUser;
-  final Friendship friendship;
+  @JsonKey(fromJson: User.fromMap)
+  final User initiator;
+  @JsonKey(fromJson: User.fromMap)
+  final User responder;
   final DateTime createdAt;
+
+  final bool isApproved;
+  final bool isTerminated;
 
   const ChattingRoom({
     required this.id,
-    required this.koreanUser,
-    required this.foreignUser,
-    required this.friendship,
+    required this.initiator,
+    required this.responder,
     required this.createdAt,
+    required this.isApproved,
+    required this.isTerminated,
   });
 
 

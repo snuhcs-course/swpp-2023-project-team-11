@@ -1,4 +1,5 @@
 import 'package:mobile_app/app/domain/repository_interfaces/chatting_room_repository.dart';
+import 'package:mobile_app/app/domain/result.dart';
 
 import '../models/chatting_room.dart';
 
@@ -8,9 +9,16 @@ class FetchChatroomsUseCase {
   Future<void> call(
       {required void Function(List<ChattingRoom> chatrooms) whenSuccess,
       required void Function() whenFail}) async {
-    List<ChattingRoom> result = await _chattingRepository.readAll();
-    if(result.isNotEmpty) whenSuccess(result);
-    else whenFail();
+    final result = await _chattingRepository.readAllWhereApproved();
+
+    switch(result) {
+      case Success(data : final rooms): {
+        whenSuccess(rooms);
+      }
+      case Fail() : {
+        whenFail();
+      }
+    }
   }
 
   FetchChatroomsUseCase({

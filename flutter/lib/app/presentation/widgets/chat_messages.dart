@@ -38,7 +38,7 @@ class ChatMessage extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             color: Colors.white,
           ),
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxWidth: 230
           ),
           child: Text(

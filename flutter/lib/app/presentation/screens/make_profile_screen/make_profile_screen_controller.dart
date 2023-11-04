@@ -64,10 +64,10 @@ class MakeProfileScreenController extends GetxController{
   };
 
   bool get notEmpty => _nickname.value.isNotEmpty && _aboutMe.value.isNotEmpty
-                      && (selectedMainLanguage.value != "") && (selectedLanguages.value.length != 0);
+                      && (selectedMainLanguage.value != "") && (selectedLanguages.value.isNotEmpty);
 
   void onNextButtonTap() {
-    print("${nickname} ${aboutMe} ${selectedMainLanguage} ${selectedLanguages}");
+    print("$nickname $aboutMe $selectedMainLanguage $selectedLanguages");
     Get.toNamed(Routes.Maker(nextRoute: Routes.PROFILE_SURVEY));
   }
 

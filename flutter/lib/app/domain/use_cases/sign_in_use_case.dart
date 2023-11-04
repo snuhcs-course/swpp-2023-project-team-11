@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/domain/repository_interfaces/user_repository.dart';
 import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 

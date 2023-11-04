@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/screens/chatting_rooms_screen/chatting_rooms_screen.dart';
 import 'package:mobile_app/app/presentation/screens/friends_screen/friends_screen.dart';
 import 'package:mobile_app/app/presentation/screens/profile_screen/profile_screen.dart';
-import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen.dart';
-import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen_binding.dart';
 
 // ignore: unused_import
 import 'main_indexed_screen_controller.dart';

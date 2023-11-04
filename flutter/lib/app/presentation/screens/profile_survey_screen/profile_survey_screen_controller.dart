@@ -143,13 +143,15 @@ class ProfileSurveyScreenController extends GetxController {
         hobbies: answerMap[Hobby]!.cast<Hobby>(),
         foodCategories: answerMap[FoodCategory]!.cast<FoodCategory>(),
         movieGenres: answerMap[MovieGenre]!.cast<MovieGenre>(),
-        locations: answerMap[Location]!.cast<Location>());
+        locations: answerMap[Location]!.cast<Location>(),
+        nationCode: countryInfo.countryCode,
+    );
     
-    User user = countryInfo.isKorean? KoreanUser(name: profileInfo.nickname, userType: UserType.korean, email: emailInfo.email, wantedLanguages: profileInfo.selectedLanguages.value, profile: profile) :
-    ForeignUser(name: profileInfo.nickname, userType: UserType.foreign, email: emailInfo.email, nationCode: countryInfo.countryCode, mainLanguage: profileInfo.mainLanguage, subLanguages: profileInfo.selectedLanguages.value, profile: profile);
+    User user = countryInfo.isKorean? KoreanUser(name: profileInfo.nickname, mainLanguage: Language.korean, type: UserType.korean, email: emailInfo.email, wantedLanguages: profileInfo.selectedLanguages.value, profile: profile) :
+    ForeignUser(name: profileInfo.nickname, type: UserType.foreign, email: emailInfo.email,  mainLanguage: profileInfo.mainLanguage, subLanguages: profileInfo.selectedLanguages.value, profile: profile);
 
     Get.put(user, permanent: true);
-    [user.name, user.email, user.profile.toJson(), user.userType].forEach(print);
+    [user.name, user.email, user.profile.toJson(), user.type].forEach(print);
 
     await _signUpUseCase(email: emailInfo.email, emailToken: emailInfo.emailToken, password: password, user: user,
         onFail: (){print("Fail on creating user");}, onSuccess: (){toMainScreen();});

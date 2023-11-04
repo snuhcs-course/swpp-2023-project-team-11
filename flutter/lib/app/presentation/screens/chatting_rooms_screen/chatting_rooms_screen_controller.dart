@@ -20,7 +20,7 @@ class ChattingRoomsScreenController extends GetxController{
   @override
   Future<void> onInit() async {
     super.onInit();
-    this.newChatRequestExists.value = true;
+    newChatRequestExists.value = true;
   }
 
   @override

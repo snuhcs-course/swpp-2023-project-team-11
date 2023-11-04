@@ -27,8 +27,10 @@ class UserRepositoryImpl implements UserRepository {
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
-    } catch (e) {
+    } catch (e,s) {
       print("알 수 없는 에러 발생");
+      print(e);
+      print(s);
       return Result.fail(DefaultIssue.unknown);
     }
 
@@ -45,7 +47,7 @@ class UserRepositoryImpl implements UserRepository {
           baseUrl + path
       );
       final data = response.data as List;
-      print("fetch${data}");
+      print("fetch$data");
       if (data == null) throw Exception();
 
       List<User> users = [];
@@ -61,8 +63,10 @@ class UserRepositoryImpl implements UserRepository {
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
-    } catch (e) {
+    } catch (e, s) {
       print("알 수 없는 에러 발생");
+      print(e);
+      print(s);
       return Result.fail(DefaultIssue.unknown);
     }
 

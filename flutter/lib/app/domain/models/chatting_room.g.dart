@@ -7,21 +7,10 @@ part of 'chatting_room.dart';
 // **************************************************************************
 
 ChattingRoom _$ChattingRoomFromJson(Map<String, dynamic> json) => ChattingRoom(
-      id: json['id'] as String,
-      koreanUser:
-          KoreanUser.fromJson(json['koreanUser'] as Map<String, dynamic>),
-      foreignUser:
-          ForeignUser.fromJson(json['foreignUser'] as Map<String, dynamic>),
-      friendship:
-          Friendship.fromJson(json['friendship'] as Map<String, dynamic>),
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: json['chatting_id'] as String,
+      initiator: User.fromMap(json['initiator'] as Map<String, dynamic>),
+      responder: User.fromMap(json['responder'] as Map<String, dynamic>),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      isApproved: json['is_approved'] as bool,
+      isTerminated: json['is_terminated'] as bool,
     );
-
-Map<String, dynamic> _$ChattingRoomToJson(ChattingRoom instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'koreanUser': instance.koreanUser,
-      'foreignUser': instance.foreignUser,
-      'friendship': instance.friendship,
-      'createdAt': instance.createdAt.toIso8601String(),
-    };

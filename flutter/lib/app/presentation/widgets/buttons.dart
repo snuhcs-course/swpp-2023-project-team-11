@@ -78,7 +78,7 @@ class SmallButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        minimumSize: Size(90, 0)
+        minimumSize: const Size(90, 0)
       ),
       child: Text(
         text,
@@ -110,6 +110,6 @@ class BottomNextButton extends StatelessWidget{
     );
   }
 
-  BottomNextButton({this.onPressed});
+  const BottomNextButton({super.key, this.onPressed});
 
 }

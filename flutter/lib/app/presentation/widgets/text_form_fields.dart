@@ -61,7 +61,7 @@ class MainTextFormField extends StatelessWidget {
         focusedBorder: border,
         disabledBorder: border,
         hintText: hintText,
-        hintStyle: textStyle?.copyWith(color: Color(0xff2d2a45).withOpacity(0.64)),
+        hintStyle: textStyle?.copyWith(color: const Color(0xff2d2a45).withOpacity(0.64)),
       ),
     );
   }

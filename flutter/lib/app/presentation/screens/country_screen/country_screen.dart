@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,7 @@ class CountryScreen extends GetView<CountryScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SimpleAppBar(),
+      appBar: const SimpleAppBar(),
       backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,19 +32,20 @@ class CountryScreen extends GetView<CountryScreenController> {
                         firstString: '저는\n한국 학생입니다.',
                         secondString: "I'm a Korean student",
                         buttonId: 1)),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Obx(() =>
                     _buildOptionContainer(
                         context: context,
                         firstString: "I'm an\nexchange student",
                         secondString: "저는 교환학생입니다.",
                         buttonId: 2)),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Obx(() {
-                  if (controller.tappedButton.value == 2)
+                  if (controller.tappedButton.value == 2) {
                     return _buildCountriesContainer();
-                  else
-                    return Text("");
+                  } else {
+                    return const Text("");
+                  }
                 })
               ],
             ),
@@ -67,11 +67,11 @@ class CountryScreen extends GetView<CountryScreenController> {
               color: Color(0xff2d3a45),
               fontWeight: FontWeight.w500),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         _buildCountryList(),
-        SizedBox(height: 8,),
+        const SizedBox(height: 8,),
         Center(child: SmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in the list above")),
-        SizedBox(height: 16,),
+        const SizedBox(height: 16,),
         if (controller.countryNotHere.value) MainTextFormField(
             textEditingController: controller.temporaryTextEditingController,
             hintText: "Your country code")
@@ -103,8 +103,8 @@ class CountryScreen extends GetView<CountryScreenController> {
                           border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
                               .orange_1 : Colors.black.withOpacity(0.1),
                               width: 1)),
-                      padding: EdgeInsets.all(6),
-                      margin: EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(6),
+                      margin: const EdgeInsets.all(4),
                       child: Text(
                         country.keys.first,
                         style: TextStyle(
@@ -139,8 +139,8 @@ class CountryScreen extends GetView<CountryScreenController> {
                           border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
                               .orange_1 : Colors.black.withOpacity(0.1),
                               width: 1)),
-                      padding: EdgeInsets.all(6),
-                      margin: EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(6),
+                      margin: const EdgeInsets.all(4),
                       child: Text(
                         country.keys.first,
                         style: TextStyle(
@@ -174,11 +174,11 @@ class CountryScreen extends GetView<CountryScreenController> {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: controller.tappedButton.value == buttonId
-                ? Border.all(color: Color(0xffff9162), width: 2)
-                : Border.all(color: Color(0xfff8f1fb), width: 2),
+                ? Border.all(color: const Color(0xffff9162), width: 2)
+                : Border.all(color: const Color(0xfff8f1fb), width: 2),
             color: controller.tappedButton.value == buttonId
                 ? Colors.white
-                : Color(0xfff8f1fb)),
+                : const Color(0xfff8f1fb)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -189,18 +189,18 @@ class CountryScreen extends GetView<CountryScreenController> {
                 style: TextStyle(
                     fontSize: 20,
                     color: controller.tappedButton.value == buttonId
-                        ? Color(0xffff9162)
-                        : Color(0xff2d3a45),
+                        ? const Color(0xffff9162)
+                        : const Color(0xff2d3a45),
                     fontWeight: FontWeight.w700),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 4,
               ),
               Text(
                 secondString,
                 style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xff2d3a45).withOpacity(0.64),
+                    color: const Color(0xff2d3a45).withOpacity(0.64),
                     fontWeight: FontWeight.w400),
               ),
             ],
@@ -230,25 +230,25 @@ class CountryScreen extends GetView<CountryScreenController> {
 
   Widget _buildTextContainer() {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "교환 학생이신가요?\n아니면 한국 학생이신가요?",
             style: TextStyle(
                 fontSize: 20,
                 color: Color(0xff2d3a45),
                 fontWeight: FontWeight.w700),
           ),
-          SizedBox(
+          const SizedBox(
             height: 12,
           ),
           Text(
             "Are you an exchange student?\nOr are you a Korean student?",
             style: TextStyle(
                 fontSize: 13,
-                color: Color(0xff2d3a45).withOpacity(0.64),
+                color: const Color(0xff2d3a45).withOpacity(0.64),
                 fontWeight: FontWeight.w400),
           ),
         ],

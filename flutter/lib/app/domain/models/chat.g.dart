@@ -7,20 +7,20 @@ part of 'chat.dart';
 // **************************************************************************
 
 NormalChat _$NormalChatFromJson(Map<String, dynamic> json) => NormalChat(
-      messageType: $enumDecode(_$ChatTypeEnumMap, json['messageType']),
+      messageType: $enumDecode(_$ChatTypeEnumMap, json['message_type']),
       id: json['id'] as String,
       text: json['text'] as String,
-      senderId: json['senderId'] as String,
-      sentAt: DateTime.parse(json['sentAt'] as String),
+      senderId: json['sender_id'] as String,
+      sentAt: DateTime.parse(json['sent_at'] as String),
     );
 
 Map<String, dynamic> _$NormalChatToJson(NormalChat instance) =>
     <String, dynamic>{
-      'messageType': _$ChatTypeEnumMap[instance.messageType]!,
+      'message_type': _$ChatTypeEnumMap[instance.messageType]!,
       'id': instance.id,
-      'senderId': instance.senderId,
+      'sender_id': instance.senderId,
       'text': instance.text,
-      'sentAt': instance.sentAt.toIso8601String(),
+      'sent_at': instance.sentAt.toIso8601String(),
     };
 
 const _$ChatTypeEnumMap = {

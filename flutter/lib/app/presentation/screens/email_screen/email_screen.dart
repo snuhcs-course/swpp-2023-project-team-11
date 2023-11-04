@@ -22,7 +22,7 @@ class EmailScreen extends GetView<EmailScreenController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4).copyWith(top: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(top: 16),
                 child: const Text(
                   '회원가입을 위해\n학교 이메일을 인증해주세요',
                   style: TextStyle(
@@ -40,7 +40,7 @@ class EmailScreen extends GetView<EmailScreenController> {
                       textEditingController: controller.emailCon,
                       hintText: "학교 이메일 입력",
                       textStyle:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                          const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                       verticalPadding: 15,
                     ),
                   ),
@@ -51,23 +51,25 @@ class EmailScreen extends GetView<EmailScreenController> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Obx(() {
-                if (controller.warningType == 1)
-                  return Text("서울대학교 계정을 사용해주세요 :)",
+                if (controller.warningType == 1) {
+                  return const Text("서울대학교 계정을 사용해주세요 :)",
                       style: TextStyle(
                           color: Color(0xff9f75d1),
                           fontSize: 14,
                           fontWeight: FontWeight.w400));
-                else
-                  return Text("");
+                } else {
+                  return const Text("");
+                }
               }),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Obx(() {
-                if (controller.emailSent.value)
+                if (controller.emailSent.value) {
                   return _buildCodeContainer();
-                else
-                  return Text("");
+                } else {
+                  return const Text("");
+                }
               })
             ],
           ),
@@ -89,10 +91,10 @@ class EmailScreen extends GetView<EmailScreenController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text("이메일로 전송된 코드를 입력해주세요.",
               style: TextStyle(
-                  color: Color(0xff2d3a45).withOpacity(0.8),
+                  color: const Color(0xff2d3a45).withOpacity(0.8),
                   fontWeight: FontWeight.w500,
                   fontSize: 14)),
           Padding(
@@ -105,7 +107,7 @@ class EmailScreen extends GetView<EmailScreenController> {
                     textEditingController: controller.codeCon,
                     hintText: "코드 6자리 입력",
                     textStyle:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                        const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                     verticalPadding: 15,
                   ),
                 ),
@@ -115,17 +117,18 @@ class EmailScreen extends GetView<EmailScreenController> {
             ),
           ),
           Obx(() {
-            if (controller.warningType == 2)
-              return Text("잘못된 코드에요. 다시 한번 확인해주세요!",
+            if (controller.warningType == 2) {
+              return const Text("잘못된 코드에요. 다시 한번 확인해주세요!",
                   style: TextStyle(
                       color: Color(0xff9f75d1),
                       fontSize: 14,
                       fontWeight: FontWeight.w400));
-            else
-              return Text("");
+            } else {
+              return const Text("");
+            }
           }),
           if (controller.certSuccess.value)
-            Text("성공적으로 인증되었어요!",
+            const Text("성공적으로 인증되었어요!",
                 style: TextStyle(
                     color: Color(0xff9f75d1),
                     fontWeight: FontWeight.w600,
