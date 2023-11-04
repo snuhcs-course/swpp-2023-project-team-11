@@ -44,7 +44,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             const SizedBox(
               height: 36,
             ),
-            SmallButton(onPressed: () => {}, text: "친구 둘러보기")
+            SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기")
           ],
         ),
       );

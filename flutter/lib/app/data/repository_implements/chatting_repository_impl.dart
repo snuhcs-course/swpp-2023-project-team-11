@@ -28,9 +28,24 @@ class ChattingRepositoryImpl implements ChattingRepository {
   }
 
   @override
-  Future<Result<List<ChattingRoom>, DefaultIssue>> readAllWhereNotApproved() {
-    // TODO: implement readAllWhereNotApproved
-    throw UnimplementedError();
+  Future<Result<List<ChattingRoom>, DefaultIssue>> readAllWhereNotApproved() async {
+    final Dio dio = DioInstance.getDio;
+    const path = "/chatting/";
+    try {
+      final response = await dio.get<List<dynamic>>(baseUrl + path, queryParameters: {"is_approved" : false});
+      final data = response.data;
+      if (data== null) throw Exception("데이터가 Null");
+      final chattingRooms = data.map((e) => ChattingRoom.fromJson(e)).toList();
+      return Result.success(chattingRooms);
+    } on DioException catch (e) {
+      print("에러 발생");
+      print(e.response?.statusCode);
+      print(e.response?.data);
+      return Result.fail(DefaultIssue.badRequest);
+    } catch (e) {
+
+      return Result.fail(DefaultIssue.badRequest);
+    }
   }
 
 }

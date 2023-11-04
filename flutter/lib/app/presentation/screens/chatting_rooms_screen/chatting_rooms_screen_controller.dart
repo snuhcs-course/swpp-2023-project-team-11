@@ -26,7 +26,7 @@ class ChattingRoomsScreenController extends GetxController{
   @override
   void onReady() {
     super.onReady();
-    _fetchChatroomsUseCase(
+    _fetchChatroomsUseCase.vaild(
         whenSuccess: (List<ChattingRoom> chatrooms) {
           this.chatrooms(chatrooms);
         },
