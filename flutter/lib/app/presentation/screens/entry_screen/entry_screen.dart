@@ -13,11 +13,6 @@ class EntryScreen extends GetView<EntryScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff2e2f3),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.offAllNamed(Routes.MAIN);
-        },
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
