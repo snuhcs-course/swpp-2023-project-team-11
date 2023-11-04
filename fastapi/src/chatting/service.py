@@ -97,10 +97,10 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
-    curr_texts = parse_recent_texts(get_recent_texts(user_id, chatting_id, DbSession))
+    curr_texts = get_recent_texts(user_id, chatting_id, DbSession)
 
     #every parameters we use
-    sentiment = calculate_sentiment_clova(curr_texts)
+    sentiment = calculate_sentiment_clova(parse_recent_texts(curr_texts))
     frequency = score_frequency(curr_texts)
     length = score_avg_length(curr_texts)
     turn = score_turn(curr_texts)
