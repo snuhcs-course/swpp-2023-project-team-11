@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from typing import List
 from sqlalchemy import insert, update, desc, or_
@@ -7,7 +8,7 @@ from src.chatting.models import *
 from src.user.models import Profile
 import requests, json
 from src.chatting.constants import *
-import urllib
+import urllib.request
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
@@ -200,48 +201,53 @@ def parse_recent_texts(texts: List[Text]) -> str:
 
 
 def get_translated_text(text: str) -> str:
-    client_id = PAPAGO_CLIENT_ID
-    client_secret = PAPAGO_CLIENT_SECRET
     translating_text = urllib.parse.quote(text)
-    data = "source=ko&target=en&text=" + translating_text
+    data = "source=auto&target=ko&text=" + translating_text
     url = "https://naveropenapi.apigw.ntruss.com/nmt/v1/translation"
     request = urllib.request.Request(url)
-    request.add_header("X-NCP-APIGW-API-KEY-ID",client_id)
-    request.add_header("X-NCP-APIGW-API-KEY",client_secret)
-    print(client_id)
-    print(client_secret)
-    response = urllib.request.urlopen(request, data=data.encode("utf-8"))
-    parsed_data = json.loads(response.text)
+    request.add_header("X-NCP-APIGW-API-KEY-ID", PAPAGO_CLIENT_ID)
+    request.add_header("X-NCP-APIGW-API-KEY", PAPAGO_CLIENT_SECRET)
 
-    translated_text = parsed_data["message"]["result"]["translatedText"]
+    response = urllib.request.urlopen(request, data=data.encode("utf-8"))
     rescode = response.getcode()
-    print(translated_text)
+    response_body = response.read()
+    decoded_response = response_body.decode('utf-8')
+    jsonized_response = json.loads(decoded_response)
+    translated_text = jsonized_response['message']['result']['translatedText']
     if rescode != 200:
         print("Error Code:" + rescode)
         return ""
 
     return translated_text
 
+
 def get_sentiment_clova(text: str) -> int:
     url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
     }
+    print(CLOVA_CLIENT_ID)
+    print(CLOVA_CLIENT_SECRET)
 
-    content = get_translated_text(text)
-    data = {"content": content}
+    content = "안녕하세요 저는 행복해요"
+    data = {
+        "content": content
+    }
+    print(json.dumps(data, indent=4, sort_keys=True))
     response = requests.post(url, data=json.dumps(data), headers=headers)
     rescode = response.status_code
 
+    print(content)
     if rescode != 200:
-        # print("Error Code:" + rescode)
+        print("Error Code:" + rescode)
         return 0
 
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
     negative = parsed_data["document"]["confidence"]["negative"]
+    print(positive - negative)
     result = positive - negative
     if result >= 0:
         return result * 0.1
