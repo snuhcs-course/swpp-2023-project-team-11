@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
+import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 
 class ChattingRoomController extends GetxController
     with StateMixin<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForReqeusted})> {
@@ -14,6 +15,7 @@ class ChattingRoomController extends GetxController
     super.onReady();
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
+      email: Get.find<UserController>().userEmail,
       whenSuccess: (validRooms, terminatedRooms, requestedRooms) {
         print("fetch 채팅룸 성공");
         _validRooms = validRooms;

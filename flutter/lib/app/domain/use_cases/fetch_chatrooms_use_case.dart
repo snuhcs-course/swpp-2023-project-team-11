@@ -7,6 +7,7 @@ class FetchChattingRoomsUseCase {
   final ChattingRepository _chattingRepository;
 
   Future<void> all({
+    required String email,
     required void Function(List<ChattingRoom> validRooms, List<ChattingRoom> terminatedRooms, List<ChattingRoom> requestedRooms,) whenSuccess,
     required void Function() whenFail,
   }) async {
@@ -26,7 +27,18 @@ class FetchChattingRoomsUseCase {
       final validRooms = approvedChattingRooms.where((element) => !element.isTerminated).toList();
       final terminatedRooms = approvedChattingRooms.where((element) => element.isTerminated).toList();
       // un approved 이면 무조건 requested
-      whenSuccess(validRooms, terminatedRooms, unApprovedChattingRooms);
+      // 다만 누가 initiator 이냐에 따라 달라짐.
+      final List<ChattingRoom> requestedRooms = [];
+      for (final unApprovedRoom in unApprovedChattingRooms) {
+        // un approve중에 내가 만든 채팅방이 있다면
+        if (unApprovedRoom.initiator.email == email) {
+          validRooms.add(unApprovedRoom);
+        } else {
+          requestedRooms.add(unApprovedRoom);
+        }
+      }
+
+      whenSuccess(validRooms, terminatedRooms, requestedRooms);
     } else {
       whenFail();
     }
