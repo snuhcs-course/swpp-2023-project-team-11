@@ -14,6 +14,8 @@ import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_scr
 import 'package:mobile_app/app/presentation/screens/profile_screen/profile_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/profile_survey_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/room_screen/room_screen.dart';
+import 'package:mobile_app/app/presentation/screens/room_screen/room_screen_binding.dart';
 import 'package:mobile_app/routes/middle_ware.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
@@ -100,6 +102,11 @@ abstract class GetPages {
           name: Routes.MAIN + Routes.CHAT_REQUESTS,
           page: () => const ChatRequestsScreen(),
           binding: ChatRequestsScreenBinding(),
-        )
+        ),
+        GetPage(
+          name: Routes.MAIN + Routes.ROOM,
+          page: () => const RoomScreen(),
+          binding: RoomScreenBinding(),
+        ),
       ];
 }

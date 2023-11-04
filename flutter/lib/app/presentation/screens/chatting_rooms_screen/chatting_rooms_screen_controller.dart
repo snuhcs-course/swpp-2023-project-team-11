@@ -17,6 +17,10 @@ class ChattingRoomsScreenController extends GetxController{
     Get.toNamed(Routes.Maker(nextRoute: Routes.CHAT_REQUESTS));
   }
 
+  void onChattingRoomTap(ChattingRoom chattingRoom) {
+    Get.toNamed(Routes.Maker(nextRoute: Routes.ROOM), arguments: chattingRoom);
+  }
+
   @override
   Future<void> onInit() async {
     super.onInit();
