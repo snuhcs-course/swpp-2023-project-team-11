@@ -45,3 +45,11 @@ class Intimacy(Base):
     timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
     chatting: Mapped[Chatting] = relationship()
     user: Mapped[User] = relationship()
+
+
+class Topic(Base):
+    __tablename__ = "topic"
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    topic: Mapped[str] = Column(String, nullable=False)
+    tag: Mapped[str] = Column(String, nullable=False)
+    #tag A = 제일 친함 / B = 친함 / C = 보통
