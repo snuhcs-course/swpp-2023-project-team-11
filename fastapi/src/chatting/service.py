@@ -172,12 +172,12 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
 
     # Update
 
-    user_intimacy_info.intimacy += intimacy
-    if user_intimacy_info.intimacy > 100:
-        user_intimacy_info.intimacy = 100
-    elif user_intimacy_info.intimacy < 0:
-        user_intimacy_info.intimacy = 0
-
+    intimacy += user_intimacy_info.intimacy
+    if intimacy > 100:
+        intimacy = 100
+    elif intimacy < 0:
+        intimacy = 0
+    user_intimacy_info.intimacy = intimacy
     return intimacy
 
 
