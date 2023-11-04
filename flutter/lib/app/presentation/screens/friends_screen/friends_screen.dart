@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: unused_import
@@ -48,7 +49,10 @@ class FriendsScreen extends GetView<FriendsScreenController> {
   }
 
   Widget _buildUserContainer(User user) {
-    return Container(
+    return GestureDetector(
+      onTap:() {
+        controller.onUserContainerTap(user);
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(

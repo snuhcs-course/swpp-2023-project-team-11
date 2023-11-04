@@ -6,6 +6,8 @@ import 'package:mobile_app/app/presentation/screens/email_screen/email_screen.da
 import 'package:mobile_app/app/presentation/screens/email_screen/email_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/entry_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/friend_detail_screen/friend_detail_screen.dart';
+import 'package:mobile_app/app/presentation/screens/friend_detail_screen/friend_detail_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/friends_screen/friends_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen.dart';
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen_binding.dart';
@@ -24,7 +26,8 @@ import '../app/presentation/screens/password_screen/password_screen.dart';
 import '../app/presentation/screens/password_screen/password_screen_binding.dart';
 
 abstract class GetPages {
-  static get pages => [
+  static get pages =>
+      [
         GetPage(
           name: Routes.ENTRY,
           page: () => const EntryScreen(),
@@ -84,6 +87,11 @@ abstract class GetPages {
               ChattingRoomsScreenBinding(),
               ProfileScreenBinding(),
             ]),
+        GetPage(
+        name: Routes.MAIN + Routes.FRIEND_DETAIL,
+          page: () => const FriendDetailScreen(),
+          binding: FriendDetailScreenBinding(),
+        ),
         GetPage(
           name: Routes.MAIN + Routes.CHAT_REQUESTS,
           page: () => const ChatRequestsScreen(),

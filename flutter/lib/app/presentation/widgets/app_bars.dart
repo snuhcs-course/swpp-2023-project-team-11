@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -15,9 +16,7 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Text(
               title!,
               style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xff2d3a45)),
+                  fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
             )
           : null,
       leading: BackButton(
@@ -75,7 +74,7 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: (title != null) ? title : null,
       centerTitle: false,
       actions: [
-        if(additionalAction != null) additionalAction!,
+        if (additionalAction != null) additionalAction!,
         ElevatedButton(
           onPressed: () => {print("!")},
           style: ElevatedButton.styleFrom(
@@ -93,5 +92,76 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize =>const  Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(64);
+}
+
+class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final ImageProvider profileImage;
+  final String userName;
+  final String userEmail;
+
+  const FriendDetailAppBar({
+    super.key,
+    required this.profileImage,
+    required this.userName,
+    required this.userEmail,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: MyColor.purple,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+      ),
+      clipBehavior: Clip.none,
+      bottom: PreferredSize(
+        preferredSize: preferredSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              height: 60,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                color: Colors.white,
+              ),
+            ),
+            Positioned(
+              top: -40,
+              left: 20,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: profileImage,
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: 80,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(userName, style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),),
+                          Text(userEmail, style: TextStyle(fontSize: 13, color: MyColor.purple, ),)
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => Size.fromHeight(162);
 }

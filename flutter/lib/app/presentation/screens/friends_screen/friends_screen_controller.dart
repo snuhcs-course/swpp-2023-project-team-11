@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_users_use_case.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'dart:math';
 
@@ -41,5 +42,9 @@ class FriendsScreenController extends GetxController {
           this.users(users);
         },
         whenFail: () => {});
+  }
+
+  void onUserContainerTap(User user) {
+    Get.toNamed(Routes.Maker(nextRoute: Routes.FRIEND_DETAIL), arguments: user);
   }
 }
