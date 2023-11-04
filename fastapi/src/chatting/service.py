@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session as DbSession
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.user.models import Profile
+import random
 import requests, json
 from src.chatting.constants import *
 import urllib.request
@@ -106,6 +107,17 @@ def get_all_texts(
 
     return query.all()
 
+def get_topic_recommendation(user_id: int, chatting_id: int | None, db: DbSession) -> str:
+    intimacy = get_intimacy(user_id, chatting_id, db)
+    if intimacy <= 40:
+        tag = "C"
+    elif intimacy <=70:
+        tag = "B"
+    else:
+        tag = "A"
+    topics = db.query(Topic).where(Topic.tag == tag).all()
+    idx = random.randint(0, len(topics)-1)
+    return topics[idx].topic
 
 def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
