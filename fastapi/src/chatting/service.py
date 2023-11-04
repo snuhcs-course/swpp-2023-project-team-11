@@ -36,6 +36,18 @@ def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
 
 
 def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
+
+    default_intimacy = 36.5
+    #Set default intimacy(유저별)
+    db.execute(
+        insert(Intimacy)
+        .values({
+            "user_id": user_id,
+            "chatting_id": chatting_id,
+            "intimacy": default_intimacy,
+            "timestamp": datetime.now(),
+        })
+    )
     chatting = db.scalar(
         update(Chatting)
         .values(is_approved=True)
@@ -103,10 +115,12 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     #if intimacy value is initial value
     is_default = user_intimacy_info.is_default
     timestamp = user_intimacy_info.timestamp
+    user_intimacy_info.timestamp = datetime.now()
 
     
     if is_default:
         user_intimacy_info.is_default = False
+        
         ## todo: get timestamp from db, update intimacy
         
         parameter_arr = np.array([sentiment, frequency, frequency_delta, 
@@ -124,7 +138,15 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
                              length, length_delta, turn, turn_delta])
     
         intimacy = weight.dot(parameter_arr.transpose())
+    
+    #Update
 
+    user_intimacy_info.intimacy += intimacy
+    if user_intimacy_info.intimacy > 100:
+        user_intimacy_info.intimacy = 100
+    elif user_intimacy_info.intimacy < 0:
+        user_intimacy_info.intimacy = 0
+    
     return intimacy
 
 
