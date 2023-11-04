@@ -7,6 +7,7 @@ from src.chatting.models import *
 from src.user.models import Profile
 import requests, json
 from src.chatting.constants import *
+import urllib
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
@@ -70,17 +71,6 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
         })
     )
 
-    default_intimacy = 36.5
-    # Set default intimacy(유저별)
-    db.execute(
-        insert(Intimacy)
-        .values({
-            "user_id": user_id,
-            "chatting_id": chatting_id,
-            "intimacy": default_intimacy,
-            "timestamp": datetime.now(),
-        })
-    )
     return chatting
 
 
@@ -124,22 +114,23 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     curr_texts = get_recent_texts(user_id, chatting_id, db)
 
     # every parameter we use
-    sentiment = calculate_sentiment_clova(parse_recent_texts(curr_texts))
+    sentiment = get_sentiment_clova(parse_recent_texts(curr_texts))
     frequency = score_frequency(curr_texts)
     length = score_avg_length(curr_texts)
     turn = score_turn(curr_texts, user_id)
     frequency_delta = length_delta = turn_delta = 0
 
-    print(f'user_id: {user_id}')
-    print(f'chatting_id: {chatting_id}')
-    for intimacy in db.query(Intimacy).all():
-        print(f'intimacy user id: {intimacy.user_id}')
-        print(f'intimacy chatting id: {intimacy.chatting_id}')
+    user_intimacy_info = (
+        db.query(Intimacy)
+        .filter_by(user_id=user_id, chatting_id=chatting_id)
+        .order_by(Intimacy.timestamp.desc())
+        .first()
+    )
 
-    user_intimacy_info = db.query(Intimacy).where(Intimacy.user_id == user_id).where(Intimacy.chatting_id == chatting_id).first()
     if user_intimacy_info is None:
         print("user_intimacy_info is None")
         return 0
+
     # if intimacy value is initial value
     is_default = user_intimacy_info.is_default
     timestamp = user_intimacy_info.timestamp
@@ -168,13 +159,12 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
 
     # Update
 
-    intimacy += user_intimacy_info.intimacy
-    if intimacy > 100:
-        intimacy = 100
-    elif intimacy < 0:
-        intimacy = 0
+    user_intimacy_info.intimacy += intimacy
+    if user_intimacy_info.intimacy > 100:
+        user_intimacy_info.intimacy = 100
+    elif user_intimacy_info.intimacy < 0:
+        user_intimacy_info.intimacy = 0
 
-    user_intimacy_info.intimacy = intimacy
     return intimacy
 
 
@@ -184,7 +174,7 @@ def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text
         .join(Text.chatting)
         .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
         .filter(Text.chatting_id == chatting_id)
-        .order_by(desc(Text.timestamp))
+        .order_by(desc(Text.id))
         .limit(20)
         .all()
     )
@@ -199,7 +189,7 @@ def get_previous_texts(
         .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
         .filter(Text.chatting_id == chatting_id)
         .filter(Text.timestamp <= timestamp)
-        .order_by(desc(Text.timestamp))
+        .order_by(desc(Text.id))
         .limit(20)
         .all()
     )
@@ -209,14 +199,38 @@ def parse_recent_texts(texts: List[Text]) -> str:
     return ".".join(text.msg for text in texts)
 
 
-def calculate_sentiment_clova(text: str) -> int:
+def get_translated_text(text: str) -> str:
+    client_id = PAPAGO_CLIENT_ID
+    client_secret = PAPAGO_CLIENT_SECRET
+    translating_text = urllib.parse.quote(text)
+    data = "source=ko&target=en&text=" + translating_text
+    url = "https://naveropenapi.apigw.ntruss.com/nmt/v1/translation"
+    request = urllib.request.Request(url)
+    request.add_header("X-NCP-APIGW-API-KEY-ID",client_id)
+    request.add_header("X-NCP-APIGW-API-KEY",client_secret)
+    print(client_id)
+    print(client_secret)
+    response = urllib.request.urlopen(request, data=data.encode("utf-8"))
+    parsed_data = json.loads(response.text)
+
+    translated_text = parsed_data["message"]["result"]["translatedText"]
+    rescode = response.getcode()
+    print(translated_text)
+    if rescode != 200:
+        print("Error Code:" + rescode)
+        return ""
+
+    return translated_text
+
+def get_sentiment_clova(text: str) -> int:
     url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
         "Content-Type": "application/json",
     }
-    content = text
+
+    content = get_translated_text(text)
     data = {"content": content}
     response = requests.post(url, data=json.dumps(data), headers=headers)
     rescode = response.status_code
