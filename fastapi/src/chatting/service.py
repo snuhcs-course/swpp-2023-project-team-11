@@ -18,6 +18,7 @@ def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Ch
     )
     if is_approved is False:
         query = query.where(Chatting.is_terminated == False)
+
     return query.all()
 
 
@@ -36,6 +37,9 @@ def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
 
 
 def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
+    default_intimacy = 36.5
+    # Set default intimacy(유저별)
+
     chatting = db.scalar(
         update(Chatting)
         .values(is_approved=True)
@@ -45,6 +49,26 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
     )
     if chatting is None:
         raise InvalidChattingException()
+    db.execute(
+        insert(Intimacy)
+        .values({
+            "user_id": user_id,
+            "chatting_id": chatting_id,
+            "intimacy": default_intimacy,
+            "is_default": True,
+            "timestamp": datetime.now(),
+        })
+    )
+    db.execute(
+        insert(Intimacy)
+        .values({
+            "user_id": chatting.initiator_id,
+            "chatting_id": chatting_id,
+            "intimacy": default_intimacy,
+            "is_default": True,
+            "timestamp": datetime.now(),
+        })
+    )
 
     default_intimacy = 36.5
     # Set default intimacy(유저별)
@@ -75,7 +99,7 @@ def terminate_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chattin
 
 
 def get_all_texts(
-    user_id: int, chatting_id: int | None, seq_id: int, limit: int | None, db: DbSession
+        user_id: int, chatting_id: int | None, seq_id: int, limit: int | None, db: DbSession
 ) -> List[Text]:
     query = (
         db.query(Text)
@@ -97,55 +121,60 @@ def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
-    curr_texts = get_recent_texts(user_id, chatting_id, DbSession)
+    curr_texts = get_recent_texts(user_id, chatting_id, db)
 
-    #every parameters we use
+    # every parameter we use
     sentiment = calculate_sentiment_clova(parse_recent_texts(curr_texts))
     frequency = score_frequency(curr_texts)
     length = score_avg_length(curr_texts)
-    turn = score_turn(curr_texts)
+    turn = score_turn(curr_texts, user_id)
     frequency_delta = length_delta = turn_delta = 0
 
-    user_intimacy_info = (
-        db.query(Intimacy)
-        .filter(Intimacy.user_id == user_id, Intimacy.chatting_id == chatting_id)
-        .first()
-    )
-    #if intimacy value is initial value
+    print(f'user_id: {user_id}')
+    print(f'chatting_id: {chatting_id}')
+    for intimacy in db.query(Intimacy).all():
+        print(f'intimacy user id: {intimacy.user_id}')
+        print(f'intimacy chatting id: {intimacy.chatting_id}')
+
+    user_intimacy_info = db.query(Intimacy).where(Intimacy.user_id == user_id).where(Intimacy.chatting_id == chatting_id).first()
+    if user_intimacy_info is None:
+        print("user_intimacy_info is None")
+        return 0
+    # if intimacy value is initial value
     is_default = user_intimacy_info.is_default
     timestamp = user_intimacy_info.timestamp
     user_intimacy_info.timestamp = datetime.now()
 
-    
     if is_default:
         user_intimacy_info.is_default = False
-        
+
         ## todo: get timestamp from db, update intimacy
-        
-        parameter_arr = np.array([sentiment, frequency, frequency_delta, 
-                             length, length_delta, turn, turn_delta])
+
+        parameter_arr = np.array([sentiment, frequency, frequency_delta,
+                                  length, length_delta, turn, turn_delta])
         intimacy = default_weight.dot(parameter_arr.transpose())
 
     else:
-   
-        prev_texts = parse_recent_texts(get_previous_texts(user_id, chatting_id,timestamp, DbSession))
+
+        prev_texts = parse_recent_texts(get_previous_texts(user_id, chatting_id, timestamp, DbSession))
         frequency_delta = score_frequency_delta(prev_texts, curr_texts)
         length_delta = score_avg_length_delta(prev_texts, curr_texts)
         turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
-    
-        parameter_arr = np.array([sentiment, frequency, frequency_delta, 
-                             length, length_delta, turn, turn_delta])
-    
-        intimacy = weight.dot(parameter_arr.transpose())
-    
-    #Update
 
-    user_intimacy_info.intimacy += intimacy
-    if user_intimacy_info.intimacy > 100:
-        user_intimacy_info.intimacy = 100
-    elif user_intimacy_info.intimacy < 0:
-        user_intimacy_info.intimacy = 0
-    
+        parameter_arr = np.array([sentiment, frequency, frequency_delta,
+                                  length, length_delta, turn, turn_delta])
+
+        intimacy = weight.dot(parameter_arr.transpose())
+
+    # Update
+
+    intimacy += user_intimacy_info.intimacy
+    if intimacy > 100:
+        intimacy = 100
+    elif intimacy < 0:
+        intimacy = 0
+
+    user_intimacy_info.intimacy = intimacy
     return intimacy
 
 
@@ -155,22 +184,22 @@ def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text
         .join(Text.chatting)
         .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
         .filter(Text.chatting_id == chatting_id)
-        .order_by(desc(Text.id))
+        .order_by(desc(Text.timestamp))
         .limit(20)
         .all()
     )
 
 
 def get_previous_texts(
-    user_id: int, chatting_id: int, timestamp: DateTime, db: DbSession
+        user_id: int, chatting_id: int, timestamp: DateTime, db: DbSession
 ) -> List[Text]:
     return (
         db.query(Text)
         .join(Text.chatting)
         .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
         .filter(Text.chatting_id == chatting_id)
-        .filter(Text.timestamp < timestamp)
-        .order_by(desc(Text.id))
+        .filter(Text.timestamp <= timestamp)
+        .order_by(desc(Text.timestamp))
         .limit(20)
         .all()
     )
@@ -199,9 +228,12 @@ def calculate_sentiment_clova(text: str) -> int:
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
     negative = parsed_data["document"]["confidence"]["negative"]
+    result = positive - negative
+    if result >= 0:
+        return result * 0.1
+    else:
+        return result * 0.05
     # positive[0~100] negative[0~100]
-
-    return positive - negative
 
 
 def get_frequency(texts: List[Text]) -> float:
@@ -312,45 +344,45 @@ def get_turn(texts: List[Text], user_id: int) -> float:
 
 
 def get_turn_delta(
-    prev_texts: List[Text], curr_texts: List[Text], user_id: int
+        prev_texts: List[Text], curr_texts: List[Text], user_id: int
 ) -> float:
     # 작을수록 개선된 것(0.5에 가까워졌으므로)
-    return np.abs(get_turn(curr_texts, user_id)-0.5) - np.abs(get_turn(prev_texts, user_id)-0.5)
+    return np.abs(get_turn(curr_texts, user_id) - 0.5) - np.abs(get_turn(prev_texts, user_id) - 0.5)
 
 
 def score_turn(texts: List[Text], user_id: int) -> int:
     rate = get_turn(texts, user_id)
     default = 0
-    if 0.4 <= rate and rate <= 0.6:
+    if 0.4 <= rate <= 0.6:
         return 10
-    elif 0.3 <= rate and rate <= 0.7:
+    elif 0.3 <= rate <= 0.7:
         return 5
-    elif 0.2 <= rate and rate <= 0.8:
+    elif 0.2 <= rate <= 0.8:
         return 0
-    elif 0.1 <= rate and rate <= 0.9:
+    elif 0.1 <= rate <= 0.9:
         return -3
-    elif 0.0 <= rate and rate <= 1.0:
+    elif 0.0 <= rate <= 1.0:
         return -5
     else:
         return default
 
 
 def score_turn_delta(
-    prev_texts: List[Text], curr_texts: List[Text], user_id: int
+        prev_texts: List[Text], curr_texts: List[Text], user_id: int
 ) -> int:
     rate = get_turn_delta(prev_texts, curr_texts, user_id)
     default = 0
-    if 0.3 <= rate :
+    if 0.3 <= rate:
         return -5
-    elif 0.1 < rate :
+    elif 0.1 <= rate:
         return -3
-    elif 0.0 < rate :
+    elif 0.0 <= rate:
         return 0
-    elif -0.5<= rate :
+    elif -0.5 <= rate:
         return 10
     else:
         return default
 
+
 def change_weight(weight: List[float]) -> List[float]:
-    
     return weight

@@ -48,7 +48,7 @@ class TestService(unittest.TestCase):
             cls.initiator_id = setup_user(db, cls.initiator)
             cls.responder_id = setup_user(db, cls.responder)
             db.commit()
-    
+
     @classmethod
     def tearDownClass(cls) -> None:
         for db in DbConnector.get_db():
@@ -57,6 +57,7 @@ class TestService(unittest.TestCase):
 
     def tearDown(self) -> None:
         for db in DbConnector.get_db():
+            db.execute(delete(Intimacy))
             db.execute(delete(Text))
             db.execute(delete(Chatting))
             db.commit()
@@ -119,6 +120,163 @@ class TestService(unittest.TestCase):
             self.assertEqual(len(texts), 2)
             self.assertEqual(texts[0].id, seq_ids[4])
             self.assertEqual(texts[1].id, seq_ids[3])
+
+    def test_get_intimacy(self):
+        # Test case 1: Get intimacy for a chatting
+        # user_id = 1
+        # chatting_id = 1
+        # expected_result = 50.0
+        timestamp = datetime.now()
+        for db in DbConnector.get_db():
+            chatting = create_chatting(self.initiator_id, self.responder_id, db)
+
+            seq_ids = list(db.scalars(insert(Text).values([
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello", "timestamp": timestamp},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp - timedelta(seconds=1)},
+                {"chatting_id": chatting.id, "sender_id": self.responder_id, "msg": "you",
+                 "timestamp": timestamp - timedelta(seconds=2)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "what",
+                 "timestamp": timestamp - timedelta(seconds=3)},
+                {"chatting_id": chatting.id, "sender_id": self.responder_id, "msg": "bye",
+                 "timestamp": timestamp - timedelta(seconds=4)},
+            ]).returning(Text.id)))
+            chatting = approve_chatting(self.responder_id, chatting.id, db)
+
+            db.commit()
+
+            self.assertEqual(get_intimacy(self.initiator_id, chatting.id, db), 50.0)
+            self.assertEqual(get_intimacy(self.initiator_id, None, db), 0.0)
+            self.assertEqual(get_intimacy(-1, chatting.id, db), 0.0)
+            self.assertEqual(get_intimacy(-1, None, db), 0.0)
+
+
+    def test_get_recent_texts(self):
+        # Test case 1: Get recent texts for a chatting
+        timestamp = datetime.now()
+
+        for db in DbConnector.get_db():
+            chatting = create_chatting(self.initiator_id, self.responder_id, db)
+            seq_ids = list(db.scalars(insert(Text).values([
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello", "timestamp": timestamp},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=1)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=2)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=3)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=4)},
+            ]).returning(Text.id)))
+            db.commit()
+
+            self.assertEqual(get_recent_texts(-1, chatting.id, db), [])
+            self.assertEqual(get_recent_texts(-1, None, db), [])
+            self.assertEqual(get_recent_texts(self.initiator_id, -1, db), [])
+            self.assertEqual(len(get_recent_texts(self.initiator_id, chatting.id, db)), 5)
+            self.assertEqual(len(get_recent_texts(self.initiator_id, None, db)), 0)
+
+    def test_get_previous_texts(self):
+        timestamp = datetime.now()
+
+        for db in DbConnector.get_db():
+            chatting = create_chatting(self.initiator_id, self.responder_id, db)
+            seq_ids = list(db.scalars(insert(Text).values([
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello", "timestamp": timestamp},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=1)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=2)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=3)},
+                {"chatting_id": chatting.id, "sender_id": self.initiator_id, "msg": "hello",
+                 "timestamp": timestamp + timedelta(milliseconds=4)},
+            ]).returning(Text.id)))
+            db.commit()
+
+            self.assertEqual(get_previous_texts(-1, chatting.id, timestamp, db), [])
+            self.assertEqual(get_previous_texts(-1, None, timestamp, db), [])
+            self.assertEqual(get_previous_texts(self.initiator_id, -1, timestamp, db), [])
+            self.assertEqual(len(get_previous_texts(self.initiator_id, chatting.id, timestamp + timedelta(milliseconds=4), db)), 5)
+            self.assertEqual(len(get_previous_texts(self.initiator_id, None, timestamp, db)), 0)
+
+    def test_parse_recent_texts(self):
+        # Test case 1: Parse recent texts
+        texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        expected_result = "Hello"
+        result = parse_recent_texts(texts)
+        self.assertEqual(result, expected_result)
+
+    def test_score_frequency(self):
+        # Test case 1: Score frequency of texts
+        texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        expected_result = 10
+        result = score_frequency(texts)
+        self.assertEqual(result, expected_result)
+
+    def test_score_frequency_delta(self):
+        # Test case 1: Score frequency delta of texts
+        prev_texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        curr_texts = [Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        expected_result = 0
+        result = score_frequency_delta(prev_texts, curr_texts)
+        self.assertEqual(result, expected_result)
+
+    def test_score_avg_length(self):
+        # Test case 1: Score average length of texts
+        texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        expected_result = 0
+        result = score_avg_length(texts)
+        self.assertEqual(result, expected_result)
+
+    def test_score_avg_length_delta(self):
+        # Test case 1: Score average length delta of texts
+        prev_texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        curr_texts = [Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        expected_result = 0
+        result = score_avg_length_delta(prev_texts, curr_texts)
+        self.assertEqual(result, expected_result)
+
+    def test_get_turn(self):
+        # Test case 1: Get turn rate of texts
+        texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()), Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        user_id = 1
+        expected_result = 0.5
+        result = get_turn(texts, user_id)
+        self.assertEqual(result, expected_result)
+
+    def test_get_turn_delta(self):
+        # Test case 1: Get turn delta of texts
+        prev_texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        curr_texts = [Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        user_id = 1
+        expected_result = 0
+        result = get_turn_delta(prev_texts, curr_texts, user_id)
+        self.assertEqual(result, expected_result)
+
+    def test_score_turn(self):
+        # Test case 1: Score turn rate of texts
+        texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()), Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        user_id = 1
+        expected_result = 10
+        result = score_turn(texts, user_id)
+        self.assertEqual(result, expected_result)
+
+    def test_score_turn_delta(self):
+        # Test case 1: Score turn delta of texts
+        prev_texts = [Text(id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now())]
+        curr_texts = [Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())]
+        user_id = 1
+        expected_result = 0
+        result = score_turn_delta(prev_texts, curr_texts, user_id)
+        self.assertEqual(result, expected_result)
+
+    def test_change_weight(self):
+        # Test case 1: Change weight of parameters
+        weight = [0.1, 0.3, 0, 0.3, 0, 0.3, 0]
+        expected_result = [0.1, 0.3, 0, 0.3, 0, 0.3, 0]
+        result = change_weight(weight)
+        self.assertEqual(result, expected_result)
 
 
 if __name__ == '__main__':

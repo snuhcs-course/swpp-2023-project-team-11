@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Integer, String, Column, ForeignKey, Table, DateTime
+from sqlalchemy import Boolean, Integer, String, Column, ForeignKey, Table, DateTime, Float
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -40,7 +40,7 @@ class Intimacy(Base):
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
     chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
-    intimacy: Mapped[int] = Column(Integer, nullable=False)
+    intimacy: Mapped[float] = Column(Float, nullable=False)
     is_default: Mapped[bool] = Column(Boolean, nullable=False, default=True)
     timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
     chatting: Mapped[Chatting] = relationship()

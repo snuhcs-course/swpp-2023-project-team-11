@@ -24,7 +24,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('chatting_id', sa.Integer(), nullable=False),
-    sa.Column('intimacy', sa.Integer(), nullable=False),
+    sa.Column('intimacy', sa.Float(), nullable=False),
     sa.Column('is_default', sa.Boolean(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['chatting_id'], ['chatting.id'], ),

@@ -53,3 +53,4 @@ def get_me(session: Session = Depends(get_session)):
 def get_all_users(session: Session = Depends(get_session), db: DbSession = Depends(DbConnector.get_db)):
     targets = service.get_target_users(session.user, db)
     return list(from_user(user) for user in service.sort_target_users(session.user, targets))
+
