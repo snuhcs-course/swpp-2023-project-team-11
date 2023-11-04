@@ -149,4 +149,9 @@ class AuthServiceImpl implements AuthService {
       return Result.fail(DefaultIssue.badRequest);
     }
   }
+
+  Future<String?> get getSessionKey async {
+    final sessionKey = await _authStorage.read(key: 'accessToken');
+    return sessionKey;
+  }
 }

@@ -101,4 +101,10 @@ class ChattingRepositoryMock implements ChattingRepository {
     // TODO: implement createChattingRoom
     throw UnimplementedError();
   }
+
+  @override
+  Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required String chattingRoomId}) {
+    // TODO: implement updateChattingRoom
+    throw UnimplementedError();
+  }
 }

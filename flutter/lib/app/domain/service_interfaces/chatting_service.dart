@@ -41,4 +41,6 @@ abstract class ChattingService {
   /// <response>
   ///
   Future<void> sendChat({required String chatText, required ChatType chatType});
+
+  Stream openChatStream(String sessionKey);
 }

@@ -43,6 +43,8 @@ abstract class AuthService {
   /// 넣어준다
   /// - 보안처리된 로컬 저장소에 sessionId를 저장한다. 추후 앱 재 실행시, 자동으로 로그인될 수 있또록
   Future<void> setAuthorized({required String accessToken});
+
+  Future<String?> get getSessionKey;
 }
 
 class AccessResult {
