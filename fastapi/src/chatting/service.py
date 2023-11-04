@@ -175,9 +175,9 @@ def calculate_sentiment_clova(text: str) -> int:
         # print("Error Code:" + rescode)
         return 0
 
-    confidence_text = response.json["document"]["confidence"]
-    positive = response.json["document"]["confidence"]["positive"]
-    negative = response.json["document"]["confidence"]["negative"]
+    parsed_data = json.loads(response.text)
+    positive = parsed_data["document"]["confidence"]["positive"]
+    negative = parsed_data["document"]["confidence"]["negative"]
     # positive[0~100] negative[0~100]
 
     return positive - negative
