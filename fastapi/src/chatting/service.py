@@ -243,7 +243,7 @@ def get_sentiment_clova(text: str) -> int:
     print(CLOVA_CLIENT_ID)
     print(CLOVA_CLIENT_SECRET)
 
-    content = "안녕하세요 저는 행복해요"
+    content = get_translated_text(text)
     data = {
         "content": content
     }
