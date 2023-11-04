@@ -107,9 +107,13 @@ def get_all_texts(
 
     return query.all()
 
-def get_topic_recommendation(user_id: int, chatting_id: int | None, db: DbSession) -> str:
+def get_recommended_topic(user_id: int, chatting_id: int | None, db: DbSession) -> str:
     intimacy = get_intimacy(user_id, chatting_id, db)
-    if intimacy <= 40:
+    topic = find_topic(intimacy, db)
+    return topic
+
+def find_topic(intimacy:float, db:DbSession)->str:
+    if intimacy  <= 40:
         tag = "C"
     elif intimacy <=70:
         tag = "B"
