@@ -28,6 +28,9 @@ class ChattingRoomsScreenController extends GetxController{
     super.onReady();
     _fetchChatroomsUseCase.vaild(
         whenSuccess: (List<ChattingRoom> chatrooms) {
+          if (chatrooms.length==0) {
+            print("유효한 채팅방이 하나도 없군");
+          }
           this.chatrooms(chatrooms);
         },
         whenFail: () => {});

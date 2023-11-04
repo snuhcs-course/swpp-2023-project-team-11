@@ -7,7 +7,7 @@ part of 'chatting_room.dart';
 // **************************************************************************
 
 ChattingRoom _$ChattingRoomFromJson(Map<String, dynamic> json) => ChattingRoom(
-      id: json['chatting_id'] as String,
+      id: json['chatting_id'] as int,
       initiator: User.fromMap(json['initiator'] as Map<String, dynamic>),
       responder: User.fromMap(json['responder'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['created_at'] as String),

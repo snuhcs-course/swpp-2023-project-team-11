@@ -75,14 +75,13 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             height: 54,
           ),
           const SizedBox(width: 16),
-          SizedBox(
-            width: 260,
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Text("상대 이름",
+                     Text(chatroom.initiator.name,
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -119,18 +118,15 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             child: PopupMenuButton(
               itemBuilder: (context) {
                 return [
-                  const PopupMenuItem<int>(value: 0, child: Text("퇴장")),
-                  const PopupMenuItem<int>(value: 1, child: Text("읽음 처리")),
-                  const PopupMenuItem<int>(value: 2, child: Text("차단"))
+                  const PopupMenuItem<int>(value: 0, child: Text("삭제")),
+                  const PopupMenuItem<int>(value: 1, child: Text("수락")),
                 ];
               },
               onSelected: (value) {
                 if (value == 0) {
-                  print("퇴장");
+                  print("삭제");
                 } else if (value == 1) {
-                  print("읽음으로 처리");
-                } else if (value == 2) {
-                  print("차단");
+                  print("수락");
                 }
               },
               color: const Color(0xff2d3a45).withOpacity(0.4),

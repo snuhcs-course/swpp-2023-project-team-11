@@ -48,4 +48,28 @@ class ChattingRepositoryImpl implements ChattingRepository {
     }
   }
 
+  @override
+  Future<Result<ChattingRoom, DefaultIssue>> createChattingRoom({required String counterPartEmail}) async {
+    final Dio dio = DioInstance.getDio;
+    const path = "/chatting/";
+    try {
+      final response = await dio.post(baseUrl + path, data: {
+        "counterpart" : counterPartEmail,
+      });
+      final data = response.data;
+      if (data== null) throw Exception("데이터가 Null");
+      final chattingRoom = ChattingRoom.fromJson(data);
+      return Result.success(chattingRoom);
+    } on DioException catch (e) {
+      print("에러 발생");
+      print(e.response?.statusCode);
+      print(e.response?.data);
+      return Result.fail(DefaultIssue.badRequest);
+    } catch (e, s) {
+      print(e);
+      print(s);
+      return Result.fail(DefaultIssue.badRequest);
+    }
+  }
+
 }

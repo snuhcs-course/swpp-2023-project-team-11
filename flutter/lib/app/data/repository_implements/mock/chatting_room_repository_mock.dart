@@ -70,7 +70,7 @@ class ChattingRepositoryMock implements ChattingRepository {
       );
 
       final room = ChattingRoom(
-        id: 'ChatRoom$i',
+        id: i,
         initiator: koreanUser,
         responder: foreignUser,
         createdAt: DateTime(2023, 10, random.nextInt(31) + 1),
@@ -93,6 +93,12 @@ class ChattingRepositoryMock implements ChattingRepository {
   @override
   Future<Result<List<ChattingRoom>, DefaultIssue>> readAllWhereNotApproved() {
     // TODO: implement readAllWhereNotApproved
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<ChattingRoom, DefaultIssue>> createChattingRoom({required String counterPartEmail}) {
+    // TODO: implement createChattingRoom
     throw UnimplementedError();
   }
 }

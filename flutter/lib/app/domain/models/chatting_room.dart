@@ -12,7 +12,7 @@ class ChattingRoom {
 	// Map<String, dynamic> toJson( instance) => _$ChattingRoomToJson(this);
 
   @JsonKey(name: "chatting_id")
-  final String id;
+  final int id;
   @JsonKey(fromJson: User.fromMap)
   final User initiator;
   @JsonKey(fromJson: User.fromMap)

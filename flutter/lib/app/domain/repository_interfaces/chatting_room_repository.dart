@@ -14,4 +14,6 @@ abstract class ChattingRepository {
   Future<Result<List<ChattingRoom>, DefaultIssue>> readAllWhereApproved();
 
   Future<Result<List<ChattingRoom>, DefaultIssue>> readAllWhereNotApproved();
+
+  Future<Result<ChattingRoom, DefaultIssue>> createChattingRoom({required String counterPartEmail});
 }
