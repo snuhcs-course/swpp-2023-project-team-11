@@ -162,8 +162,6 @@ class TestService(unittest.TestCase):
             self.assertEqual(texts[0].id, seq_ids[4])
             self.assertEqual(texts[1].id, seq_ids[3])
 
-    ## def test_get_recommend_topic(self):
-
     def test_get_topic(self):
         for db in DbConnector.get_db():
             db.execute(
@@ -172,13 +170,14 @@ class TestService(unittest.TestCase):
                         {"topic": "I'm so good", "tag": "A"},
                         {"topic": "I'm so mad", "tag": "B"},
                         {"topic": "I'm so sad", "tag": "C"},
+                        {"topic": "I'm so happy", "tag": "C"}
                     ]
                 )
             )
             db.commit()
-            self.assertEqual(get_topic(30, db), "I'm so sad")
-            self.assertEqual(get_topic(60, db), "I'm so mad")
-            self.assertEqual(get_topic(90, db), "I'm so good")
+            self.assertIn(get_topic('C', db), ["I'm so sad", "I'm so happy"])
+            self.assertEqual(get_topic('B', db), "I'm so mad")
+            self.assertEqual(get_topic('A', db), "I'm so good")
 
     def test_get_intimacy(self):
         # Test case 1: Get intimacy for a chatting
@@ -238,7 +237,6 @@ class TestService(unittest.TestCase):
             )
 
     def test_get_recent_texts(self):
-        # Test case 1: Get recent texts for a chatting
         timestamp = datetime.now()
 
         for db in DbConnector.get_db():

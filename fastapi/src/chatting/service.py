@@ -110,15 +110,18 @@ def get_all_texts(
 
 def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     intimacy = get_intimacy(user_id, chatting_id, db)
-    return get_topic(intimacy, db)
+    tag = get_tag(intimacy)
+    return get_topic(tag, db)
 
-def get_topic(intimacy: float, db: DbSession) -> str:
-    if intimacy  <= 40:
-        tag = "C"
+def get_tag(intimacy: float) -> str:
+    if intimacy <= 40:
+        return "C"
     elif intimacy <= 70:
-        tag = "B"
+        return "B"
     else:
-        tag = "A"
+        return "A"
+
+def get_topic(tag: str, db: DbSession) -> str:
     topics = db.query(Topic).where(Topic.tag == tag).all()
     idx = random.randint(0, len(topics)-1)
     return topics[idx].topic
