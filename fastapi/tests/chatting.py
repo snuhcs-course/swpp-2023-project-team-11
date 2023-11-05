@@ -88,7 +88,7 @@ class TestService(unittest.TestCase):
             self.assertEqual(len(get_all_chattings(self.initiator_id, True, db)), 1)
             self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 0)
 
-            # TODO check intimacy
+            # TODO intimacy insert 됐는지 확인하는 test 추가해주세요
 
             with self.assertRaises(InvalidChattingException):
                 terminate_chatting(-1, chatting_id, db)
@@ -186,6 +186,7 @@ class TestService(unittest.TestCase):
             self.assertEqual(get_topic('B', db), "I'm so mad")
             self.assertEqual(get_topic('A', db), "I'm so good")
 
+    # TODO Clova & Papago API 호출하는 함수 (translate_text, get_sentiment) 모킹해서 실제로 두 API 호출하지 않도록 해주세요
     @unittest.skip("Clova & Papago API Required")
     def test_get_intimacy(self):
         # Test case 1: Get intimacy for a chatting
@@ -243,6 +244,8 @@ class TestService(unittest.TestCase):
             self.assertEqual(
                 get_intimacy(self.initiator_id, chatting.id, db), 40.999562680485
             )
+
+    # TODO 실제로 clova, papago API 호출하는 unit test 각각 하나씩 만들어주세요.
 
     def test_flatten_texts(self):
         texts = [

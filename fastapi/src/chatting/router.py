@@ -50,15 +50,19 @@ def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int |
     return list(from_text(text) for text in service.get_all_texts(session.user_id, chatting_id, seq_id, limit, timestamp, db))
 
 
+# TODO HTTP Method get에서 post로 바꿔주세요
+# TODO 이 함수 이름 create_intimacy로 바꿔주세요
 @router.get("/intimacy")
 def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
                  db: DbSession = Depends(DbConnector.get_db)):
     intimacy = service.get_intimacy(session.user_id, chatting_id, db)
     db.commit()
+    # TODO Response Schema 만들어주세요
     return intimacy
 
 
 @router.get("/topic")
 def get_topic_recommendation(chatting_id: int, session: Session = Depends(get_session),
                              db: DbSession = Depends(DbConnector.get_db)):
+    # TODO response schema 만들어주세요
     return service.get_recommended_topic(session.user_id, chatting_id, db)

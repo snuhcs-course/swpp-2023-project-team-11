@@ -41,6 +41,8 @@ class Intimacy(Base):
     user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
     chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
     intimacy: Mapped[float] = Column(Float, nullable=False)
+    # TODO is_default 필요 없어지도록 서비스 수정 하고 나서 해당 column 없애주세요
+    # TODO 그리고 나서 alembic migration 추가해주세요
     is_default: Mapped[bool] = Column(Boolean, nullable=False, default=True)
     timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
     chatting: Mapped[Chatting] = relationship()

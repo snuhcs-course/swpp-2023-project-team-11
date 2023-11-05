@@ -111,6 +111,8 @@ def get_all_texts(
 
 
 def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
+    # TODO 이거 topic 추천할 때 intimacy를 새로 만들면 안되요. 그니깐 db에서 쿼리해오는 get_intimacy를 써주세요 (새로 구현한 거))
+    # 지금 쓴 함수는 사실 create_intimacy니깐요
     intimacy = get_intimacy(user_id, chatting_id, db)
     tag = get_tag(intimacy)
     return get_topic(tag, db)
@@ -131,6 +133,7 @@ def get_topic(tag: str, db: DbSession) -> str:
     return topics[idx].topic
 
 
+# TODO 함수 이름 create_intimacy로 바꿔주세요
 def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
@@ -170,7 +173,7 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     if is_default:
         user_intimacy_info.is_default = False
 
-        ## todo: get timestamp from db, update intimacy
+        ## TODO get timestamp from db, update intimacy
 
         parameter_arr = np.array([sentiment, frequency, frequency_delta,
                                   length, length_delta, turn, turn_delta])
@@ -188,6 +191,7 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
         intimacy = weight.dot(parameter_arr.transpose())
 
     # Update
+    # TODO update가 아니라 insert를 해야 합니다 그리고 지금도 실제로 db에 업데이트를 하지는 않는군요
 
     intimacy += user_intimacy_info.intimacy
     if intimacy > 100:
@@ -196,6 +200,10 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
         intimacy = 0
     user_intimacy_info.intimacy = intimacy
     return intimacy
+
+
+# TODO DB에서 intimacy 불러오는 get_intimacy 서비스 만들어주세요
+# 여러 곳에서 쓰일 수 있으니 최대한 generic하게 잘 만들어주세요
 
 
 def flatten_texts(texts: List[Text]) -> str:
