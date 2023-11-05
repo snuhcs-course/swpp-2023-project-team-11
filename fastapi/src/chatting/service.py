@@ -131,10 +131,11 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
-    curr_texts = get_recent_texts(user_id, chatting_id, db)
+    # Previous 20 texts from chatting
+    curr_texts = get_all_texts(user_id, chatting_id, -1, 20, db)
 
     # every parameter we use
-    sentiment = get_sentiment_clova(parse_recent_texts(curr_texts))
+    sentiment = get_sentiment_clova(flatten_texts(curr_texts))
     frequency = score_frequency(curr_texts)
     length = score_avg_length(curr_texts)
     turn = score_turn(curr_texts, user_id)
@@ -167,7 +168,7 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
 
     else:
 
-        prev_texts = parse_recent_texts(get_previous_texts(user_id, chatting_id, timestamp, DbSession))
+        prev_texts = flatten_texts(get_previous_texts(user_id, chatting_id, timestamp, DbSession))
         frequency_delta = score_frequency_delta(prev_texts, curr_texts)
         length_delta = score_avg_length_delta(prev_texts, curr_texts)
         turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
@@ -188,18 +189,6 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     return intimacy
 
 
-def get_recent_texts(user_id: int, chatting_id: int, db: DbSession) -> List[Text]:
-    return (
-        db.query(Text)
-        .join(Text.chatting)
-        .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
-        .filter(Text.chatting_id == chatting_id)
-        .order_by(desc(Text.id))
-        .limit(20)
-        .all()
-    )
-
-
 def get_previous_texts(
         user_id: int, chatting_id: int, timestamp: DateTime, db: DbSession
 ) -> List[Text]:
@@ -215,7 +204,7 @@ def get_previous_texts(
     )
 
 
-def parse_recent_texts(texts: List[Text]) -> str:
+def flatten_texts(texts: List[Text]) -> str:
     return ".".join(text.msg for text in texts)
 
 

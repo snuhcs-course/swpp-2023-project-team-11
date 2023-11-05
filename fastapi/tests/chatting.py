@@ -236,61 +236,6 @@ class TestService(unittest.TestCase):
                 get_intimacy(self.initiator_id, chatting.id, db), 40.999562680485
             )
 
-    def test_get_recent_texts(self):
-        timestamp = datetime.now()
-
-        for db in DbConnector.get_db():
-            chatting = create_chatting(self.initiator_id, self.responder_id, db)
-            seq_ids = list(
-                db.scalars(
-                    insert(Text)
-                    .values(
-                        [
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp,
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=1),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=2),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=3),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=4),
-                            },
-                        ]
-                    )
-                    .returning(Text.id)
-                )
-            )
-            db.commit()
-
-            self.assertEqual(get_recent_texts(-1, chatting.id, db), [])
-            self.assertEqual(get_recent_texts(-1, None, db), [])
-            self.assertEqual(get_recent_texts(self.initiator_id, -1, db), [])
-            self.assertEqual(
-                len(get_recent_texts(self.initiator_id, chatting.id, db)), 5
-            )
-            self.assertEqual(len(get_recent_texts(self.initiator_id, None, db)), 0)
-
     def test_get_previous_texts(self):
         timestamp = datetime.now()
 
@@ -358,15 +303,14 @@ class TestService(unittest.TestCase):
                 len(get_previous_texts(self.initiator_id, None, timestamp, db)), 0
             )
 
-    def test_parse_recent_texts(self):
-        # Test case 1: Parse recent texts
+    def test_flatten_texts(self):
         texts = [
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         expected_result = "Hello"
-        result = parse_recent_texts(texts)
+        result = flatten_texts(texts)
         self.assertEqual(result, expected_result)
 
     def test_score_frequency(self):
