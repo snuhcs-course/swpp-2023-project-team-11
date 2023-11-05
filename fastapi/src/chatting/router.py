@@ -66,3 +66,5 @@ def get_topic_recommendation(chatting_id: int, session: Session = Depends(get_se
                              db: DbSession = Depends(DbConnector.get_db)):
     # TODO response schema 만들어주세요
     return service.get_recommended_topic(session.user_id, chatting_id, db)
+
+# TODO Get intimacy endpoint 만들어주세요
