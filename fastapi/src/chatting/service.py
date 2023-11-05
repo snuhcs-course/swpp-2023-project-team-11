@@ -8,9 +8,9 @@ from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
 import urllib.request, urllib.parse
 
+from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
-from src.chatting.constants import *
 from src.exceptions import ExternalApiError
 
 
@@ -42,9 +42,6 @@ def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
 
 
 def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
-    default_intimacy = 36.5
-    # Set default intimacy(유저별)
-
     chatting = db.scalar(
         update(Chatting)
         .values(is_approved=True)
@@ -54,25 +51,26 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
     )
     if chatting is None:
         raise InvalidChattingException()
+
+    timestamp = datetime.now(),
     db.execute(
         insert(Intimacy)
-        .values({
-            "user_id": user_id,
-            "chatting_id": chatting_id,
-            "intimacy": default_intimacy,
-            "is_default": True,
-            "timestamp": datetime.now(),
-        })
-    )
-    db.execute(
-        insert(Intimacy)
-        .values({
-            "user_id": chatting.initiator_id,
-            "chatting_id": chatting_id,
-            "intimacy": default_intimacy,
-            "is_default": True,
-            "timestamp": datetime.now(),
-        })
+        .values([
+            {
+                "user_id": user_id,
+                "chatting_id": chatting_id,
+                "intimacy": DEFAULT_INTIMACY,
+                "is_default": True,
+                "timestamp": timestamp,
+            },
+            {
+                "user_id": chatting.initiator_id,
+                "chatting_id": chatting_id,
+                "intimacy": DEFAULT_INTIMACY,
+                "is_default": True,
+                "timestamp": timestamp,
+            },
+        ])
     )
 
     return chatting
@@ -109,10 +107,12 @@ def get_all_texts(
 
     return query.all()
 
+
 def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     intimacy = get_intimacy(user_id, chatting_id, db)
     tag = get_tag(intimacy)
     return get_topic(tag, db)
+
 
 def get_tag(intimacy: float) -> str:
     if intimacy <= 40:
@@ -121,6 +121,7 @@ def get_tag(intimacy: float) -> str:
         return "B"
     else:
         return "A"
+
 
 def get_topic(tag: str, db: DbSession) -> str:
     topics = db.query(Topic).where(Topic.tag == tag).all()
@@ -134,14 +135,19 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
 
     # Previous 20 texts from chatting
     curr_texts = get_all_texts(user_id, chatting_id, -1, 20, db)
+    flatten = flatten_texts(curr_texts)
+    translated = translate_text(flatten)
 
     # every parameter we use
-    sentiment = get_sentiment_clova(flatten_texts(curr_texts))
+    sentiment = get_sentiment(translated)
     frequency = score_frequency(curr_texts)
+    frequency_delta = 0
     length = score_avg_length(curr_texts)
+    length_delta = 0
     turn = score_turn(curr_texts, user_id)
-    frequency_delta = length_delta = turn_delta = 0
+    turn_delta = 0
 
+    # Get Intimacy info
     user_intimacy_info = (
         db.query(Intimacy)
         .filter_by(user_id=user_id, chatting_id=chatting_id)
@@ -209,7 +215,7 @@ def flatten_texts(texts: List[Text]) -> str:
     return ".".join(text.msg for text in texts)
 
 
-def get_translated_text(text: str) -> str:
+def translate_text(text: str) -> str:
     # Request
     data = ("source=auto&target=ko&text=" + urllib.parse.quote(text)).encode('utf-8')
     request = urllib.request.Request(PAPAGO_API_URL)
@@ -224,15 +230,14 @@ def get_translated_text(text: str) -> str:
     return json.loads(decoded_response)['message']['result']['translatedText']
 
 
-def get_sentiment_clova(text: str) -> int:
+def get_sentiment(text: str) -> int:
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
         "Content-Type": "application/json"
     }
 
-    content = get_translated_text(text)
-    response = requests.post(CLOVA_API_URL, data=json.dumps({"content": content}), headers=headers)
+    response = requests.post(CLOVA_API_URL, data=json.dumps({"content": text}), headers=headers)
     if response.status_code != 200:
         raise ExternalApiError("sentimental")
 
@@ -247,7 +252,10 @@ def get_sentiment_clova(text: str) -> int:
     # positive[0~100] negative[0~100]
 
 
-def get_frequency(texts: List[Text]) -> float:
+def get_frequency(texts: List[Text]) -> float | None:
+    if len(texts) == 0:
+        return None
+
     frequency = datetime.now() - texts[-1].timestamp
     seconds = frequency.seconds
     return seconds
