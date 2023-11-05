@@ -211,8 +211,7 @@ def flatten_texts(texts: List[Text]) -> str:
 def get_translated_text(text: str) -> str:
     translating_text = urllib.parse.quote(text)
     data = "source=auto&target=ko&text=" + translating_text
-    url = "https://naveropenapi.apigw.ntruss.com/nmt/v1/translation"
-    request = urllib.request.Request(url)
+    request = urllib.request.Request(PAPAGO_API_URL)
     request.add_header("X-NCP-APIGW-API-KEY-ID", PAPAGO_CLIENT_ID)
     request.add_header("X-NCP-APIGW-API-KEY", PAPAGO_CLIENT_SECRET)
 
@@ -230,7 +229,6 @@ def get_translated_text(text: str) -> str:
 
 
 def get_sentiment_clova(text: str) -> int:
-    url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
@@ -244,7 +242,7 @@ def get_sentiment_clova(text: str) -> int:
         "content": content
     }
     print(json.dumps(data, indent=4, sort_keys=True))
-    response = requests.post(url, data=json.dumps(data), headers=headers)
+    response = requests.post(CLOVA_API_URL, data=json.dumps(data), headers=headers)
     rescode = response.status_code
 
     print(content)
