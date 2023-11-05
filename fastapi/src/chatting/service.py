@@ -234,18 +234,14 @@ def get_sentiment_clova(text: str) -> int:
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
         "Content-Type": "application/json"
     }
-    print(CLOVA_CLIENT_ID)
-    print(CLOVA_CLIENT_SECRET)
 
     content = get_translated_text(text)
     data = {
         "content": content
     }
-    print(json.dumps(data, indent=4, sort_keys=True))
     response = requests.post(CLOVA_API_URL, data=json.dumps(data), headers=headers)
     rescode = response.status_code
 
-    print(content)
     if rescode != 200:
         print("Error Code:" + rescode)
         return 0
@@ -253,7 +249,6 @@ def get_sentiment_clova(text: str) -> int:
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
     negative = parsed_data["document"]["confidence"]["negative"]
-    print(positive - negative)
     result = positive - negative
     if result >= 0:
         return result * 0.1
