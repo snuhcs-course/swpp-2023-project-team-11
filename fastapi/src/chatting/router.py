@@ -45,9 +45,9 @@ def delete_chatting(chatting_id: int, session: Session = Depends(get_session),
 
 
 @router.get("/text", response_model=List[TextResponse])
-def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int | None = None,
+def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int | None = None, timestamp: datetime | None = None,
                   session: Session = Depends(get_session), db: DbSession = Depends(DbConnector.get_db)):
-    return list(from_text(text) for text in service.get_all_texts(session.user_id, chatting_id, seq_id, limit, db))
+    return list(from_text(text) for text in service.get_all_texts(session.user_id, chatting_id, seq_id, limit, timestamp, db))
 
 
 @router.get("/intimacy")

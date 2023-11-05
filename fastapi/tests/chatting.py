@@ -144,23 +144,28 @@ class TestService(unittest.TestCase):
             )
             db.commit()
 
-            self.assertEqual(get_all_texts(-1, chatting.id, -1, None, db), [])
-            self.assertEqual(get_all_texts(-1, None, -1, None, db), [])
-            self.assertEqual(get_all_texts(self.initiator_id, -1, -1, None, db), [])
+            self.assertEqual(get_all_texts(-1, chatting.id, -1, None, None, db), [])
+            self.assertEqual(get_all_texts(-1, None, -1, None, None, db), [])
+            self.assertEqual(get_all_texts(self.initiator_id, -1, -1, None, None, db), [])
             self.assertEqual(
-                len(get_all_texts(self.initiator_id, chatting.id, -1, None, db)), 5
+                len(get_all_texts(self.initiator_id, chatting.id, -1, None, None, db)), 5
             )
             self.assertEqual(
-                len(get_all_texts(self.initiator_id, None, -1, None, db)), 5
+                len(get_all_texts(self.initiator_id, None, -1, None, None, db)), 5
             )
             self.assertEqual(
-                len(get_all_texts(self.initiator_id, None, seq_ids[1], None, db)), 3
+                len(get_all_texts(self.initiator_id, None, seq_ids[1], None, None, db)), 3
             )
 
-            texts = get_all_texts(self.initiator_id, None, seq_ids[1], 2, db)
+            texts = get_all_texts(self.initiator_id, None, seq_ids[1], 2, None, db)
             self.assertEqual(len(texts), 2)
             self.assertEqual(texts[0].id, seq_ids[4])
             self.assertEqual(texts[1].id, seq_ids[3])
+
+            texts = get_all_texts(self.initiator_id, None, seq_ids[1], None, timestamp + timedelta(milliseconds=3), db)
+            self.assertEqual(len(texts), 2)
+            self.assertEqual(texts[0].id, seq_ids[3])
+            self.assertEqual(texts[1].id, seq_ids[2])
 
     def test_get_topic(self):
         for db in DbConnector.get_db():
@@ -234,73 +239,6 @@ class TestService(unittest.TestCase):
 
             self.assertEqual(
                 get_intimacy(self.initiator_id, chatting.id, db), 40.999562680485
-            )
-
-    def test_get_previous_texts(self):
-        timestamp = datetime.now()
-
-        for db in DbConnector.get_db():
-            chatting = create_chatting(self.initiator_id, self.responder_id, db)
-            seq_ids = list(
-                db.scalars(
-                    insert(Text)
-                    .values(
-                        [
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp,
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=1),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=2),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=3),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=4),
-                            },
-                        ]
-                    )
-                    .returning(Text.id)
-                )
-            )
-            db.commit()
-
-            self.assertEqual(get_previous_texts(-1, chatting.id, timestamp, db), [])
-            self.assertEqual(get_previous_texts(-1, None, timestamp, db), [])
-            self.assertEqual(
-                get_previous_texts(self.initiator_id, -1, timestamp, db), []
-            )
-            self.assertEqual(
-                len(
-                    get_previous_texts(
-                        self.initiator_id,
-                        chatting.id,
-                        timestamp + timedelta(milliseconds=4),
-                        db,
-                    )
-                ),
-                5,
-            )
-            self.assertEqual(
-                len(get_previous_texts(self.initiator_id, None, timestamp, db)), 0
             )
 
     def test_flatten_texts(self):

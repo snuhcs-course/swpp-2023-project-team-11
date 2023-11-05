@@ -91,7 +91,7 @@ def terminate_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chattin
 
 
 def get_all_texts(
-        user_id: int, chatting_id: int | None, seq_id: int, limit: int | None, db: DbSession
+        user_id: int, chatting_id: int | None, seq_id: int, limit: int | None, timestamp: datetime | None, db: DbSession
 ) -> List[Text]:
     query = (
         db.query(Text)
@@ -104,6 +104,8 @@ def get_all_texts(
         query = query.where(Chatting.id == chatting_id)
     if limit is not None:
         query = query.limit(limit=limit)
+    if timestamp is not None:
+        query = query.where(Text.timestamp <= timestamp)
 
     return query.all()
 
@@ -128,21 +130,22 @@ def get_topic(tag: str, db: DbSession) -> str:
     idx = random.randint(0, len(topics)-1)
     return topics[idx].topic
 
+
 def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
     # Previous 20 texts from chatting
-    curr_texts = get_all_texts(user_id, chatting_id, -1, 20, db)
-    flatten = flatten_texts(curr_texts)
-    translated = translate_text(flatten)
+    curr_texts: List[Text] = get_all_texts(user_id, chatting_id, -1, 20, None, db)
+    curr_flatten: str = flatten_texts(curr_texts)
+    curr_translated: str = translate_text(curr_flatten)
 
     # every parameter we use
-    sentiment = get_sentiment(translated)
-    frequency = score_frequency(curr_texts)
+    sentiment: int = get_sentiment(curr_translated)
+    frequency: int = score_frequency(curr_texts)
     frequency_delta = 0
-    length = score_avg_length(curr_texts)
+    length: int = score_avg_length(curr_texts)
     length_delta = 0
     turn = score_turn(curr_texts, user_id)
     turn_delta = 0
@@ -174,8 +177,7 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
         intimacy = default_weight.dot(parameter_arr.transpose())
 
     else:
-
-        prev_texts = flatten_texts(get_previous_texts(user_id, chatting_id, timestamp, DbSession))
+        prev_texts: List[Text] = get_all_texts(user_id, chatting_id, -1, 20, timestamp, db)
         frequency_delta = score_frequency_delta(prev_texts, curr_texts)
         length_delta = score_avg_length_delta(prev_texts, curr_texts)
         turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
@@ -194,21 +196,6 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
         intimacy = 0
     user_intimacy_info.intimacy = intimacy
     return intimacy
-
-
-def get_previous_texts(
-        user_id: int, chatting_id: int, timestamp: DateTime, db: DbSession
-) -> List[Text]:
-    return (
-        db.query(Text)
-        .join(Text.chatting)
-        .filter(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
-        .filter(Text.chatting_id == chatting_id)
-        .filter(Text.timestamp <= timestamp)
-        .order_by(desc(Text.id))
-        .limit(20)
-        .all()
-    )
 
 
 def flatten_texts(texts: List[Text]) -> str:
