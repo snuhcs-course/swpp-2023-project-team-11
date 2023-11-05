@@ -40,7 +40,7 @@ abstract class ChattingService {
   /// - chatType (string 바꿔서)
   /// <response>
   ///
-  Future<void> sendChat({required String chatText, required ChatType chatType});
+  Future<void> sendChat({required String chatText, required String chattingRoomId});
 
-  Stream openChatStream(String sessionKey);
+  Stream initChatConnection({required String sessionKey, required void Function(Chat chat) onMessageChatReceive,});
 }

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/automated_opacity_widget.dart';
 import 'package:mobile_app/app/presentation/widgets/bottom_chatting_form.dart';
@@ -29,21 +30,21 @@ class RoomScreen extends GetView<RoomScreenController> {
             controller: controller.scrollCon,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             itemBuilder: (context, index) {
-              final chatVm = controller.chatTextList[index];
+              final chatVm = controller.validChattingRoomController.chatVmList[index];
               late final ChatVM priorChatVm;
               if (index>0) {
-                priorChatVm = controller.chatTextList[index-1];
+                priorChatVm = controller.validChattingRoomController.chatVmList[index-1];
               }
               return ChatMessage(
                 text: chatVm.text,
                 senderType: chatVm.senderType,
                 sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
-              ).paddingOnly(bottom: controller.chatTextList.length-1 ==index?240:0);
+              ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?240:0);
             },
             separatorBuilder: (context, index) {
               return const SizedBox(height: 10);
             },
-            itemCount: controller.chatTextList.length,
+            itemCount: controller.validChattingRoomController.chatVmList.length,
           ),
         ),
       ),

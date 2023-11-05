@@ -1,3 +1,4 @@
+import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/repository_interfaces/chatting_room_repository.dart';
 import 'package:mobile_app/app/domain/result.dart';
 
@@ -8,7 +9,12 @@ class FetchChattingRoomsUseCase {
 
   Future<void> all({
     required String email,
-    required void Function(List<ChattingRoom> validRooms, List<ChattingRoom> terminatedRooms, List<ChattingRoom> requestedRooms,) whenSuccess,
+    required void Function(
+      List<ChattingRoom> validRooms,
+      List<ChattingRoom> terminatedRooms,
+      List<ChattingRoom> requestingRooms,
+      List<ChattingRoom> requestedRooms,
+    ) whenSuccess,
     required void Function() whenFail,
   }) async {
     final futureForApprovedResult = _chattingRepository.readAllWhereApproved();
@@ -21,24 +27,26 @@ class FetchChattingRoomsUseCase {
 
     if (approvedResult.isSuccess && unApprovedResult.isSuccess) {
       final List<ChattingRoom> approvedChattingRooms = (approvedResult as Success).data;
-      final List<ChattingRoom> unApprovedChattingRooms =(unApprovedResult as Success).data;
+      final List<ChattingRoom> unApprovedChattingRooms = (unApprovedResult as Success).data;
 
       // approved 중에는 terminated 에 따라서 판단해줘야 함.
       final validRooms = approvedChattingRooms.where((element) => !element.isTerminated).toList();
-      final terminatedRooms = approvedChattingRooms.where((element) => element.isTerminated).toList();
+      final terminatedRooms =
+          approvedChattingRooms.where((element) => element.isTerminated).toList();
       // un approved 이면 무조건 requested
       // 다만 누가 initiator 이냐에 따라 달라짐.
+      final List<ChattingRoom> requestingRooms = [];
       final List<ChattingRoom> requestedRooms = [];
       for (final unApprovedRoom in unApprovedChattingRooms) {
         // un approve중에 내가 만든 채팅방이 있다면
         if (unApprovedRoom.initiator.email == email) {
-          validRooms.add(unApprovedRoom);
+          requestingRooms.add(unApprovedRoom);
         } else {
           requestedRooms.add(unApprovedRoom);
         }
       }
 
-      whenSuccess(validRooms, terminatedRooms, requestedRooms);
+      whenSuccess(validRooms, terminatedRooms, requestingRooms,requestedRooms);
     } else {
       whenFail();
     }
