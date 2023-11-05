@@ -6,11 +6,12 @@ import numpy as np
 import requests
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
-import urllib.request
+import urllib.request, urllib.parse
 
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.chatting.constants import *
+from src.exceptions import ExternalApiError
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
@@ -209,23 +210,18 @@ def flatten_texts(texts: List[Text]) -> str:
 
 
 def get_translated_text(text: str) -> str:
-    translating_text = urllib.parse.quote(text)
-    data = "source=auto&target=ko&text=" + translating_text
+    # Request
+    data = ("source=auto&target=ko&text=" + urllib.parse.quote(text)).encode('utf-8')
     request = urllib.request.Request(PAPAGO_API_URL)
     request.add_header("X-NCP-APIGW-API-KEY-ID", PAPAGO_CLIENT_ID)
     request.add_header("X-NCP-APIGW-API-KEY", PAPAGO_CLIENT_SECRET)
+    response = urllib.request.urlopen(request, data=data)
+    if response.getcode() != 200:
+        raise ExternalApiError("translation")
 
-    response = urllib.request.urlopen(request, data=data.encode("utf-8"))
-    rescode = response.getcode()
-    response_body = response.read()
-    decoded_response = response_body.decode('utf-8')
-    jsonized_response = json.loads(decoded_response)
-    translated_text = jsonized_response['message']['result']['translatedText']
-    if rescode != 200:
-        print("Error Code:" + rescode)
-        return ""
-
-    return translated_text
+    # Parse Response
+    decoded_response = response.read().decode('utf-8')
+    return json.loads(decoded_response)['message']['result']['translatedText']
 
 
 def get_sentiment_clova(text: str) -> int:
@@ -236,15 +232,9 @@ def get_sentiment_clova(text: str) -> int:
     }
 
     content = get_translated_text(text)
-    data = {
-        "content": content
-    }
-    response = requests.post(CLOVA_API_URL, data=json.dumps(data), headers=headers)
-    rescode = response.status_code
-
-    if rescode != 200:
-        print("Error Code:" + rescode)
-        return 0
+    response = requests.post(CLOVA_API_URL, data=json.dumps({"content": content}), headers=headers)
+    if response.status_code != 200:
+        raise ExternalApiError("sentimental")
 
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
@@ -258,7 +248,6 @@ def get_sentiment_clova(text: str) -> int:
 
 
 def get_frequency(texts: List[Text]) -> float:
-    default = 50
     frequency = datetime.now() - texts[-1].timestamp
     seconds = frequency.seconds
     return seconds
