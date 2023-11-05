@@ -164,9 +164,7 @@ class TestService(unittest.TestCase):
 
     ## def test_get_recommend_topic(self):
 
-    def test_find_topic(self):
-        # Test case 1: Find topic
-
+    def test_get_topic(self):
         for db in DbConnector.get_db():
             db.execute(
                 insert(Topic).values(
@@ -178,9 +176,9 @@ class TestService(unittest.TestCase):
                 )
             )
             db.commit()
-            self.assertEqual(find_topic(30, db), "I'm so sad")
-            self.assertEqual(find_topic(60, db), "I'm so mad")
-            self.assertEqual(find_topic(90, db), "I'm so good")
+            self.assertEqual(get_topic(30, db), "I'm so sad")
+            self.assertEqual(get_topic(60, db), "I'm so mad")
+            self.assertEqual(get_topic(90, db), "I'm so good")
 
     def test_get_intimacy(self):
         # Test case 1: Get intimacy for a chatting

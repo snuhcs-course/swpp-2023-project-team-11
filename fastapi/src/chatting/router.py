@@ -59,6 +59,6 @@ def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
 
 
 @router.get("/topic")
-def get_topic_recommendation(user_id: int, chatting_id: int, db: DbSession = Depends(DbConnector.get_db)):
-    topic = service.get_topic_recommendation(user_id, chatting_id, db)
-    return topic
+def get_topic_recommendation(chatting_id: int, session: Session = Depends(get_session),
+                             db: DbSession = Depends(DbConnector.get_db)):
+    return service.get_recommended_topic(session.user_id, chatting_id, db)

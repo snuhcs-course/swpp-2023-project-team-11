@@ -1,15 +1,16 @@
-import os
-import numpy as np
+import random
 from typing import List
+
+import json
+import numpy as np
+import requests
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
+import urllib.request
+
 from src.chatting.exceptions import *
 from src.chatting.models import *
-from src.user.models import Profile
-import random
-import requests, json
 from src.chatting.constants import *
-import urllib.request
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
@@ -107,15 +108,14 @@ def get_all_texts(
 
     return query.all()
 
-def get_recommended_topic(user_id: int, chatting_id: int | None, db: DbSession) -> str:
+def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     intimacy = get_intimacy(user_id, chatting_id, db)
-    topic = find_topic(intimacy, db)
-    return topic
+    return get_topic(intimacy, db)
 
-def find_topic(intimacy:float, db:DbSession)->str:
+def get_topic(intimacy: float, db: DbSession) -> str:
     if intimacy  <= 40:
         tag = "C"
-    elif intimacy <=70:
+    elif intimacy <= 70:
         tag = "B"
     else:
         tag = "A"
@@ -123,7 +123,7 @@ def find_topic(intimacy:float, db:DbSession)->str:
     idx = random.randint(0, len(topics)-1)
     return topics[idx].topic
 
-def get_intimacy(user_id: int, chatting_id: int | None, db: DbSession) -> float:
+def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
@@ -421,4 +421,5 @@ def score_turn_delta(
 
 
 def change_weight(weight: List[float]) -> List[float]:
+    """It is not used now, but will be used by applying cosine similarity between users to adjust weights"""
     return weight
