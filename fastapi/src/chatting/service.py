@@ -239,22 +239,40 @@ def get_sentiment(text: str) -> int:
     # positive[0~100] negative[0~100]
 
 
-def get_frequency(texts: List[Text]) -> float | None:
-    if len(texts) == 0:
+def null_if_empty(func):
+    def wrapper(texts: List[Text], *args, **kwargs) -> float | None:
+        if len(texts) == 0:
+            return None
+
+        return func(texts, *args, **kwargs)
+
+    return wrapper
+
+
+def get_delta(prev: float | None, curr: float | None) -> float | None:
+    if prev is None or curr is None:
         return None
+    return curr - prev
+
+
+@null_if_empty
+def get_frequency(texts: List[Text]) -> float | None:
+    """An average seconds for 20 texts"""
 
     frequency = datetime.now() - texts[-1].timestamp
-    seconds = frequency.seconds
-    return seconds
+    seconds = frequency.seconds + frequency.microseconds / 1e6
+    return seconds * 20 / len(texts)
 
 
-def get_frequency_delta(prev_text: List[Text], curr_text: List[Text]) -> float:
-    return get_frequency(curr_text) - get_frequency(prev_text)
+def get_frequency_delta(prev_text: List[Text], curr_text: List[Text]) -> float | None:
+    return get_delta(get_frequency(prev_text), get_frequency(curr_text))
 
 
 def score_frequency(texts: List[Text]) -> int:
     seconds = get_frequency(texts)
-    default = 0
+    if seconds is None:
+        return 0
+
     if 3600 <= seconds:
         return -5
     elif 3000 <= seconds:
@@ -267,14 +285,15 @@ def score_frequency(texts: List[Text]) -> int:
         return 3
     elif 600 <= seconds:
         return 5
-    elif 0 <= seconds:
-        return 10
     else:
-        return default
+        return 10
 
 
-def score_frequency_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float:
+def score_frequency_delta(prev_texts: List[Text], curr_texts: List[Text]) -> int:
     seconds = get_frequency_delta(prev_texts, curr_texts)
+    if seconds is None:
+        return 0
+
     if 1800 <= seconds:
         return -5
     elif 1200 <= seconds:
@@ -291,8 +310,24 @@ def score_frequency_delta(prev_texts: List[Text], curr_texts: List[Text]) -> flo
         return 10
 
 
+@null_if_empty
+def get_avg_length(texts: List[Text]) -> float | None:
+    avg_len = 0
+    for text in texts:
+        avg_len += len(text.msg)
+    avg_len /= len(texts)
+    return avg_len
+
+
+def get_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float | None:
+    return get_delta(get_avg_length(prev_texts), get_avg_length(curr_texts))
+
+
 def score_avg_length(texts: List[Text]) -> int:
     avg_len = get_avg_length(texts)
+    if avg_len is None:
+        return 0
+
     if avg_len >= 30:
         return 10
     elif avg_len >= 20:
@@ -301,15 +336,15 @@ def score_avg_length(texts: List[Text]) -> int:
         return 4
     elif avg_len >= 5:
         return 0
-    elif avg_len >= 0:
-        return -5
     else:
-        return 0
+        return -5
 
 
 def score_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> int:
-    default = 0
     avg_len = get_avg_length_delta(prev_texts, curr_texts)
+    if avg_len is None:
+        return 0
+
     if avg_len >= 15:
         return 10
     elif avg_len >= 10:
@@ -318,27 +353,15 @@ def score_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> in
         return 0
     elif avg_len >= -20:
         return -3
-    elif avg_len < -20:
-        return -5
     else:
-        return default
-
-
-def get_avg_length(texts: List[Text]) -> float:
-    avg_len = 0
-    for text in texts:
-        avg_len += len(text.msg)
-    avg_len /= len(texts)
-    return avg_len
-
-
-def get_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float:
-    return get_avg_length(curr_texts) - get_avg_length(prev_texts)
+        return -5
 
 
 # scope of rate[0,1]
-def get_turn(texts: List[Text], user_id: int) -> float:
-    default = 50
+@null_if_empty
+def get_turn(texts: List[Text], user_id: int) -> float | None:
+    """How many turns that the user took among provided texts"""
+
     turn = 0
     for text in texts:
         if text.sender_id == user_id:
@@ -348,16 +371,24 @@ def get_turn(texts: List[Text], user_id: int) -> float:
     return rate
 
 
+# 작을수록 개선된 것(0.5에 가까워졌으므로)
 def get_turn_delta(
         prev_texts: List[Text], curr_texts: List[Text], user_id: int
-) -> float:
-    # 작을수록 개선된 것(0.5에 가까워졌으므로)
-    return np.abs(get_turn(curr_texts, user_id) - 0.5) - np.abs(get_turn(prev_texts, user_id) - 0.5)
+) -> float | None:
+    prev_rate = get_turn(prev_texts, user_id)
+    curr_rate = get_turn(curr_texts, user_id)
+
+    if prev_rate is None or curr_rate is None:
+        return None
+
+    return abs(curr_rate - 0.5) - abs(prev_rate - 0.5)
 
 
 def score_turn(texts: List[Text], user_id: int) -> int:
     rate = get_turn(texts, user_id)
-    default = 0
+    if rate is None:
+        return 0
+
     if 0.4 <= rate <= 0.6:
         return 10
     elif 0.3 <= rate <= 0.7:
@@ -366,27 +397,25 @@ def score_turn(texts: List[Text], user_id: int) -> int:
         return 0
     elif 0.1 <= rate <= 0.9:
         return -3
-    elif 0.0 <= rate <= 1.0:
-        return -5
     else:
-        return default
+        return -5
 
 
 def score_turn_delta(
         prev_texts: List[Text], curr_texts: List[Text], user_id: int
 ) -> int:
     rate = get_turn_delta(prev_texts, curr_texts, user_id)
-    default = 0
+    if rate is None:
+        return 0
+
     if 0.3 <= rate:
         return -5
     elif 0.1 <= rate:
         return -3
     elif 0.0 <= rate:
         return 0
-    elif -0.5 <= rate:
-        return 10
     else:
-        return default
+        return 10
 
 
 def change_weight(weight: List[float]) -> List[float]:

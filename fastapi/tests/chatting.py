@@ -88,6 +88,8 @@ class TestService(unittest.TestCase):
             self.assertEqual(len(get_all_chattings(self.initiator_id, True, db)), 1)
             self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 0)
 
+            # TODO check intimacy
+
             with self.assertRaises(InvalidChattingException):
                 terminate_chatting(-1, chatting_id, db)
             with self.assertRaises(InvalidChattingException):
@@ -184,6 +186,7 @@ class TestService(unittest.TestCase):
             self.assertEqual(get_topic('B', db), "I'm so mad")
             self.assertEqual(get_topic('A', db), "I'm so good")
 
+    @unittest.skip("Clova & Papago API Required")
     def test_get_intimacy(self):
         # Test case 1: Get intimacy for a chatting
         # user_id = 1
@@ -251,19 +254,48 @@ class TestService(unittest.TestCase):
         result = flatten_texts(texts)
         self.assertEqual(result, expected_result)
 
-    def test_score_frequency(self):
-        # Test case 1: Score frequency of texts
+    def test_get_frequency(self):
+        timestamp = datetime.now()
         texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=1)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=2)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=3)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=8)),
         ]
-        expected_result = 10
-        result = score_frequency(texts)
-        self.assertEqual(result, expected_result)
+        result = get_frequency(texts)
+        self.assertGreaterEqual(result, 39.9)
+        self.assertLessEqual(result, 40.1)
+
+        self.assertIsNone(get_frequency([]))
+
+    def test_get_frequency_delta(self):
+        self.assertIsNone(get_frequency_delta([], []))
+
+    def test_score_frequency(self):
+        text = Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=datetime.now()-timedelta(seconds=1))
+        self.assertEqual(score_frequency([text]), 10)
+
+        text.timestamp = datetime.now()-timedelta(seconds=31)
+        self.assertEqual(score_frequency([text]), 5)
+
+        text.timestamp = datetime.now()-timedelta(seconds=61)
+        self.assertEqual(score_frequency([text]), 3)
+
+        text.timestamp = datetime.now()-timedelta(seconds=91)
+        self.assertEqual(score_frequency([text]), 0)
+
+        text.timestamp = datetime.now()-timedelta(seconds=121)
+        self.assertEqual(score_frequency([text]), -2)
+
+        text.timestamp = datetime.now()-timedelta(seconds=151)
+        self.assertEqual(score_frequency([text]), -4)
+
+        text.timestamp = datetime.now()-timedelta(seconds=181)
+        self.assertEqual(score_frequency([text]), -5)
+
+        self.assertEqual(score_frequency([]), 0)
 
     def test_score_frequency_delta(self):
-        # Test case 1: Score frequency delta of texts
         prev_texts = [
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
@@ -272,12 +304,11 @@ class TestService(unittest.TestCase):
         curr_texts = [
             Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
         ]
-        expected_result = 0
-        result = score_frequency_delta(prev_texts, curr_texts)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(score_frequency_delta(prev_texts, curr_texts), 0)
+
+        self.assertEqual(score_frequency_delta([], []), 0)
 
     def test_score_avg_length(self):
-        # Test case 1: Score average length of texts
         texts = [
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
@@ -302,17 +333,15 @@ class TestService(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     def test_get_turn(self):
-        # Test case 1: Get turn rate of texts
         texts = [
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
             Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now()),
         ]
-        user_id = 1
-        expected_result = 0.5
-        result = get_turn(texts, user_id)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(get_turn(texts, 1), 0.5)
+
+        self.assertIsNone(get_turn([], -1))
 
     def test_get_turn_delta(self):
         # Test case 1: Get turn delta of texts
@@ -324,10 +353,9 @@ class TestService(unittest.TestCase):
         curr_texts = [
             Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
         ]
-        user_id = 1
-        expected_result = 0
-        result = get_turn_delta(prev_texts, curr_texts, user_id)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(get_turn_delta(prev_texts, curr_texts, 1), 0)
+
+        self.assertIsNone(get_turn_delta([], [], -1))
 
     def test_score_turn(self):
         # Test case 1: Score turn rate of texts
