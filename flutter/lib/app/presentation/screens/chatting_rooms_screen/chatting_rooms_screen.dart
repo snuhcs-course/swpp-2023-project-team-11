@@ -119,7 +119,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 30,
+              radius: 24,
               backgroundImage: ProfilePic().call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
             ),
             // Container(
@@ -161,27 +161,22 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
               ),
             ),
             // const SizedBox(width: 12),
-            Transform.rotate(
-              angle: -math.pi / 2,
-              child: PopupMenuButton(
-                itemBuilder: (context) {
-                  return [
-                    const PopupMenuItem<int>(value: 0, child: Text("퇴장")),
-                    const PopupMenuItem<int>(value: 1, child: Text("읽음 처리")),
-                    const PopupMenuItem<int>(value: 2, child: Text("차단"))
-                  ];
-                },
-                onSelected: (value) {
-                  if (value == 0) {
-                    print("퇴장");
-                  } else if (value == 1) {
-                    print("읽음으로 처리");
-                  } else if (value == 2) {
-                    print("차단");
-                  }
-                },
-                color: const Color(0xff2d3a45).withOpacity(0.4),
-              ),
+            PopupMenuButton(
+              icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
+              itemBuilder: (context) {
+                return [
+                  const PopupMenuItem<int>(value: 0, child: Text("알림 음소거")),
+                  const PopupMenuItem<int>(value: 1, child: Text("채팅방 나가기", style: TextStyle(color: MyColor.orange_1),)),
+                ];
+              },
+              onSelected: (value) {
+                if (value == 0) {
+                  print("알림 음소거");
+                } else if (value == 1) {
+                  print("채팅방 나가기");
+                }
+              },
+              // color: const Color(0xff2d3a45).withOpacity(0.4),
             )
           ],
         ),

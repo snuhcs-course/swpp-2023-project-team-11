@@ -17,40 +17,42 @@ class CountryScreen extends GetView<CountryScreenController> {
     return Scaffold(
       appBar: const SimpleAppBar(),
       backgroundColor: Colors.white,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTextContainer(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Obx(() =>
-                    _buildOptionContainer(
-                        context: context,
-                        firstString: '저는\n한국 학생입니다.',
-                        secondString: "I'm a Korean student",
-                        buttonId: 1)),
-                const SizedBox(height: 16),
-                Obx(() =>
-                    _buildOptionContainer(
-                        context: context,
-                        firstString: "I'm an\nexchange student",
-                        secondString: "저는 교환학생입니다.",
-                        buttonId: 2)),
-                const SizedBox(height: 16),
-                Obx(() {
-                  if (controller.tappedButton.value == 2) {
-                    return _buildCountriesContainer();
-                  } else {
-                    return const Text("");
-                  }
-                })
-              ],
-            ),
-          )
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTextContainer(),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Obx(() =>
+                      _buildOptionContainer(
+                          context: context,
+                          firstString: '저는\n한국 학생입니다.',
+                          secondString: "I'm a Korean student",
+                          buttonId: 1)),
+                  const SizedBox(height: 16),
+                  Obx(() =>
+                      _buildOptionContainer(
+                          context: context,
+                          firstString: "I'm an\nexchange student",
+                          secondString: "저는 교환학생입니다.",
+                          buttonId: 2)),
+                  const SizedBox(height: 16),
+                  Obx(() {
+                    if (controller.tappedButton.value == 2) {
+                      return _buildCountriesContainer();
+                    } else {
+                      return const Text("");
+                    }
+                  })
+                ],
+              ),
+            )
+          ],
+        ),
       ),
       bottomNavigationBar: Obx(() => _buildNextContainer(context)),
     );
@@ -69,7 +71,7 @@ class CountryScreen extends GetView<CountryScreenController> {
         ),
         const SizedBox(height: 12),
         _buildCountryList(),
-        const SizedBox(height: 8,),
+        const SizedBox(height: 12,),
         Center(child: SmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in the list above")),
         const SizedBox(height: 16,),
         if (controller.countryNotHere.value) MainTextFormField(
