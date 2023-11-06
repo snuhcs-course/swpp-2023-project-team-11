@@ -52,19 +52,32 @@ def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int |
 
 # TODO HTTP Method get에서 post로 바꿔주세요
 # TODO 이 함수 이름 create_intimacy로 바꿔주세요
-@router.get("/intimacy")
-def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
+@router.post("/intimacy", response_model=IntimacyResponse)
+def create_intimacy(chatting_id: int, session: Session = Depends(get_session),
                  db: DbSession = Depends(DbConnector.get_db)):
-    intimacy = service.get_intimacy(session.user_id, chatting_id, db)
+    intimacy = service.create_intimacy(session.user_id, chatting_id, db)
     db.commit()
     # TODO Response Schema 만들어주세요
-    return intimacy
+    return from_intimacy(intimacy)
 
 
-@router.get("/topic")
+@router.get("/topic", response_model=TopicResponse)
 def get_topic_recommendation(chatting_id: int, session: Session = Depends(get_session),
                              db: DbSession = Depends(DbConnector.get_db)):
     # TODO response schema 만들어주세요
-    return service.get_recommended_topic(session.user_id, chatting_id, db)
+    topic = service.get_recommended_topic(session.user_id, chatting_id, db)
+    return from_topic(topic)
 
 # TODO Get intimacy endpoint 만들어주세요
+@router.get("/intimacy", response_model=IntimacyResponse)
+def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
+                 db: DbSession = Depends(DbConnector.get_db)):
+    intimacy = service.get_intimacy(session.user_id, chatting_id, db)
+    # TODO Response Schema 만들어주세요
+    return from_intimacy(intimacy[-1])
+
+@router.get("/intimacy/all", response_model=List[IntimacyResponse])
+def get_all_intimacy(chatting_id: int, session: Session = Depends(get_session),
+                 db: DbSession = Depends(DbConnector.get_db)):
+    intimacy = service.get_intimacy(session.user_id, chatting_id, db)
+    return list(from_intimacy(intimacy) for intimacy in intimacy)

@@ -127,10 +127,10 @@ def get_tag(intimacy: float) -> str:
         return "A"
 
 
-def get_topic(tag: str, db: DbSession) -> str:
+def get_topic(tag: str, db: DbSession) -> Topic:
     topics = db.query(Topic).where(Topic.tag == tag).all()
     idx = random.randint(0, len(topics)-1)
-    return topics[idx].topic
+    return topics[idx]
 
 
 # TODO 함수 이름 create_intimacy로 바꿔주세요

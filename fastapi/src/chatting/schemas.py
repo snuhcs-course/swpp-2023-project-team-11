@@ -25,3 +25,13 @@ class TextResponse(BaseModel):
     email: str
     msg: str
     timestamp: datetime
+
+class IntimacyResponse(BaseModel):
+    chatting_id: int
+    intimacy: float
+    timestamp: datetime
+
+class TopicResponse(BaseModel):
+    topic_id: int
+    topic: str
+    tag: str

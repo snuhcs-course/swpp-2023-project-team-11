@@ -23,3 +23,17 @@ def from_text(text: Text) -> TextResponse:
         msg=text.msg,
         timestamp=text.timestamp,
     )
+
+def from_intimacy(intimacy: Intimacy) -> IntimacyResponse:
+    return IntimacyResponse(
+        chatting_id=intimacy.chatting_id,
+        intimacy=intimacy.intimacy,
+        timestamp=intimacy.timestamp,
+    )
+
+def from_topic(topic: Topic) -> TopicResponse:
+    return TopicResponse(
+        topic_id=topic.id,
+        topic=topic.topic,
+        tag=topic.tag,
+    )
