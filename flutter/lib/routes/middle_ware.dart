@@ -4,6 +4,7 @@ import 'package:mobile_app/app/data/service_implements/auth_service_impl.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
+import 'package:mobile_app/app/domain/use_cases/fetch_all_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
@@ -29,7 +30,7 @@ class MainMiddleWare extends GetMiddleware {
             chattingService: ChattingServiceImpl(),
             authService: AuthServiceImpl(),
           ),
-          sendChatUseCase: SendChatUseCase(
+          fetchAllChatUseCase: FetchAllChatUseCase(
             chattingService: chattingServiceImpl,
           )),
     );

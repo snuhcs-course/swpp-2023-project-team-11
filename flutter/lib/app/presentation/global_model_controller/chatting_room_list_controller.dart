@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
+import 'package:mobile_app/app/domain/use_cases/fetch_all_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
@@ -97,7 +98,7 @@ class ChattingRoomListController extends GetxController
         Get.put<ValidChattingRoomController>(
           ValidChattingRoomController(
             chattingRoom: newChattingRoom,
-            sendChatUseCase: _sendChatUseCase,
+            fetchAllChatUseCase: _fetchAllChatUseCase,
           ),
           tag: newChattingRoom.id.toString(),
         );
@@ -152,15 +153,15 @@ class ChattingRoomListController extends GetxController
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;
   final FetchChattingRoomsUseCase _fetchChattingRoomsUseCase;
   final OpenChatConnectionUseCase _openChatConnectionUseCase;
-  final SendChatUseCase _sendChatUseCase;
+  final FetchAllChatUseCase _fetchAllChatUseCase;
 
   ChattingRoomListController({
     required FetchChattingRoomsUseCase fetchChattingRoomsUseCase,
     required AcceptChattingRequestUseCase acceptChattingRequestUseCase,
     required OpenChatConnectionUseCase openChatConnectionUseCase,
-    required SendChatUseCase sendChatUseCase,
+    required FetchAllChatUseCase fetchAllChatUseCase,
   })  : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
         _acceptChattingRequestUseCase = acceptChattingRequestUseCase,
-        _sendChatUseCase = sendChatUseCase,
+        _fetchAllChatUseCase = fetchAllChatUseCase,
         _openChatConnectionUseCase = openChatConnectionUseCase;
 }
