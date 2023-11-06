@@ -60,14 +60,12 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
                 "user_id": user_id,
                 "chatting_id": chatting_id,
                 "intimacy": DEFAULT_INTIMACY,
-                "is_default": True,
                 "timestamp": timestamp,
             },
             {
                 "user_id": chatting.initiator_id,
                 "chatting_id": chatting_id,
                 "intimacy": DEFAULT_INTIMACY,
-                "is_default": True,
                 "timestamp": timestamp,
             },
         ])
@@ -112,9 +110,11 @@ def get_all_texts(
 
 def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     # TODO 이거 topic 추천할 때 intimacy를 새로 만들면 안되요. 그니깐 db에서 쿼리해오는 get_intimacy를 써주세요 (새로 구현한 거))
-    # 지금 쓴 함수는 사실 create_intimacy니깐요
-    intimacy = get_intimacy(user_id, chatting_id, db)
-    tag = get_tag(intimacy)
+
+    intimacy_list = get_intimacy(user_id, chatting_id, db)
+    if(intimacy_list is None):
+        return get_topic("C", db)
+    tag = get_tag(intimacy_list[-1].intimacy)
     return get_topic(tag, db)
 
 
@@ -134,7 +134,7 @@ def get_topic(tag: str, db: DbSession) -> str:
 
 
 # TODO 함수 이름 create_intimacy로 바꿔주세요
-def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
+def create_intimacy(user_id: int, chatting_id: int, db: DbSession) :
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
@@ -154,24 +154,20 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     turn_delta = 0
 
     # Get Intimacy info
-    user_intimacy_info = (
-        db.query(Intimacy)
-        .filter_by(user_id=user_id, chatting_id=chatting_id)
-        .order_by(Intimacy.timestamp.desc())
-        .first()
-    )
+    intimacy_list = get_intimacy(user_id, chatting_id, None, None, db)
 
-    if user_intimacy_info is None:
+    if intimacy_list is None:
         print("user_intimacy_info is None")
         return 0
+    
 
     # if intimacy value is initial value
-    is_default = user_intimacy_info.is_default
-    timestamp = user_intimacy_info.timestamp
-    user_intimacy_info.timestamp = datetime.now()
 
-    if is_default:
-        user_intimacy_info.is_default = False
+    timestamp = intimacy_list[-1].timestamp
+    intimacy_list[-1].timestamp = datetime.now()
+
+    # we cannot calculate delta value with only one intimacy 
+    if len(intimacy_list) == 1:
 
         ## TODO get timestamp from db, update intimacy
 
@@ -193,18 +189,42 @@ def get_intimacy(user_id: int, chatting_id: int, db: DbSession) -> float:
     # Update
     # TODO update가 아니라 insert를 해야 합니다 그리고 지금도 실제로 db에 업데이트를 하지는 않는군요
 
-    intimacy += user_intimacy_info.intimacy
+    intimacy += intimacy_list[-1].intimacy
     if intimacy > 100:
         intimacy = 100
     elif intimacy < 0:
         intimacy = 0
-    user_intimacy_info.intimacy = intimacy
-    return intimacy
+    
+    new_intimacy = db.execute(insert(Intimacy).values(
+            {
+            "user_id": user_id,
+            "chatting_id": chatting_id,
+            "intimacy": intimacy,
+            "timestamp": datetime.now(),
+            }
+        )
+    )
+    return new_intimacy
 
 
 # TODO DB에서 intimacy 불러오는 get_intimacy 서비스 만들어주세요
 # 여러 곳에서 쓰일 수 있으니 최대한 generic하게 잘 만들어주세요
+def get_intimacy(user_id: int, chatting_id: int | None, limit: int | None, timestamp: datetime | None, db: DbSession) -> List[Intimacy]:
+    query = (
+        db.query(Intimacy)
+        .join(Intimacy.chatting)
+        .where(Intimacy.user_id == user_id)
+        .order_by(desc(Intimacy.id))
+    )
+    if chatting_id is not None:
+        query = query.where(Chatting.id == chatting_id)
+    if limit is not None:
+        query = query.limit(limit=limit)
+    if timestamp is not None:
+        #timestamp보다 과거의 것을 불러오는 것
+        query = query.where(Intimacy.timestamp <= timestamp)
 
+    return query.all()
 
 def flatten_texts(texts: List[Text]) -> str:
     return ".".join(text.msg for text in texts)
