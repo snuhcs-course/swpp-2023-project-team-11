@@ -231,18 +231,16 @@ def flatten_texts(texts: List[Text]) -> str:
 
 
 def translate_text(text: str) -> str:
-    # Request
-    data = ("source=auto&target=ko&text=" + urllib.parse.quote(text)).encode('utf-8')
-    request = urllib.request.Request(PAPAGO_API_URL)
-    request.add_header("X-NCP-APIGW-API-KEY-ID", PAPAGO_CLIENT_ID)
-    request.add_header("X-NCP-APIGW-API-KEY", PAPAGO_CLIENT_SECRET)
-    response = urllib.request.urlopen(request, data=data)
-    if response.getcode() != 200:
+    headers = {
+        "X-NCP-APIGW-API-KEY-ID": PAPAGO_CLIENT_ID,
+        "X-NCP-APIGW-API-KEY": PAPAGO_CLIENT_SECRET
+    }
+    data = {"source": "auto", "target": "ko", "text": text}
+    response = requests.post(PAPAGO_API_URL, data=data, headers=headers)
+    if response.status_code != 200:
         raise ExternalApiError("translation")
-
-    # Parse Response
-    decoded_response = response.read().decode('utf-8')
-    return json.loads(decoded_response)['message']['result']['translatedText']
+    parsed_response = response.json()
+    return parsed_response['message']['result']['translatedText']
 
 
 def get_sentiment(text: str) -> int:
