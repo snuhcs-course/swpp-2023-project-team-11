@@ -1,9 +1,11 @@
 from datetime import timedelta
 import random
 import unittest
+from unittest.mock import patch, Mock
 
 from sqlalchemy import insert, delete, select
 
+import src.chatting.service
 from src.database import Base, DbConnector
 from src.chatting.dependencies import *
 from src.chatting.models import *
@@ -186,14 +188,63 @@ class TestService(unittest.TestCase):
             self.assertEqual(get_topic('B', db), "I'm so mad")
             self.assertEqual(get_topic('A', db), "I'm so good")
 
+    # TODO 실제로 clova, papago API 호출하는 unit test 각각 하나씩 만들어주세요.
+    def test_clova_api(self):
+        with self.assertRaises(ExternalApiError):
+            call_clova_api("")
+        response = call_clova_api("I am Happy!")
+        self.assertEqual(response.status_code, 200)
+        print(response.json())
+
+    def test_papago_api(self):
+        with self.assertRaises(ExternalApiError):
+            call_papago_api("")
+        response = call_papago_api("I am Happy!")
+        self.assertEqual(response.status_code, 200)
+        print(response.json())
+
     # TODO Clova & Papago API 호출하는 함수 (translate_text, get_sentiment) 모킹해서 실제로 두 API 호출하지 않도록 해주세요
-    @unittest.skip("Clova & Papago API Required")
-    def test_get_intimacy(self):
+    @patch("src.chatting.service.requests.post")
+    def test_get_sentiment(self, mock_clova):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        data = {
+            'document': {'sentiment': 'positive',
+                         'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}},
+            'sentences': [{'content': 'I am Happy!', 'offset': 0, 'length': 11, 'sentiment': 'positive',
+                           'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568},
+                           'highlights': [{'offset': 0, 'length': 10}]}]
+        }
+        mock_response.text = json.dumps(data)
+        mock_clova.return_value = mock_response
+
+        response = get_sentiment("")
+        self.assertEqual(response, 9.9933326082)
+
+    @patch("src.chatting.service.requests.post")
+    def test_translate_text(self, mock_papago):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        data = {
+            'message': {'result':
+                            {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': '나는 행복해!'}
+                        }
+        }
+
+        mock_response.json.return_value = data
+        mock_papago.return_value = mock_response
+
+        response = translate_text("I'm so sad..")
+        self.assertEqual(response, "나는 행복해!")
+
+    @patch("src.chatting.service.requests.post")
+    def test_get_intimacy(self, mock_apis):
         # Test case 1: Get intimacy for a chatting
         # user_id = 1
         # chatting_id = 1
         # expected_result = 50.0
         timestamp = datetime.now()
+
         for db in DbConnector.get_db():
             chatting = create_chatting(self.initiator_id, self.responder_id, db)
 
@@ -238,14 +289,17 @@ class TestService(unittest.TestCase):
                 )
             )
             chatting = approve_chatting(self.responder_id, chatting.id, db)
-
+            create_intimacy(self.initiator_id, chatting.id, db)
             db.commit()
 
-            self.assertEqual(
-                get_intimacy(self.initiator_id, chatting.id, db), 40.999562680485
-            )
+            print(get_sentiment("asdf"))
+            print(translate_text(""))
+            print("asdfasdf")
+            intimacy = get_intimacy(user_id=self.initiator_id, chatting_id=chatting.id, limit=None, timestamp=None, db = db)[0].intimacy
 
-    # TODO 실제로 clova, papago API 호출하는 unit test 각각 하나씩 만들어주세요.
+            self.assertEqual(
+                intimacy, 40.999562680485
+            )
 
     def test_flatten_texts(self):
         texts = [
@@ -260,10 +314,10 @@ class TestService(unittest.TestCase):
     def test_get_frequency(self):
         timestamp = datetime.now()
         texts = [
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=1)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=2)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=3)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp-timedelta(seconds=8)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=1)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=2)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=3)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=8)),
         ]
         result = get_frequency(texts)
         self.assertGreaterEqual(result, 39.9)
@@ -275,25 +329,25 @@ class TestService(unittest.TestCase):
         self.assertIsNone(get_frequency_delta([], []))
 
     def test_score_frequency(self):
-        text = Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=datetime.now()-timedelta(seconds=1))
+        text = Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=datetime.now() - timedelta(seconds=1))
         self.assertEqual(score_frequency([text]), 10)
 
-        text.timestamp = datetime.now()-timedelta(seconds=31)
+        text.timestamp = datetime.now() - timedelta(seconds=31)
         self.assertEqual(score_frequency([text]), 5)
 
-        text.timestamp = datetime.now()-timedelta(seconds=61)
+        text.timestamp = datetime.now() - timedelta(seconds=61)
         self.assertEqual(score_frequency([text]), 3)
 
-        text.timestamp = datetime.now()-timedelta(seconds=91)
+        text.timestamp = datetime.now() - timedelta(seconds=91)
         self.assertEqual(score_frequency([text]), 0)
 
-        text.timestamp = datetime.now()-timedelta(seconds=121)
+        text.timestamp = datetime.now() - timedelta(seconds=121)
         self.assertEqual(score_frequency([text]), -2)
 
-        text.timestamp = datetime.now()-timedelta(seconds=151)
+        text.timestamp = datetime.now() - timedelta(seconds=151)
         self.assertEqual(score_frequency([text]), -4)
 
-        text.timestamp = datetime.now()-timedelta(seconds=181)
+        text.timestamp = datetime.now() - timedelta(seconds=181)
         self.assertEqual(score_frequency([text]), -5)
 
         self.assertEqual(score_frequency([]), 0)

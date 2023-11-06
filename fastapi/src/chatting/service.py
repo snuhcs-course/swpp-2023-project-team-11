@@ -112,7 +112,7 @@ def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     # TODO 이거 topic 추천할 때 intimacy를 새로 만들면 안되요. 그니깐 db에서 쿼리해오는 get_intimacy를 써주세요 (새로 구현한 거))
 
     intimacy_list = get_intimacy(user_id, chatting_id, db)
-    if(intimacy_list is None):
+    if (intimacy_list is None):
         return get_topic("C", db)
     tag = get_tag(intimacy_list[-1].intimacy)
     return get_topic(tag, db)
@@ -129,12 +129,12 @@ def get_tag(intimacy: float) -> str:
 
 def get_topic(tag: str, db: DbSession) -> Topic:
     topics = db.query(Topic).where(Topic.tag == tag).all()
-    idx = random.randint(0, len(topics)-1)
+    idx = random.randint(0, len(topics) - 1)
     return topics[idx]
 
 
 # TODO 함수 이름 create_intimacy로 바꿔주세요
-def create_intimacy(user_id: int, chatting_id: int, db: DbSession) :
+def create_intimacy(user_id: int, chatting_id: int, db: DbSession):
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
@@ -159,7 +159,6 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) :
     if intimacy_list is None:
         print("user_intimacy_info is None")
         return 0
-    
 
     # if intimacy value is initial value
 
@@ -194,22 +193,23 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) :
         intimacy = 100
     elif intimacy < 0:
         intimacy = 0
-    
+
     new_intimacy = db.execute(insert(Intimacy).values(
-            {
+        {
             "user_id": user_id,
             "chatting_id": chatting_id,
             "intimacy": intimacy,
             "timestamp": datetime.now(),
-            }
-        )
+        }
+    )
     )
     return new_intimacy
 
 
 # TODO DB에서 intimacy 불러오는 get_intimacy 서비스 만들어주세요
 # 여러 곳에서 쓰일 수 있으니 최대한 generic하게 잘 만들어주세요
-def get_intimacy(user_id: int, chatting_id: int | None, limit: int | None, timestamp: datetime | None, db: DbSession) -> List[Intimacy]:
+def get_intimacy(user_id: int, chatting_id: int | None, limit: int | None, timestamp: datetime | None, db: DbSession) -> \
+        List[Intimacy]:
     query = (
         db.query(Intimacy)
         .join(Intimacy.chatting)
@@ -221,16 +221,31 @@ def get_intimacy(user_id: int, chatting_id: int | None, limit: int | None, times
     if limit is not None:
         query = query.limit(limit=limit)
     if timestamp is not None:
-        #timestamp보다 과거의 것을 불러오는 것
+        # timestamp보다 과거의 것을 불러오는 것
         query = query.where(Intimacy.timestamp <= timestamp)
 
     return query.all()
+
 
 def flatten_texts(texts: List[Text]) -> str:
     return ".".join(text.msg for text in texts)
 
 
-def translate_text(text: str) -> str:
+def call_clova_api(text) -> requests.Response:
+    headers = {
+        "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
+        "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
+        "Content-Type": "application/json"
+    }
+    data = json.dumps({"content": text})
+
+    response = requests.post(CLOVA_API_URL, data=data, headers=headers)
+    if response.status_code != 200:
+        raise ExternalApiError("sentimental")
+    return response
+
+
+def call_papago_api(text) -> requests.Response:
     headers = {
         "X-NCP-APIGW-API-KEY-ID": PAPAGO_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": PAPAGO_CLIENT_SECRET
@@ -239,21 +254,17 @@ def translate_text(text: str) -> str:
     response = requests.post(PAPAGO_API_URL, data=data, headers=headers)
     if response.status_code != 200:
         raise ExternalApiError("translation")
+    return response
+
+
+def translate_text(text: str) -> str:
+    response = call_papago_api(text)
     parsed_response = response.json()
     return parsed_response['message']['result']['translatedText']
 
 
 def get_sentiment(text: str) -> int:
-    headers = {
-        "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
-        "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
-        "Content-Type": "application/json"
-    }
-
-    response = requests.post(CLOVA_API_URL, data=json.dumps({"content": text}), headers=headers)
-    if response.status_code != 200:
-        raise ExternalApiError("sentimental")
-
+    response = call_clova_api(text)
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
     negative = parsed_data["document"]["confidence"]["negative"]
