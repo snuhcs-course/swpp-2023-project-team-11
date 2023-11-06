@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
+import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
@@ -13,7 +14,7 @@ class ChattingRoomsScreenController extends GetxController{
 
 
   final ChattingRoomListController chattingRoomController = Get.find<ChattingRoomListController>();
-
+  final UserController userController = Get.find<UserController>();
 
 
   void onNewChatRequestTap() {

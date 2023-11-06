@@ -1,10 +1,11 @@
-import 'dart:math';
+
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
@@ -18,9 +19,10 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: FriendDetailAppBar(
-        profileImage: AssetImage(
-          'assets/images/snek_profile_img_${Random().nextInt(5) + 1}.webp',
-        ),
+        profileImage: ProfilePic().call(controller.user.email),
+        // AssetImage(
+        //   'assets/images/snek_profile_img_${Random().nextInt(5) + 1}.webp',
+        // ),
         userName: "${controller.user.name}",
         userEmail: "${controller.user.email}",
       ),
@@ -275,7 +277,7 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
   Wrap _buildLanguageList() {
     return Wrap(
       children: [
-        for (Language language in controller.user.getLanguages)
+        for (Language language in controller.user.getLanguages) if(language != controller.user.getMainLanguage)
           Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),

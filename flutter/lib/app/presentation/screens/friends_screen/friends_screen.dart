@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -69,8 +70,9 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
                   size: const Size.fromRadius(72),
-                  child: Image.asset(
-                      'assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
+                  child: Image(image: ProfilePic().call(user.email))
+                  // ProfilePic().call(user.email)
+                  // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
                 ),
               ),
               Positioned(

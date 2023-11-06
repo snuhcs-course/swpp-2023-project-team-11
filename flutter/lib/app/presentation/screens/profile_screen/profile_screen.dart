@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
@@ -15,24 +16,32 @@ class ProfileScreen extends GetView<ProfileScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const NotiAppBar(
-        title: Text(
-          "프로필",
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Color(0xff2d3a45)),
-        ),
+      appBar:
+      FriendDetailAppBar(
+        profileImage: ProfilePic().call(controller.userController.userEmail),
+        userName: "${controller.userController.userName}",
+        userEmail: "${controller.userController.userEmail}",
+        isMyProfile: true,
       ),
+
+      // NotiAppBar(
+      //   title: Text(
+      //     "내 프로필",
+      //     style: TextStyle(
+      //         fontSize: 20,
+      //         fontWeight: FontWeight.w700,
+      //         color: Color(0xff2d3a45)),
+      //   ),
+      // ),
       body: Padding(
         padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSimpleProfile(),
-              const SizedBox(height: 20),
-              MainButton(mainButtonType: MainButtonType.key, text: "로그아웃", onPressed: controller.onLogOutButtonTap),
+              // _buildSimpleProfile(),
+              // const SizedBox(height: 20),
+              _buildAboutMeContainer(),
               const SizedBox(height: 24),
 
               if (controller.userController.userProfile.nationCode != 82)
@@ -57,7 +66,9 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     color: MyColor.textBaseColor.withOpacity(0.8)),
               ),
               SizedBox(height: 8),
-              _buildLikeContainer()
+              _buildLikeContainer(),
+              SizedBox(height: 24),
+              MainButton(mainButtonType: MainButtonType.key, text: "로그아웃", onPressed: controller.onLogOutButtonTap),
 
             ],
           ),
@@ -315,7 +326,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
   Wrap _buildLanguageList() {
     return Wrap(
       children: [
-        for (Language language in controller.userController.userLanguages)
+        for (Language language in controller.userController.userLanguages) if(language != controller.userController.userMainLanguage)
           Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'dart:math' as math;
 
@@ -72,13 +73,9 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.withOpacity(0.4),
-                border: Border.all(width: 1.5, color: const Color(0xff9f75d1))),
-            width: 54,
-            height: 54,
+          CircleAvatar(
+              radius: 30,
+              backgroundImage: ProfilePic().call(chatroom.initiator.email)
           ),
           const SizedBox(width: 16),
           Expanded(

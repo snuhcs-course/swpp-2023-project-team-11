@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'dart:math' as math;
 
@@ -117,14 +118,18 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey.withOpacity(0.4),
-                  border: Border.all(width: 1.5, color: const Color(0xffff9162))),
-              width: 54,
-              height: 54,
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: ProfilePic().call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
             ),
+            // Container(
+            //   decoration: BoxDecoration(
+            //       shape: BoxShape.circle,
+            //       color: Colors.grey.withOpacity(0.4),
+            //       border: Border.all(width: 1.5, color: const Color(0xffff9162))),
+            //   width: 54,
+            //   height: 54,
+            // ),
             const SizedBox(width: 16),
             Expanded(
               child: SizedBox(
@@ -133,7 +138,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                   children: [
                     Row(
                       children: [
-                        Text(chatroom.responder.name,
+                        Text((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.name:chatroom.responder.name,
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
