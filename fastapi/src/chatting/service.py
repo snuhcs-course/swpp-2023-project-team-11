@@ -52,23 +52,24 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
     if chatting is None:
         raise InvalidChattingException()
 
-    timestamp = datetime.now(),
+    timestamp = (datetime.now(),)
     db.execute(
-        insert(Intimacy)
-        .values([
-            {
-                "user_id": user_id,
-                "chatting_id": chatting_id,
-                "intimacy": DEFAULT_INTIMACY,
-                "timestamp": timestamp,
-            },
-            {
-                "user_id": chatting.initiator_id,
-                "chatting_id": chatting_id,
-                "intimacy": DEFAULT_INTIMACY,
-                "timestamp": timestamp,
-            },
-        ])
+        insert(Intimacy).values(
+            [
+                {
+                    "user_id": user_id,
+                    "chatting_id": chatting_id,
+                    "intimacy": DEFAULT_INTIMACY,
+                    "timestamp": timestamp,
+                },
+                {
+                    "user_id": chatting.initiator_id,
+                    "chatting_id": chatting_id,
+                    "intimacy": DEFAULT_INTIMACY,
+                    "timestamp": timestamp,
+                },
+            ]
+        )
     )
 
     return chatting
@@ -89,7 +90,12 @@ def terminate_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chattin
 
 
 def get_all_texts(
-        user_id: int, chatting_id: int | None, seq_id: int, limit: int | None, timestamp: datetime | None, db: DbSession
+    user_id: int,
+    chatting_id: int | None,
+    seq_id: int,
+    limit: int | None,
+    timestamp: datetime | None,
+    db: DbSession,
 ) -> List[Text]:
     query = (
         db.query(Text)
@@ -112,7 +118,7 @@ def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
     # TODO 이거 topic 추천할 때 intimacy를 새로 만들면 안되요. 그니깐 db에서 쿼리해오는 get_intimacy를 써주세요 (새로 구현한 거))
 
     intimacy_list = get_intimacy(user_id, chatting_id, db)
-    if (intimacy_list is None):
+    if intimacy_list is None:
         return get_topic("C", db)
     tag = get_tag(intimacy_list[-1].intimacy)
     return get_topic(tag, db)
@@ -165,23 +171,42 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession):
     timestamp = intimacy_list[-1].timestamp
     intimacy_list[-1].timestamp = datetime.now()
 
-    # we cannot calculate delta value with only one intimacy 
+    # we cannot calculate delta value with only one intimacy
     if len(intimacy_list) == 1:
-
         ## TODO get timestamp from db, update intimacy
 
-        parameter_arr = np.array([sentiment, frequency, frequency_delta,
-                                  length, length_delta, turn, turn_delta])
+        parameter_arr = np.array(
+            [
+                sentiment,
+                frequency,
+                frequency_delta,
+                length,
+                length_delta,
+                turn,
+                turn_delta,
+            ]
+        )
         intimacy = default_weight.dot(parameter_arr.transpose())
 
     else:
-        prev_texts: List[Text] = get_all_texts(user_id, chatting_id, -1, 20, timestamp, db)
+        prev_texts: List[Text] = get_all_texts(
+            user_id, chatting_id, -1, 20, timestamp, db
+        )
         frequency_delta = score_frequency_delta(prev_texts, curr_texts)
         length_delta = score_avg_length_delta(prev_texts, curr_texts)
         turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
 
-        parameter_arr = np.array([sentiment, frequency, frequency_delta,
-                                  length, length_delta, turn, turn_delta])
+        parameter_arr = np.array(
+            [
+                sentiment,
+                frequency,
+                frequency_delta,
+                length,
+                length_delta,
+                turn,
+                turn_delta,
+            ]
+        )
 
         intimacy = weight.dot(parameter_arr.transpose())
 
@@ -194,22 +219,31 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession):
     elif intimacy < 0:
         intimacy = 0
 
-    new_intimacy = db.execute(insert(Intimacy).values(
-        {
-            "user_id": user_id,
-            "chatting_id": chatting_id,
-            "intimacy": intimacy,
-            "timestamp": datetime.now(),
-        }
+    new_intimacy = db.scalar(
+        insert(Intimacy)
+        .values(
+            {
+                "user_id": user_id,
+                "chatting_id": chatting_id,
+                "intimacy": intimacy,
+                "timestamp": datetime.now(),
+            }
+        )
+        .returning(Intimacy)
     )
-    )
+
     return new_intimacy
 
 
 # TODO DB에서 intimacy 불러오는 get_intimacy 서비스 만들어주세요
 # 여러 곳에서 쓰일 수 있으니 최대한 generic하게 잘 만들어주세요
-def get_intimacy(user_id: int, chatting_id: int | None, limit: int | None, timestamp: datetime | None, db: DbSession) -> \
-        List[Intimacy]:
+def get_intimacy(
+    user_id: int,
+    chatting_id: int | None,
+    limit: int | None,
+    timestamp: datetime | None,
+    db: DbSession,
+) -> List[Intimacy]:
     query = (
         db.query(Intimacy)
         .join(Intimacy.chatting)
@@ -235,7 +269,7 @@ def call_clova_api(text) -> requests.Response:
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     data = json.dumps({"content": text})
 
@@ -248,7 +282,7 @@ def call_clova_api(text) -> requests.Response:
 def call_papago_api(text) -> requests.Response:
     headers = {
         "X-NCP-APIGW-API-KEY-ID": PAPAGO_CLIENT_ID,
-        "X-NCP-APIGW-API-KEY": PAPAGO_CLIENT_SECRET
+        "X-NCP-APIGW-API-KEY": PAPAGO_CLIENT_SECRET,
     }
     data = {"source": "auto", "target": "ko", "text": text}
     response = requests.post(PAPAGO_API_URL, data=data, headers=headers)
@@ -260,7 +294,7 @@ def call_papago_api(text) -> requests.Response:
 def translate_text(text: str) -> str:
     response = call_papago_api(text)
     parsed_response = response.json()
-    return parsed_response['message']['result']['translatedText']
+    return parsed_response["message"]["result"]["translatedText"]
 
 
 def get_sentiment(text: str) -> int:
@@ -356,7 +390,9 @@ def get_avg_length(texts: List[Text]) -> float | None:
     return avg_len
 
 
-def get_avg_length_delta(prev_texts: List[Text], curr_texts: List[Text]) -> float | None:
+def get_avg_length_delta(
+    prev_texts: List[Text], curr_texts: List[Text]
+) -> float | None:
     return get_delta(get_avg_length(prev_texts), get_avg_length(curr_texts))
 
 
@@ -410,7 +446,7 @@ def get_turn(texts: List[Text], user_id: int) -> float | None:
 
 # 작을수록 개선된 것(0.5에 가까워졌으므로)
 def get_turn_delta(
-        prev_texts: List[Text], curr_texts: List[Text], user_id: int
+    prev_texts: List[Text], curr_texts: List[Text], user_id: int
 ) -> float | None:
     prev_rate = get_turn(prev_texts, user_id)
     curr_rate = get_turn(curr_texts, user_id)
@@ -439,7 +475,7 @@ def score_turn(texts: List[Text], user_id: int) -> int:
 
 
 def score_turn_delta(
-        prev_texts: List[Text], curr_texts: List[Text], user_id: int
+    prev_texts: List[Text], curr_texts: List[Text], user_id: int
 ) -> int:
     rate = get_turn_delta(prev_texts, curr_texts, user_id)
     if rate is None:

@@ -184,9 +184,9 @@ class TestService(unittest.TestCase):
                 )
             )
             db.commit()
-            self.assertIn(get_topic('C', db), ["I'm so sad", "I'm so happy"])
-            self.assertEqual(get_topic('B', db), "I'm so mad")
-            self.assertEqual(get_topic('A', db), "I'm so good")
+            self.assertIn(get_topic('C', db).topic, ["I'm so sad", "I'm so happy"])
+            self.assertEqual(get_topic('B', db).topic, "I'm so mad")
+            self.assertEqual(get_topic('A', db).topic, "I'm so good")
 
     # TODO 실제로 clova, papago API 호출하는 unit test 각각 하나씩 만들어주세요.
     def test_clova_api(self):
@@ -237,14 +237,14 @@ class TestService(unittest.TestCase):
         response = translate_text("I'm so sad..")
         self.assertEqual(response, "나는 행복해!")
 
-    @patch("src.chatting.service.requests.post")
-    def test_get_intimacy(self, mock_apis):
-        # Test case 1: Get intimacy for a chatting
-        # user_id = 1
-        # chatting_id = 1
-        # expected_result = 50.0
-        timestamp = datetime.now()
 
+    
+    
+    @patch("src.chatting.service.requests.post") ## patch for clova
+    def test_create_intimacy(self, mock_post):
+
+        timestamp = datetime.now()
+        
         for db in DbConnector.get_db():
             chatting = create_chatting(self.initiator_id, self.responder_id, db)
 
@@ -288,17 +288,27 @@ class TestService(unittest.TestCase):
                     .returning(Text.id)
                 )
             )
-            chatting = approve_chatting(self.responder_id, chatting.id, db)
-            create_intimacy(self.initiator_id, chatting.id, db)
-            db.commit()
+            
+            
+            papago_mock_response = Mock()
+            clova_mock_response = Mock()
+            papago_mock_response.status_code = 200
+            clova_mock_response.status_code = 200
+            clova_mock_response.text = json.dumps({'document': {'sentiment': 'positive', 'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}}, 'sentences': [{'content': 'translated text', 'offset': 0, 'length': 11, 'sentiment': 'positive', 'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568}, 'highlights': [{'offset': 0, 'length': 10}]}]})
+            papago_mock_response.json.return_value = {'message': {'result': {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': 'translated text'}}}
+            mock_post.side_effect = [papago_mock_response, clova_mock_response]
+            
 
-            print(get_sentiment("asdf"))
-            print(translate_text(""))
-            print("asdfasdf")
-            intimacy = get_intimacy(user_id=self.initiator_id, chatting_id=chatting.id, limit=None, timestamp=None, db = db)[0].intimacy
+            
+
+            chatting = approve_chatting(self.responder_id, chatting.id, db)
+            intimacy = create_intimacy(self.initiator_id, chatting.id, db)
+            db.commit()
+            
+
 
             self.assertEqual(
-                intimacy, 40.999562680485
+                intimacy.intimacy, 41.99933326082
             )
 
     def test_flatten_texts(self):
