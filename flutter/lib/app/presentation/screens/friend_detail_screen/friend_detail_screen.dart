@@ -16,6 +16,7 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: FriendDetailAppBar(
         profileImage: AssetImage(
           'assets/images/snek_profile_img_${Random().nextInt(5) + 1}.webp',

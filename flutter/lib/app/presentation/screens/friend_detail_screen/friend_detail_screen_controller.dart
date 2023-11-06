@@ -9,11 +9,6 @@ class FriendDetailScreenController extends GetxController {
   final RequestChattingUseCase _requestChattingUseCase;
   User user = Get.arguments as User;
 
-  // List<Language> languages = [Language.korean, Language.arabic, Language.chinese, Language.korean, Language.arabic, Language.chinese, Language.korean, Language.arabic, Language.chinese];
-  // List<Hobby> hobbies = [Hobby.cooking, Hobby.cycling, Hobby.dancing, Hobby.movie, Hobby.movie, Hobby.music, Hobby.cooking, Hobby.cycling, Hobby.dancing, Hobby.movie,Hobby.cooking, Hobby.cycling, Hobby.dancing, Hobby.movie];
-  // List<FoodCategory> foods = [FoodCategory.chinese, FoodCategory.korean, FoodCategory.dessert, FoodCategory.american, FoodCategory.indian,FoodCategory.chinese, FoodCategory.korean, FoodCategory.dessert, FoodCategory.american, FoodCategory.indian ];
-  // List<MovieGenre> movies = [MovieGenre.action, MovieGenre.adventure, MovieGenre.animation, MovieGenre.comedy, MovieGenre.drama];
-
   Map <Language, String> languageFlagMap = {
     Language.korean: "Korean 🇰🇷",
     Language.english: "English 🇺🇸",
