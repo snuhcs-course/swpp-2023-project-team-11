@@ -140,7 +140,7 @@ def get_topic(tag: str, db: DbSession) -> Topic:
 
 
 # TODO 함수 이름 create_intimacy로 바꿔주세요
-def create_intimacy(user_id: int, chatting_id: int, db: DbSession):
+def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
@@ -164,7 +164,7 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession):
 
     if intimacy_list is None:
         print("user_intimacy_info is None")
-        return 0
+        return InvalidIntimacyException()
 
     # if intimacy value is initial value
 
