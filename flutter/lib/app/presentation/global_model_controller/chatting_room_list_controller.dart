@@ -19,8 +19,10 @@ class ChattingRoomListController extends GetxController
   List<ChattingRoom> _terminatedRooms = [];
   List<ChattingRoom> _requestedRooms = [];
 
+  int get numRequestedRooms => _requestedRooms.length;
+
   @override
-  void onReady() async {
+  Future<void> onReady() async {
     super.onReady();
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(

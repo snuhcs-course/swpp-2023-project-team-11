@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
-import 'dart:math' as math;
 
 // ignore: unused_import
 import '../../../domain/models/chatting_room.dart';
@@ -106,9 +105,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             ),
           ),
           const SizedBox(width: 12),
-          Transform.rotate(
-            angle: -math.pi / 2,
-            child: PopupMenuButton(
+            PopupMenuButton(
               itemBuilder: (context) {
                 return [
                   const PopupMenuItem<int>(value: 0, child: Text("삭제")),
@@ -124,7 +121,6 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
               },
               color: const Color(0xff2d3a45).withOpacity(0.4),
             ),
-          )
         ],
       ),
     );

@@ -119,7 +119,7 @@ class FriendDetailScreenController extends GetxController {
       ChattingWaitBottomSheet(
         onConfirmButtonTap: () {
           Get.until((route) => route.settings.name == "/main");
-          Get.toNamed(Routes.Maker(nextRoute: Routes.CHAT_REQUESTS));
+          Get.back();
         },
       ),
     );

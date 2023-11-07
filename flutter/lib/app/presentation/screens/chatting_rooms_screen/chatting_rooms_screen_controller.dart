@@ -7,18 +7,27 @@ import 'package:mobile_app/app/presentation/global_model_controller/chatting_roo
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/routes/named_routes.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ChattingRoomsScreenController extends GetxController{
 
-  final Rxn<bool> newChatRequestExists = Rxn(null); // 새로운 채팅 요청 여부에 따라 업데이트 돼어야함
-
+  final newChatRequestExists = false.obs; // 새로운 채팅 요청 여부에 따라 업데이트 돼어야함
+  // bool get newChatRequestExists => (chattingRoomController.state == null)? false : (chattingRoomController.state!.roomForRequested.isNotEmpty);
 
   final ChattingRoomListController chattingRoomController = Get.find<ChattingRoomListController>();
   final UserController userController = Get.find<UserController>();
-
+  RefreshController refreshController = RefreshController(initialRefresh: false);
 
   void onNewChatRequestTap() {
     Get.toNamed(Routes.Maker(nextRoute: Routes.CHAT_REQUESTS));
+  }
+
+  void onRefresh() async{
+    await chattingRoomController.onReady();
+    newChatRequestExists.value = (chattingRoomController.numRequestedRooms != 0);
+
+    // if failed, use refreshFailed()
+    refreshController.refreshCompleted();
   }
 
   void onChattingRoomTap(ChattingRoom chattingRoom) {
@@ -40,7 +49,13 @@ class ChattingRoomsScreenController extends GetxController{
   @override
   Future<void> onInit() async {
     super.onInit();
-    newChatRequestExists.value = true;
+
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    newChatRequestExists.value = (chattingRoomController.numRequestedRooms != 0);
   }
 
 

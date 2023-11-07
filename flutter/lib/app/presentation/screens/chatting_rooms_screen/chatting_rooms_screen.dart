@@ -5,7 +5,7 @@ import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
-import 'dart:math' as math;
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: unused_import
 import 'chatting_rooms_screen_controller.dart';
@@ -31,7 +31,12 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           if (state!.roomForMain.isEmpty) {
             return _buildEmptyChatRoomResponse();
           } else {
-            return _buildChatroomList(state.roomForMain);
+            return SmartRefresher(
+              enablePullDown: true,
+                header: const WaterDropHeader(),
+                controller: controller.refreshController,
+                onRefresh: controller.onRefresh,
+                child: _buildChatroomList(state.roomForMain));
           }
         },
         onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
@@ -53,7 +58,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           ),
         ),
       ),
-      if (controller.newChatRequestExists.value == true)
+      if (controller.newChatRequestExists.value != null && controller.newChatRequestExists.value!)
         const Positioned(
           // draw a red marble
           top: 4,
@@ -122,14 +127,6 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
               radius: 24,
               backgroundImage: ProfilePic().call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
             ),
-            // Container(
-            //   decoration: BoxDecoration(
-            //       shape: BoxShape.circle,
-            //       color: Colors.grey.withOpacity(0.4),
-            //       border: Border.all(width: 1.5, color: const Color(0xffff9162))),
-            //   width: 54,
-            //   height: 54,
-            // ),
             const SizedBox(width: 16),
             Expanded(
               child: SizedBox(

@@ -39,7 +39,7 @@ class ChattingWaitBottomSheet extends StatelessWidget {
           const SizedBox(height: 32),
           MainButton(
             mainButtonType: MainButtonType.key,
-            text: '확인하러 가기',
+            text: '다른 친구들 더 확인하기',
             onPressed: onConfirmButtonTap,
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom/2),
