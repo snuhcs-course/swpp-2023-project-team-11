@@ -36,7 +36,7 @@ class EntryScreen extends GetView<EntryScreenController> {
           ),
           const SizedBox(height: 8),
           const Text(
-            "일이삼사오육칠팔구십이삼사",
+            "간식보다 재밌는 언어교환",
             style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(

@@ -41,13 +41,13 @@ class UserRepositoryImpl implements UserRepository {
     final Dio dio = DioInstance.getDio;
 
     const path = "/user/all";
-    print(baseUrl + path);
+    // print(baseUrl + path);
     try{
       final response = await dio.get(
           baseUrl + path
       );
       final data = response.data as List;
-      print("fetch$data");
+      // print("fetch$data");
       if (data == null) throw Exception();
 
       List<User> users = [];

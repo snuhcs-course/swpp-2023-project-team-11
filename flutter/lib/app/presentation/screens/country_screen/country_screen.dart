@@ -71,12 +71,11 @@ class CountryScreen extends GetView<CountryScreenController> {
         ),
         const SizedBox(height: 12),
         _buildCountryList(),
-        const SizedBox(height: 12,),
-        Center(child: SmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in the list above")),
-        const SizedBox(height: 16,),
+        const SizedBox(height: 12),
         if (controller.countryNotHere.value) MainTextFormField(
             textEditingController: controller.temporaryTextEditingController,
             hintText: "Your country code")
+        else SizedBox(height: 40)
       ],
     );
   }
@@ -156,7 +155,8 @@ class CountryScreen extends GetView<CountryScreenController> {
                       ),
                     ),
                   ),
-                )
+                ),
+                Center(child: ExtraSmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in this list")),
               ],
             ),
           ],
