@@ -95,5 +95,32 @@ class ChattingRepositoryImpl implements ChattingRepository {
       return Result.fail(DefaultIssue.badRequest);
     }
   }
+  // update: for accepting the chat requests
+
+  @override
+  Future<Result<ChattingRoom, DefaultIssue>> deleteChattingRoom({required int chattingRoomId}) async {
+    Dio dio = DioInstance.getDio;
+    const path = "/chatting/";
+    try{
+      final response = await dio.delete(baseUrl + path, queryParameters: {
+        "chatting_id" : chattingRoomId,
+      });
+      final data = response.data;
+      if (data== null) throw Exception("데이터가 Null");
+      final chattingRoom = ChattingRoom.fromJson(data);
+      return Result.success(chattingRoom);
+    } on DioException catch (e) {
+      print("에러 발생");
+      print(e.response?.statusCode);
+      print(e.response?.data);
+      return Result.fail(DefaultIssue.badRequest);
+    } catch (e, s) {
+      print(e);
+      print(s);
+      return Result.fail(DefaultIssue.badRequest);
+    }
+  }
+
+
 
 }

@@ -26,7 +26,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           return _buildNewRequestButton();
         }),
       ),
-      body: controller.chattingRoomController.obx(
+      body: controller.chattingRoomListController.obx(
         (state) {
           if (state!.roomForMain.isEmpty) {
             return _buildEmptyChatRoomResponse();

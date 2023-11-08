@@ -18,4 +18,6 @@ abstract class ChattingRepository {
   Future<Result<ChattingRoom, DefaultIssue>> createChattingRoom({required String counterPartEmail});
 
   Future<Result<ChattingRoom, DefaultIssue>> updateChattingRoom({required int chattingRoomId});
+
+  Future<Result<ChattingRoom, DefaultIssue>> deleteChattingRoom({required int chattingRoomId});
 }

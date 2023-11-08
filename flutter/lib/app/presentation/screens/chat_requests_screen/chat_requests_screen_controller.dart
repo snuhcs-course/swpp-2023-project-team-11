@@ -15,11 +15,11 @@ import 'package:mobile_app/core/utils/loading_util.dart';
 import '../../../domain/models/chatting_room.dart';
 
 class ChatRequestsScreenController extends GetxController{
-  final ChattingRoomListController chattingRoomController = Get.find<ChattingRoomListController>();
+  final ChattingRoomListController chattingRoomListController = Get.find<ChattingRoomListController>();
   final requestable = true.obs;
 
   Future <void> onAcceptButtonTap(ChattingRoom chattingRoom) async {
-    await chattingRoomController.acceptChattingRequest(chattingRoom);
+    await chattingRoomListController.acceptChattingRequest(chattingRoom);
   }
 
   void onProfileTap(User you, ChattingRoom chattingRoom){

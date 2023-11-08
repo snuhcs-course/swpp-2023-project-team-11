@@ -22,7 +22,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
       ),
-      body: controller.chattingRoomController.obx(
+      body: controller.chattingRoomListController.obx(
         (state) {
           if (state!.roomForRequested.isEmpty) {
             return _buildEmptyChattingRoomResponse();
