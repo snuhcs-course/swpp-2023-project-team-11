@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_detail_column.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 class UserInfoDetailBottomSheet extends StatelessWidget {
   final VoidCallback onAcceptButtonTap;
@@ -23,8 +24,14 @@ class UserInfoDetailBottomSheet extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(user.name, style: TextStyle(fontSize: 18, color: MyColor.purple, fontWeight: FontWeight.bold),),
+            SizedBox(height: 8),
+            Text(user.email, style: TextStyle(fontSize: 13, color: MyColor.purple, ),),
+            SizedBox(height: 20),
             ProfileDetailColumn(user: user),
+            SizedBox(height: 24),
             MainButton(
               mainButtonType: MainButtonType.key,
               text: '채팅 요청 수락하기',

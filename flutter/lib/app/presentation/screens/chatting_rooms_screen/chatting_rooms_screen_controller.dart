@@ -100,7 +100,7 @@ class ChattingRoomsScreenController extends GetxController{
   @override
   void onReady() {
     super.onReady();
-    newChatRequestExists.value = (chattingRoomListController.numRequestedRooms != 0);
+    onRefresh(); // call refresh once at the beginning to update..
   }
 
 
