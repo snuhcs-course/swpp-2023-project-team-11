@@ -6,7 +6,6 @@ import numpy as np
 import requests
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
-import urllib.request, urllib.parse
 
 from src.chatting.constants import *
 from src.chatting.exceptions import *
@@ -50,9 +49,9 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
         .returning(Chatting)
     )
     if chatting is None:
-        raise InvalidChattingException()
+        raise ChattingNotExistException()
 
-    timestamp = (datetime.now(),)
+    timestamp = datetime.now()
     db.execute(
         insert(Intimacy).values(
             [
@@ -84,7 +83,7 @@ def terminate_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chattin
         .returning(Chatting)
     )
     if chatting is None:
-        raise InvalidChattingException()
+        raise ChattingNotExistException()
 
     return chatting
 
@@ -115,10 +114,8 @@ def get_all_texts(
 
 
 def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
-    # TODO 이거 topic 추천할 때 intimacy를 새로 만들면 안되요. 그니깐 db에서 쿼리해오는 get_intimacy를 써주세요 (새로 구현한 거))
-
     intimacy_list = get_intimacy(user_id, chatting_id, db)
-    if intimacy_list is None:
+    if len(intimacy_list) == 0:
         return get_topic("C", db)
     tag = get_tag(intimacy_list[-1].intimacy)
     return get_topic(tag, db)
@@ -139,7 +136,6 @@ def get_topic(tag: str, db: DbSession) -> Topic:
     return topics[idx]
 
 
-# TODO 함수 이름 create_intimacy로 바꿔주세요
 def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
@@ -161,20 +157,15 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
 
     # Get Intimacy info
     intimacy_list = get_intimacy(user_id, chatting_id, None, None, db)
+    if len(intimacy_list) == 0:
+        return IntimacyNotExistException()
 
-    if intimacy_list is None:
-        print("user_intimacy_info is None")
-        return InvalidIntimacyException()
-
-    # if intimacy value is initial value
-
+    # Record the last timestamp and update to now
     timestamp = intimacy_list[-1].timestamp
     intimacy_list[-1].timestamp = datetime.now()
 
-    # we cannot calculate delta value with only one intimacy
     if len(intimacy_list) == 1:
-        ## TODO get timestamp from db, update intimacy
-
+        # we cannot calculate delta value with only one intimacy
         parameter_arr = np.array(
             [
                 sentiment,
@@ -207,12 +198,9 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
                 turn_delta,
             ]
         )
-
         intimacy = weight.dot(parameter_arr.transpose())
 
     # Update
-    # TODO update가 아니라 insert를 해야 합니다 그리고 지금도 실제로 db에 업데이트를 하지는 않는군요
-
     intimacy += intimacy_list[-1].intimacy
     if intimacy > 100:
         intimacy = 100
@@ -235,8 +223,6 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     return new_intimacy
 
 
-# TODO DB에서 intimacy 불러오는 get_intimacy 서비스 만들어주세요
-# 여러 곳에서 쓰일 수 있으니 최대한 generic하게 잘 만들어주세요
 def get_intimacy(
     user_id: int,
     chatting_id: int | None,

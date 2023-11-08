@@ -41,7 +41,6 @@ class Intimacy(Base):
     user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
     chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
     intimacy: Mapped[float] = Column(Float, nullable=False)
-    # TODO alembic migration 추가
     timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
     chatting: Mapped[Chatting] = relationship()
     user: Mapped[User] = relationship()

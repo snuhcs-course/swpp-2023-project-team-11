@@ -79,9 +79,9 @@ class TestService(unittest.TestCase):
             self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 1)
             self.assertEqual(len(get_all_chattings(self.responder_id, False, db)), 1)
 
-            with self.assertRaises(InvalidChattingException):
+            with self.assertRaises(ChattingNotExistException):
                 approve_chatting(self.initiator_id, chatting_id, db)
-            with self.assertRaises(InvalidChattingException):
+            with self.assertRaises(ChattingNotExistException):
                 approve_chatting(self.responder_id, -1, db)
             chatting = approve_chatting(self.responder_id, chatting_id, db)
             db.commit()
@@ -92,9 +92,9 @@ class TestService(unittest.TestCase):
 
             # TODO intimacy insert 됐는지 확인하는 test 추가해주세요
 
-            with self.assertRaises(InvalidChattingException):
+            with self.assertRaises(ChattingNotExistException):
                 terminate_chatting(-1, chatting_id, db)
-            with self.assertRaises(InvalidChattingException):
+            with self.assertRaises(ChattingNotExistException):
                 terminate_chatting(self.initiator_id, -1, db)
             chatting = terminate_chatting(self.initiator_id, chatting_id, db)
             self.assertEqual(chatting.is_terminated, True)
