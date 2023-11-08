@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Integer, String, Column, ForeignKey, Table, DateTime
+from sqlalchemy import Boolean, Integer, String, Column, ForeignKey, Table, DateTime, Float
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -32,3 +32,23 @@ class Text(Base):
 
     chatting: Mapped[Chatting] = relationship()
     sender: Mapped[User] = relationship()
+
+
+class Intimacy(Base):
+    __tablename__ = "user_intimacy"
+
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
+    chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
+    intimacy: Mapped[float] = Column(Float, nullable=False)
+    timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
+    chatting: Mapped[Chatting] = relationship()
+    user: Mapped[User] = relationship()
+
+
+class Topic(Base):
+    __tablename__ = "topic"
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    topic: Mapped[str] = Column(String, nullable=False)
+    tag: Mapped[str] = Column(String, nullable=False)
+    #tag A = 제일 친함 / B = 친함 / C = 보통

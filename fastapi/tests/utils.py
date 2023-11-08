@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy import insert, delete, select
 from sqlalchemy.orm import Session as DbSession
 
+from src.database import DbConnector
 from src.user.models import *
 
 
@@ -12,7 +13,8 @@ def setup_user(db: DbSession, email: str) -> int:
     hash = "TgnJJnmbbfKJLmZiArqCc61kGYrZlvlfsatsFfKlQK4="
     name = "SNEK"
 
-    email_id = db.scalar(insert(Email).values({"email": email}).returning(Email.id))
+    email_id = db.scalar(insert(Email).values(
+        {"email": email}).returning(Email.id))
     verification_id = db.scalar(
         insert(EmailVerification).values({
             "token": token,
@@ -22,7 +24,8 @@ def setup_user(db: DbSession, email: str) -> int:
     )
     lang_id = db.scalar(select(Language.id).where(Language.name == "Korean"))
     if lang_id is None:
-        lang_id = db.scalar(insert(Language).values({"name": "Korean"}).returning(Language.id))
+        lang_id = db.scalar(insert(Language).values(
+            {"name": "Korean"}).returning(Language.id))
     profile_id = db.scalar(
         insert(Profile).values({
             "name": name,
@@ -51,3 +54,10 @@ def teardown_user(db: DbSession):
     db.execute(delete(Language))
     db.execute(delete(Email))
 
+
+def inject_db(func):
+    def wrapper(*args, **kwargs):
+        for db in DbConnector.get_db():
+            return func(*args, **kwargs, db=db)
+
+    return wrapper
