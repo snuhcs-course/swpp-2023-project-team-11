@@ -159,12 +159,14 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     recent_intimacy = intimacies[0]
 
     if len(intimacies) > 1:
-        prev_texts: get_all_texts(user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
+        prev_texts: get_all_texts(
+            user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
     else:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
         prev_texts = None
 
-    new_intimacy_value = calculate_intimacy(curr_texts, prev_texts, recent_intimacy, user_id)
+    new_intimacy_value = calculate_intimacy(
+        curr_texts, prev_texts, recent_intimacy, user_id)
     new_intimacy = db.scalar(
         insert(Intimacy)
         .values(
@@ -209,7 +211,6 @@ def calculate_intimacy(
     else:
         weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
-    # TODO skip when curr_texts is empty
     curr_flatten: str = flatten_texts(curr_texts)
     curr_translated: str = translate_text(curr_flatten)
     sentiment = get_sentiment(curr_translated)
@@ -222,8 +223,10 @@ def calculate_intimacy(
     length_delta = score_avg_length_delta(prev_texts, curr_texts)
     turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
 
-    parameters = np.array([sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta])
-    new_intimacy_value: int = recent_intimacy.intimacy + weight.dot(parameters.transpose())
+    parameters = np.array(
+        [sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta])
+    new_intimacy_value: int = recent_intimacy.intimacy + \
+        weight.dot(parameters.transpose())
     return max(0, min(100, new_intimacy_value))
 
 
@@ -258,12 +261,19 @@ def call_papago_api(text) -> requests.Response:
 
 
 def translate_text(text: str) -> str:
+    if text == '':
+        # No need to translate
+        return text
+
     response = call_papago_api(text)
     parsed_response = response.json()
     return parsed_response["message"]["result"]["translatedText"]
 
 
 def get_sentiment(text: str) -> int:
+    if text == '':
+        return 0
+
     response = call_clova_api(text)
     parsed_data = json.loads(response.text)
     positive = parsed_data["document"]["confidence"]["positive"]
