@@ -88,7 +88,10 @@ class TestService(unittest.TestCase):
             self.assertEqual(len(get_all_chattings(self.initiator_id, True, db)), 1)
             self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 0)
 
-            # TODO intimacy insert 됐는지 확인하는 test 추가해주세요
+            intimacy = get_all_intimacies(self.initiator_id, None, None, None, db)
+            self.assertEqual(len(intimacy), 1)
+            intimacy = get_all_intimacies(self.responder_id, None, None, None, db)
+            self.assertEqual(len(intimacy), 1)
 
             with self.assertRaises(ChattingNotExistException):
                 terminate_chatting(-1, chatting_id, db)
@@ -186,58 +189,6 @@ class TestService(unittest.TestCase):
             self.assertEqual(get_topic('B', db).topic, "I'm so mad")
             self.assertEqual(get_topic('A', db).topic, "I'm so good")
 
-    # TODO 실제로 clova, papago API 호출하는 unit test 각각 하나씩 만들어주세요.
-    def test_clova_api(self):
-        with self.assertRaises(ExternalApiError):
-            call_clova_api("")
-        response = call_clova_api("I am Happy!")
-        self.assertEqual(response.status_code, 200)
-        print(response.json())
-
-    def test_papago_api(self):
-        with self.assertRaises(ExternalApiError):
-            call_papago_api("")
-        response = call_papago_api("I am Happy!")
-        self.assertEqual(response.status_code, 200)
-        print(response.json())
-
-    # TODO Clova & Papago API 호출하는 함수 (translate_text, get_sentiment) 모킹해서 실제로 두 API 호출하지 않도록 해주세요
-    @patch("src.chatting.service.requests.post")
-    def test_get_sentiment(self, mock_clova):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        data = {
-            'document': {'sentiment': 'positive',
-                         'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}},
-            'sentences': [{'content': 'I am Happy!', 'offset': 0, 'length': 11, 'sentiment': 'positive',
-                           'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568},
-                           'highlights': [{'offset': 0, 'length': 10}]}]
-        }
-        mock_response.text = json.dumps(data)
-        mock_clova.return_value = mock_response
-
-        response = get_sentiment("")
-        self.assertEqual(response, 9.9933326082)
-
-    @patch("src.chatting.service.requests.post")
-    def test_translate_text(self, mock_papago):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        data = {
-            'message': {'result':
-                            {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': '나는 행복해!'}
-                        }
-        }
-
-        mock_response.json.return_value = data
-        mock_papago.return_value = mock_response
-
-        response = translate_text("I'm so sad..")
-        self.assertEqual(response, "나는 행복해!")
-
-
-    
-    
     @patch("src.chatting.service.requests.post") ## patch for clova
     def test_create_intimacy(self, mock_post):
 
@@ -318,6 +269,53 @@ class TestService(unittest.TestCase):
         expected_result = "Hello"
         result = flatten_texts(texts)
         self.assertEqual(result, expected_result)
+
+    @unittest.skip("This test actually calls external API")
+    def test_call_clova_api(self):
+        with self.assertRaises(ExternalApiError):
+            call_clova_api("")
+        response = call_clova_api("I am Happy!")
+        self.assertEqual(response.status_code, 200)
+
+    @unittest.skip("This test actually calls external API")
+    def test_call_papago_api(self):
+        with self.assertRaises(ExternalApiError):
+            call_papago_api("")
+        response = call_papago_api("I am Happy!")
+        self.assertEqual(response.status_code, 200)
+
+    @patch("src.chatting.service.requests.post")
+    def test_translate_text(self, mock_papago):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        data = {
+            'message': {'result':
+                            {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': '나는 행복해!'}
+                        }
+        }
+
+        mock_response.json.return_value = data
+        mock_papago.return_value = mock_response
+
+        response = translate_text("I'm so sad..")
+        self.assertEqual(response, "나는 행복해!")
+
+    @patch("src.chatting.service.requests.post")
+    def test_get_sentiment(self, mock_clova):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        data = {
+            'document': {'sentiment': 'positive',
+                         'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}},
+            'sentences': [{'content': 'I am Happy!', 'offset': 0, 'length': 11, 'sentiment': 'positive',
+                           'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568},
+                           'highlights': [{'offset': 0, 'length': 10}]}]
+        }
+        mock_response.text = json.dumps(data)
+        mock_clova.return_value = mock_response
+
+        response = get_sentiment("I am Happy!")
+        self.assertEqual(response, 9.9933326082)
 
     def test_get_frequency(self):
         timestamp = datetime.now()
