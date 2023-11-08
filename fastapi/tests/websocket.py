@@ -62,31 +62,31 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             db.commit()
 
     @classmethod
-    def tearDownClass(cls) -> None:
-        for db in DbConnector.get_db():
-            teardown_user(db)
-            db.commit()
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        teardown_user(db)
+        db.commit()
 
-    def setUp(self) -> None:
-        for db in DbConnector.get_db():
-            self.valid_chatting_id = db.scalar(insert(Chatting).values({
-                "initiator_id": self.profile_id,
-                "responder_id": self.profile_id,
-                "is_approved": True,
-                "created_at": datetime.now(),
-            }).returning(Chatting.id))
-            self.pending_chatting_id = db.scalar(insert(Chatting).values({
-                "initiator_id": self.profile_id,
-                "responder_id": self.profile_id,
-                "created_at": datetime.now(),
-            }).returning(Chatting.id))
-            self.terminated_chatting_id = db.scalar(insert(Chatting).values({
-                "initiator_id": self.profile_id,
-                "responder_id": self.profile_id,
-                "is_terminated": True,
-                "created_at": datetime.now(),
-            }).returning(Chatting.id))
-            db.commit()
+    @inject_db
+    def setUp(self, db: DbSession) -> None:
+        self.valid_chatting_id = db.scalar(insert(Chatting).values({
+            "initiator_id": self.profile_id,
+            "responder_id": self.profile_id,
+            "is_approved": True,
+            "created_at": datetime.now(),
+        }).returning(Chatting.id))
+        self.pending_chatting_id = db.scalar(insert(Chatting).values({
+            "initiator_id": self.profile_id,
+            "responder_id": self.profile_id,
+            "created_at": datetime.now(),
+        }).returning(Chatting.id))
+        self.terminated_chatting_id = db.scalar(insert(Chatting).values({
+            "initiator_id": self.profile_id,
+            "responder_id": self.profile_id,
+            "is_terminated": True,
+            "created_at": datetime.now(),
+        }).returning(Chatting.id))
+        db.commit()
 
     async def asyncSetUp(self) -> None:
         self.socket = AsyncMock()

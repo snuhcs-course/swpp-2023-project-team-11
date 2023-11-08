@@ -5,7 +5,7 @@ from src.database import Base, DbConnector
 from src.user.dependencies import *
 from src.user.models import *
 from src.user.service import *
-
+from tests.utils import *
 
 class TestDependencies(unittest.TestCase):
     snu_email = "test@snu.ac.kr"
@@ -88,69 +88,70 @@ class TestService(unittest.TestCase):
             db.commit()
 
     @classmethod
-    def tearDownClass(cls) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(User))
-            db.execute(delete(Profile))
-            db.execute(delete(Email))
-            db.execute(delete(Language))
-            db.execute(delete(Location))
-            db.execute(delete(Movie))
-            db.execute(delete(Hobby))
-            db.execute(delete(Food))
-            db.commit()
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        db.execute(delete(User))
+        db.execute(delete(Profile))
+        db.execute(delete(Email))
+        db.execute(delete(Language))
+        db.execute(delete(Location))
+        db.execute(delete(Movie))
+        db.execute(delete(Hobby))
+        db.execute(delete(Food))
+        db.commit()
 
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(Email).where(Email.email == self.email))
-            db.commit()
+    @inject_db
+    def tearDown(self, db: DbSession) -> None:
+        db.execute(delete(Email).where(Email.email == self.email))
+        db.commit()
 
-    def test_create_verification_code(self):
-        for db in DbConnector.get_db():
-            code = create_verification_code(self.email, db)
-            self.assertEqual(
-                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
-                code
-            )
-            code = create_verification_code(self.email, db)
-            self.assertEqual(
-                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
-                code
-            )
+    @inject_db
+    def test_create_verification_code(self, db: DbSession):
+        code = create_verification_code(self.email, db)
+        self.assertEqual(
+            db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+            code
+        )
+        code = create_verification_code(self.email, db)
+        self.assertEqual(
+            db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
+            code
+        )
 
     @unittest.skip("We do not actually send email")
     def test_send_code_via_email(self):
         send_code_via_email(self.email, self.code)
 
-    def test_check_verification_code(self) -> None:
+    @inject_db
+    def test_check_verification_code(self, db: DbSession) -> None:
         valid_req = VerificationRequest(email=self.email, code=self.code)
         invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
         invalid_code_req = VerificationRequest(email=self.email, code=0)
 
-        for db in DbConnector.get_db():
-            db.add(EmailCode(code=self.code, email=Email(email=self.email)))
-            db.flush()
+        db.add(EmailCode(code=self.code, email=Email(email=self.email)))
+        db.flush()
 
-            check_verification_code(valid_req, db)
-            with self.assertRaises(InvalidEmailCodeException):
-                check_verification_code(invalid_email_req, db)
-            with self.assertRaises(InvalidEmailCodeException):
-                check_verification_code(invalid_code_req, db)
+        check_verification_code(valid_req, db)
+        with self.assertRaises(InvalidEmailCodeException):
+            check_verification_code(invalid_email_req, db)
+        with self.assertRaises(InvalidEmailCodeException):
+            check_verification_code(invalid_code_req, db)
 
-    def test_create_verification(self):
-        for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
+    @inject_db
+    def test_create_verification(self, db: DbSession):
+        email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
 
-            self.assertEqual(
-                create_verification(self.email, email_id, db),
-                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+        self.assertEqual(
+            create_verification(self.email, email_id, db),
+            db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
+        )
+        self.assertEqual(
+            create_verification(self.email, email_id, db),
+            db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
             )
-            self.assertEqual(
-                create_verification(self.email, email_id, db),
-                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
-            )
 
-    def test_check_verification_token(self) -> None:
+    @inject_db
+    def test_check_verification_token(self, db: DbSession) -> None:
         profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
                           nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
         valid_req = CreateUserRequest(email=self.email, token=self.token, password="", profile=profile,
@@ -160,15 +161,14 @@ class TestService(unittest.TestCase):
         invalid_token_req = CreateUserRequest(email=self.email, token="", password="", profile=profile,
                                               main_language="", languages=[])
 
-        for db in DbConnector.get_db():
-            db.add(EmailVerification(token=self.token, email=Email(email=self.email)))
-            db.flush()
+        db.add(EmailVerification(token=self.token, email=Email(email=self.email)))
+        db.flush()
 
-            check_verification_token(valid_req, db)
-            with self.assertRaises(InvalidEmailTokenException):
-                check_verification_token(invalid_email_req, db)
-            with self.assertRaises(InvalidEmailTokenException):
-                check_verification_token(invalid_token_req, db)
+        check_verification_token(valid_req, db)
+        with self.assertRaises(InvalidEmailTokenException):
+            check_verification_token(invalid_email_req, db)
+        with self.assertRaises(InvalidEmailTokenException):
+            check_verification_token(invalid_token_req, db)
 
     def test_create_user(self):
         for db in DbConnector.get_db():
@@ -248,15 +248,15 @@ class TestService(unittest.TestCase):
         self.assertEqual(len(salt), 24)
         self.assertEqual(len(hash), 44)
 
-    def test_get_target_users(self):
-        for db in DbConnector.get_db():
-            kor_user = db.query(User).join(User.profile).where(Profile.name == 'user1').first()
-            for_user = db.query(User).join(User.profile).where(Profile.name == 'user8').first()
+    @inject_db
+    def test_get_target_users(self, db: DbSession):
+        kor_user = db.query(User).join(User.profile).where(Profile.name == 'user1').first()
+        for_user = db.query(User).join(User.profile).where(Profile.name == 'user8').first()
 
-            targets = list(map(lambda user: user.profile.name, get_target_users(kor_user, db)))
-            self.assertEqual(set(targets), set(['user2', 'user4', 'user6']))
-            targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
-            self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
+        targets = list(map(lambda user: user.profile.name, get_target_users(kor_user, db)))
+        self.assertEqual(set(targets), set(['user2', 'user4', 'user6']))
+        targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
+        self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
 
     def test_sort_target_users(self):
         my_profile = Profile(

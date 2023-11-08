@@ -23,19 +23,19 @@ class TestDependencies(unittest.TestCase):
             db.commit()
 
     @classmethod
-    def tearDownClass(cls) -> None:
-        for db in DbConnector.get_db():
-            teardown_user(db)
-            db.commit()
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        teardown_user(db)
+        db.commit()
 
-    def test_get_user_id(self) -> None:
+    @inject_db
+    def test_get_user_id(self, db: DbSession) -> None:
         valid_req = CreateChattingRequest(counterpart=self.email)
         invalid_req = CreateChattingRequest(counterpart=self.invalid)
 
-        for db in DbConnector.get_db():
-            self.assertEqual(self.profile_id, get_user_id(valid_req, db))
-            with self.assertRaises(InvalidUserException):
-                get_user_id(invalid_req, db)
+        self.assertEqual(self.profile_id, get_user_id(valid_req, db))
+        with self.assertRaises(InvalidUserException):
+            get_user_id(invalid_req, db)
 
 
 class TestService(unittest.TestCase):
@@ -51,214 +51,185 @@ class TestService(unittest.TestCase):
             db.commit()
 
     @classmethod
-    def tearDownClass(cls) -> None:
-        for db in DbConnector.get_db():
-            teardown_user(db)
-            db.commit()
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        teardown_user(db)
+        db.commit()
 
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(Topic))
-            db.execute(delete(Intimacy))
-            db.execute(delete(Text))
-            db.execute(delete(Chatting))
-            db.commit()
+    @inject_db
+    def tearDown(self, db: DbSession) -> None:
+        db.execute(delete(Topic))
+        db.execute(delete(Intimacy))
+        db.execute(delete(Text))
+        db.execute(delete(Chatting))
+        db.commit()
 
-    def test_chatting(self):
-        for db in DbConnector.get_db():
-            chatting = create_chatting(self.initiator_id, self.responder_id, db)
-            chatting_id = chatting.id
-            self.assertIsNotNone(chatting)
-            self.assertEqual(chatting.is_approved, False)
-            self.assertEqual(chatting.is_terminated, False)
-            db.commit()
+    @inject_db
+    def test_chatting(self, db: DbSession):
+        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        chatting_id = chatting.id
+        self.assertIsNotNone(chatting)
+        self.assertEqual(chatting.is_approved, False)
+        self.assertEqual(chatting.is_terminated, False)
+        db.commit()
 
-            self.assertEqual(get_all_chattings(self.initiator_id, True, db), [])
-            self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 1)
-            self.assertEqual(len(get_all_chattings(self.responder_id, False, db)), 1)
+        self.assertEqual(get_all_chattings(self.initiator_id, True, db), [])
+        self.assertEqual(len(get_all_chattings(
+            self.initiator_id, False, db)), 1)
+        self.assertEqual(len(get_all_chattings(
+            self.responder_id, False, db)), 1)
 
-            with self.assertRaises(ChattingNotExistException):
-                approve_chatting(self.initiator_id, chatting_id, db)
-            with self.assertRaises(ChattingNotExistException):
-                approve_chatting(self.responder_id, -1, db)
-            chatting = approve_chatting(self.responder_id, chatting_id, db)
-            db.commit()
+        with self.assertRaises(ChattingNotExistException):
+            approve_chatting(self.initiator_id, chatting_id, db)
+        with self.assertRaises(ChattingNotExistException):
+            approve_chatting(self.responder_id, -1, db)
+        chatting = approve_chatting(self.responder_id, chatting_id, db)
+        db.commit()
 
-            self.assertEqual(chatting.id, chatting_id)
-            self.assertEqual(len(get_all_chattings(self.initiator_id, True, db)), 1)
-            self.assertEqual(len(get_all_chattings(self.initiator_id, False, db)), 0)
+        self.assertEqual(chatting.id, chatting_id)
+        self.assertEqual(
+            len(get_all_chattings(self.initiator_id, True, db)), 1)
+        self.assertEqual(len(get_all_chattings(
+            self.initiator_id, False, db)), 0)
 
-            intimacy = get_all_intimacies(self.initiator_id, None, None, None, db)
-            self.assertEqual(len(intimacy), 1)
-            intimacy = get_all_intimacies(self.responder_id, None, None, None, db)
-            self.assertEqual(len(intimacy), 1)
+        intimacy = get_all_intimacies(self.initiator_id, None, None, None, db)
+        self.assertEqual(len(intimacy), 1)
+        intimacy = get_all_intimacies(self.responder_id, None, None, None, db)
+        self.assertEqual(len(intimacy), 1)
 
-            with self.assertRaises(ChattingNotExistException):
-                terminate_chatting(-1, chatting_id, db)
-            with self.assertRaises(ChattingNotExistException):
-                terminate_chatting(self.initiator_id, -1, db)
-            chatting = terminate_chatting(self.initiator_id, chatting_id, db)
-            self.assertEqual(chatting.is_terminated, True)
-            chatting = terminate_chatting(self.responder_id, chatting_id, db)
-            db.commit()
+        with self.assertRaises(ChattingNotExistException):
+            terminate_chatting(-1, chatting_id, db)
+        with self.assertRaises(ChattingNotExistException):
+            terminate_chatting(self.initiator_id, -1, db)
+        chatting = terminate_chatting(self.initiator_id, chatting_id, db)
+        self.assertEqual(chatting.is_terminated, True)
+        chatting = terminate_chatting(self.responder_id, chatting_id, db)
+        db.commit()
 
-    def test_get_all_texts(self):
+    @inject_db
+    def test_get_all_texts(self, db: DbSession):
         timestamp = datetime.now()
 
-        for db in DbConnector.get_db():
-            chatting = create_chatting(self.initiator_id, self.responder_id, db)
-            seq_ids = list(
-                db.scalars(
-                    insert(Text)
-                    .values(
-                        [
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp,
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=1),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=2),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=3),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp + timedelta(milliseconds=4),
-                            },
-                        ]
-                    )
-                    .returning(Text.id)
-                )
+        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        seq_ids = list(
+            db.scalars(
+                insert(Text)
+                .values(list(
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.initiator_id,
+                        "msg": "hello",
+                        "timestamp": timestamp + timedelta(milliseconds=i),
+                    } for i in range(5)
+                ))
+                .returning(Text.id)
             )
-            db.commit()
+        )
+        db.commit()
 
-            self.assertEqual(get_all_texts(-1, chatting.id, -1, None, None, db), [])
-            self.assertEqual(get_all_texts(-1, None, -1, None, None, db), [])
-            self.assertEqual(get_all_texts(self.initiator_id, -1, -1, None, None, db), [])
-            self.assertEqual(
-                len(get_all_texts(self.initiator_id, chatting.id, -1, None, None, db)), 5
-            )
-            self.assertEqual(
-                len(get_all_texts(self.initiator_id, None, -1, None, None, db)), 5
-            )
-            self.assertEqual(
-                len(get_all_texts(self.initiator_id, None, seq_ids[1], None, None, db)), 3
-            )
+        self.assertEqual(
+            get_all_texts(-1, chatting.id, -1, None, None, db), [])
+        self.assertEqual(get_all_texts(-1, None, -1, None, None, db), [])
+        self.assertEqual(get_all_texts(
+            self.initiator_id, -1, -1, None, None, db), [])
+        self.assertEqual(
+            len(get_all_texts(self.initiator_id, chatting.id, -1, None, None, db)), 5
+        )
+        self.assertEqual(
+            len(get_all_texts(self.initiator_id, None, -1, None, None, db)), 5
+        )
+        self.assertEqual(
+            len(get_all_texts(self.initiator_id,
+                None, seq_ids[1], None, None, db)), 3
+        )
 
-            texts = get_all_texts(self.initiator_id, None, seq_ids[1], 2, None, db)
-            self.assertEqual(len(texts), 2)
-            self.assertEqual(texts[0].id, seq_ids[4])
-            self.assertEqual(texts[1].id, seq_ids[3])
+        texts = get_all_texts(self.initiator_id, None, seq_ids[1], 2, None, db)
+        self.assertEqual(len(texts), 2)
+        self.assertEqual(texts[0].id, seq_ids[4])
+        self.assertEqual(texts[1].id, seq_ids[3])
 
-            texts = get_all_texts(self.initiator_id, None, seq_ids[1], None, timestamp + timedelta(milliseconds=3), db)
-            self.assertEqual(len(texts), 2)
-            self.assertEqual(texts[0].id, seq_ids[3])
-            self.assertEqual(texts[1].id, seq_ids[2])
+        texts = get_all_texts(
+            self.initiator_id, None, seq_ids[1], None, timestamp + timedelta(milliseconds=3), db)
+        self.assertEqual(len(texts), 2)
+        self.assertEqual(texts[0].id, seq_ids[3])
+        self.assertEqual(texts[1].id, seq_ids[2])
 
-    def test_get_topic(self):
-        for db in DbConnector.get_db():
-            db.execute(
-                insert(Topic).values(
-                    [
-                        {"topic": "I'm so good", "tag": "A"},
-                        {"topic": "I'm so mad", "tag": "B"},
-                        {"topic": "I'm so sad", "tag": "C"},
-                        {"topic": "I'm so happy", "tag": "C"}
-                    ]
-                )
-            )
-            db.commit()
-            self.assertIn(get_topic('C', db).topic, ["I'm so sad", "I'm so happy"])
-            self.assertEqual(get_topic('B', db).topic, "I'm so mad")
-            self.assertEqual(get_topic('A', db).topic, "I'm so good")
+    @patch("src.chatting.service.requests.post")  # patch for clova
+    @inject_db
+    def test_create_intimacy(self, mock_post, db: DbSession):
+        papago_mock_response = Mock()
+        clova_mock_response = Mock()
+        papago_mock_response.status_code = 200
+        clova_mock_response.status_code = 200
+        clova_mock_response.text = json.dumps({'document': {'sentiment': 'positive', 'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}}, 'sentences': [
+                                              {'content': 'translated text', 'offset': 0, 'length': 11, 'sentiment': 'positive', 'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568}, 'highlights': [{'offset': 0, 'length': 10}]}]})
+        papago_mock_response.json.return_value = {'message': {'result': {
+            'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': 'translated text'}}}
+        mock_post.side_effect = [papago_mock_response, clova_mock_response]
 
-    @patch("src.chatting.service.requests.post") ## patch for clova
-    def test_create_intimacy(self, mock_post):
+        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        chatting = approve_chatting(self.responder_id, chatting.id, db)
 
         timestamp = datetime.now()
-        
-        for db in DbConnector.get_db():
-            chatting = create_chatting(self.initiator_id, self.responder_id, db)
-
-            seq_ids = list(
-                db.scalars(
-                    insert(Text)
-                    .values(
-                        [
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp,
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "hello",
-                                "timestamp": timestamp - timedelta(seconds=1),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.responder_id,
-                                "msg": "you",
-                                "timestamp": timestamp - timedelta(seconds=2),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.initiator_id,
-                                "msg": "what",
-                                "timestamp": timestamp - timedelta(seconds=3),
-                            },
-                            {
-                                "chatting_id": chatting.id,
-                                "sender_id": self.responder_id,
-                                "msg": "bye",
-                                "timestamp": timestamp - timedelta(seconds=4),
-                            },
-                        ]
-                    )
-                    .returning(Text.id)
-                )
+        db.scalars(
+            insert(Text)
+            .values(
+                [
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.initiator_id,
+                        "msg": "hello",
+                        "timestamp": timestamp,
+                    },
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.initiator_id,
+                        "msg": "hello",
+                        "timestamp": timestamp - timedelta(seconds=1),
+                    },
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.responder_id,
+                        "msg": "you",
+                        "timestamp": timestamp - timedelta(seconds=2),
+                    },
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.initiator_id,
+                        "msg": "what",
+                        "timestamp": timestamp - timedelta(seconds=3),
+                    },
+                    {
+                        "chatting_id": chatting.id,
+                        "sender_id": self.responder_id,
+                        "msg": "bye",
+                        "timestamp": timestamp - timedelta(seconds=4),
+                    },
+                ]
             )
-            
-            
-            papago_mock_response = Mock()
-            clova_mock_response = Mock()
-            papago_mock_response.status_code = 200
-            clova_mock_response.status_code = 200
-            clova_mock_response.text = json.dumps({'document': {'sentiment': 'positive', 'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}}, 'sentences': [{'content': 'translated text', 'offset': 0, 'length': 11, 'sentiment': 'positive', 'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568}, 'highlights': [{'offset': 0, 'length': 10}]}]})
-            papago_mock_response.json.return_value = {'message': {'result': {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': 'translated text'}}}
-            mock_post.side_effect = [papago_mock_response, clova_mock_response]
-            
+            .returning(Text.id)
+        )
+        db.commit()
 
-            
+        intimacy = create_intimacy(self.initiator_id, chatting.id, db)
+        self.assertEqual(intimacy.intimacy, 41.99933326082)
 
-            chatting = approve_chatting(self.responder_id, chatting.id, db)
-            intimacy = create_intimacy(self.initiator_id, chatting.id, db)
-            db.commit()
-            
-
-
-            self.assertEqual(
-                intimacy.intimacy, 41.99933326082
+    @inject_db
+    def test_get_topic(self, db: DbSession):
+        db.execute(
+            insert(Topic).values(
+                [
+                    {"topic": "I'm so good", "tag": "A"},
+                    {"topic": "I'm so mad", "tag": "B"},
+                    {"topic": "I'm so sad", "tag": "C"},
+                    {"topic": "I'm so happy", "tag": "C"}
+                ]
             )
+        )
+        db.commit()
+        self.assertIn(get_topic('C', db).topic, ["I'm so sad", "I'm so happy"])
+        self.assertEqual(get_topic('B', db).topic, "I'm so mad")
+        self.assertEqual(get_topic('A', db).topic, "I'm so good")
 
     def test_flatten_texts(self):
         texts = [
@@ -290,7 +261,8 @@ class TestService(unittest.TestCase):
         mock_response.status_code = 200
         data = {
             'message': {'result':
-                            {'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': '나는 행복해!'}
+                        {'srcLangType': 'en', 'tarLangType': 'ko',
+                            'translatedText': '나는 행복해!'}
                         }
         }
 
@@ -320,10 +292,14 @@ class TestService(unittest.TestCase):
     def test_get_frequency(self):
         timestamp = datetime.now()
         texts = [
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=timestamp - timedelta(seconds=8)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=1)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=2)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=3)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=8)),
         ]
         result = get_frequency(texts)
         self.assertGreaterEqual(result, 39.9)
@@ -335,7 +311,8 @@ class TestService(unittest.TestCase):
         self.assertIsNone(get_frequency_delta([], []))
 
     def test_score_frequency(self):
-        text = Text(id=1, chatting_id=1, sender_id=1, msg="", timestamp=datetime.now() - timedelta(seconds=1))
+        text = Text(id=1, chatting_id=1, sender_id=1, msg="",
+                    timestamp=datetime.now() - timedelta(seconds=1))
         self.assertEqual(score_frequency([text]), 10)
 
         text.timestamp = datetime.now() - timedelta(seconds=31)
@@ -365,7 +342,8 @@ class TestService(unittest.TestCase):
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(score_frequency_delta(prev_texts, curr_texts), 0)
 
@@ -389,7 +367,8 @@ class TestService(unittest.TestCase):
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
         ]
         expected_result = 0
         result = score_avg_length_delta(prev_texts, curr_texts)
@@ -400,7 +379,8 @@ class TestService(unittest.TestCase):
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now()),
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now()),
         ]
         self.assertEqual(get_turn(texts, 1), 0.5)
 
@@ -414,7 +394,8 @@ class TestService(unittest.TestCase):
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(get_turn_delta(prev_texts, curr_texts, 1), 0)
 
@@ -426,7 +407,8 @@ class TestService(unittest.TestCase):
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now()),
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now()),
         ]
         user_id = 1
         expected_result = 10
@@ -441,7 +423,8 @@ class TestService(unittest.TestCase):
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2, msg="Hi", timestamp=datetime.now())
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
         ]
         user_id = 1
         expected_result = 0
