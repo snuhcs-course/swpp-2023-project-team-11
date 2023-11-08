@@ -1,11 +1,9 @@
 from datetime import timedelta
-import random
 import unittest
 from unittest.mock import patch, Mock
 
-from sqlalchemy import insert, delete, select
+from sqlalchemy import insert, delete
 
-import src.chatting.service
 from src.database import Base, DbConnector
 from src.chatting.dependencies import *
 from src.chatting.models import *

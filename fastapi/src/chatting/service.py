@@ -113,117 +113,18 @@ def get_all_texts(
     return query.all()
 
 
-def get_recommended_topic(user_id: int, chatting_id: int, db: DbSession) -> str:
-    intimacy_list = get_intimacy(user_id, chatting_id, db)
-    if len(intimacy_list) == 0:
-        return get_topic("C", db)
-    tag = get_tag(intimacy_list[-1].intimacy)
-    return get_topic(tag, db)
+def get_recent_intimacy(
+    user_id: int,
+    chatting_id: int | None,
+    db: DbSession
+) -> Intimacy | None:
+    intimacies = get_all_intimacies(user_id, chatting_id, 1, None, db)
+    if len(intimacies) == 0:
+        return None
+    return intimacies[0]
 
 
-def get_tag(intimacy: float) -> str:
-    if intimacy <= 40:
-        return "C"
-    elif intimacy <= 70:
-        return "B"
-    else:
-        return "A"
-
-
-def get_topic(tag: str, db: DbSession) -> Topic:
-    topics = db.query(Topic).where(Topic.tag == tag).all()
-    idx = random.randint(0, len(topics) - 1)
-    return topics[idx]
-
-
-def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
-    # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
-    default_weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
-    weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
-
-    # Previous 20 texts from chatting
-    curr_texts: List[Text] = get_all_texts(user_id, chatting_id, -1, 20, None, db)
-    curr_flatten: str = flatten_texts(curr_texts)
-    curr_translated: str = translate_text(curr_flatten)
-
-    # every parameter we use
-    sentiment: int = get_sentiment(curr_translated)
-    frequency: int = score_frequency(curr_texts)
-    frequency_delta = 0
-    length: int = score_avg_length(curr_texts)
-    length_delta = 0
-    turn = score_turn(curr_texts, user_id)
-    turn_delta = 0
-
-    # Get Intimacy info
-    intimacy_list = get_intimacy(user_id, chatting_id, None, None, db)
-    if len(intimacy_list) == 0:
-        return IntimacyNotExistException()
-
-    # Record the last timestamp and update to now
-    timestamp = intimacy_list[-1].timestamp
-    intimacy_list[-1].timestamp = datetime.now()
-
-    if len(intimacy_list) == 1:
-        # we cannot calculate delta value with only one intimacy
-        parameter_arr = np.array(
-            [
-                sentiment,
-                frequency,
-                frequency_delta,
-                length,
-                length_delta,
-                turn,
-                turn_delta,
-            ]
-        )
-        intimacy = default_weight.dot(parameter_arr.transpose())
-
-    else:
-        prev_texts: List[Text] = get_all_texts(
-            user_id, chatting_id, -1, 20, timestamp, db
-        )
-        frequency_delta = score_frequency_delta(prev_texts, curr_texts)
-        length_delta = score_avg_length_delta(prev_texts, curr_texts)
-        turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
-
-        parameter_arr = np.array(
-            [
-                sentiment,
-                frequency,
-                frequency_delta,
-                length,
-                length_delta,
-                turn,
-                turn_delta,
-            ]
-        )
-        intimacy = weight.dot(parameter_arr.transpose())
-
-    # Update
-    intimacy += intimacy_list[-1].intimacy
-    if intimacy > 100:
-        intimacy = 100
-    elif intimacy < 0:
-        intimacy = 0
-
-    new_intimacy = db.scalar(
-        insert(Intimacy)
-        .values(
-            {
-                "user_id": user_id,
-                "chatting_id": chatting_id,
-                "intimacy": intimacy,
-                "timestamp": datetime.now(),
-            }
-        )
-        .returning(Intimacy)
-    )
-
-    return new_intimacy
-
-
-def get_intimacy(
+def get_all_intimacies(
     user_id: int,
     chatting_id: int | None,
     limit: int | None,
@@ -245,6 +146,85 @@ def get_intimacy(
         query = query.where(Intimacy.timestamp <= timestamp)
 
     return query.all()
+
+
+def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
+    # Previous 20 texts from chatting
+    curr_texts = get_all_texts(user_id, chatting_id, -1, 20, None, db)
+
+    # Get Intimacy info
+    intimacies = get_all_intimacies(user_id, chatting_id, 2, None, db)
+    if len(intimacies) == 0:
+        return IntimacyNotExistException()
+    recent_intimacy = intimacies[0]
+
+    if len(intimacies) > 1:
+        prev_texts: get_all_texts(user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
+    else:
+        # we cannot calculate delta value with only one intimacy (which is definitely a default value)
+        prev_texts = None
+
+    new_intimacy_value = calculate_intimacy(curr_texts, prev_texts, recent_intimacy, user_id)
+    new_intimacy = db.scalar(
+        insert(Intimacy)
+        .values(
+            {
+                "user_id": user_id,
+                "chatting_id": chatting_id,
+                "intimacy": new_intimacy_value,
+                "timestamp": datetime.now(),
+            }
+        )
+        .returning(Intimacy)
+    )
+
+    return new_intimacy
+
+
+def get_topic(tag: str, db: DbSession) -> Topic:
+    topics = db.query(Topic).where(Topic.tag == tag).all()
+    idx = random.randint(0, len(topics) - 1)
+    return topics[idx]
+
+
+def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
+    if intimacy is None or intimacy <= 40:
+        return "C"
+    elif intimacy <= 70:
+        return "B"
+    else:
+        return "A"
+
+
+def calculate_intimacy(
+    curr_texts: List[Text],
+    prev_texts: List[Text] | None,
+    recent_intimacy: Intimacy,
+    user_id: int,
+) -> int:
+    # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
+    if prev_texts is None:
+        weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
+        prev_texts = []
+    else:
+        weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
+
+    # TODO skip when curr_texts is empty
+    curr_flatten: str = flatten_texts(curr_texts)
+    curr_translated: str = translate_text(curr_flatten)
+    sentiment = get_sentiment(curr_translated)
+
+    frequency = score_frequency(curr_texts)
+    length = score_avg_length(curr_texts)
+    turn = score_turn(curr_texts, user_id)
+
+    frequency_delta = score_frequency_delta(prev_texts, curr_texts)
+    length_delta = score_avg_length_delta(prev_texts, curr_texts)
+    turn_delta = score_turn_delta(prev_texts, curr_texts, user_id)
+
+    parameters = np.array([sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta])
+    new_intimacy_value: int = recent_intimacy.intimacy + weight.dot(parameters.transpose())
+    return max(0, min(100, new_intimacy_value))
 
 
 def flatten_texts(texts: List[Text]) -> str:
