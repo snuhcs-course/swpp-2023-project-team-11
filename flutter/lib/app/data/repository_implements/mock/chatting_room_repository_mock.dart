@@ -107,4 +107,10 @@ class ChattingRepositoryMock implements ChattingRepository {
     // TODO: implement updateChattingRoom
     throw UnimplementedError();
   }
+
+  @override
+  Future<Result<ChattingRoom, DefaultIssue>> deleteChattingRoom({required int chattingRoomId}) {
+    // TODO: implement deleteChattingRoom
+    throw UnimplementedError();
+  }
 }

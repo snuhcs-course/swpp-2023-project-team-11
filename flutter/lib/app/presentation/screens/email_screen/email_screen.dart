@@ -22,7 +22,8 @@ class EmailScreen extends GetView<EmailScreenController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(top: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(
+                    top: 16),
                 child: const Text(
                   '회원가입을 위해\n학교 이메일을 인증해주세요',
                   style: TextStyle(
@@ -40,15 +41,18 @@ class EmailScreen extends GetView<EmailScreenController> {
                       textEditingController: controller.emailCon,
                       hintText: "학교 이메일 입력",
                       textStyle:
-                          const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                      const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w400),
                       verticalPadding: 15,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  SmallButton(
-                    text: '인증하기',
-                    onPressed: controller.onAuthButtonTap,
-                  ),
+                  Obx(() {
+                    return SmallButton(
+                      text: '인증하기',
+                      onPressed: controller.certable.value? controller.onAuthButtonTap : null,
+                    );
+                  }),
                 ],
               ),
               const SizedBox(height: 10),
@@ -78,7 +82,7 @@ class EmailScreen extends GetView<EmailScreenController> {
       bottomNavigationBar: Obx(() {
         return BottomNextButton(
             onPressed:
-                controller.certSuccess.value ? controller.onNextTap : null);
+            controller.certSuccess.value ? controller.onNextTap : null);
       }),
     );
   }
@@ -107,12 +111,12 @@ class EmailScreen extends GetView<EmailScreenController> {
                     textEditingController: controller.codeCon,
                     hintText: "코드 6자리 입력",
                     textStyle:
-                        const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                     verticalPadding: 15,
                   ),
                 ),
                 const SizedBox(width: 12),
-                SmallButton(text: '확인', onPressed: controller.onCodeButtonTap),
+                SmallButton(text: '확인', onPressed: controller.verifiable.value? controller.onCodeButtonTap:null),
               ],
             ),
           ),

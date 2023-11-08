@@ -99,12 +99,14 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
   final ImageProvider profileImage;
   final String userName;
   final String userEmail;
+  final bool isMyProfile;
 
   const FriendDetailAppBar({
     super.key,
     required this.profileImage,
     required this.userName,
     required this.userEmail,
+    this.isMyProfile = false
   });
 
   @override
@@ -115,6 +117,8 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
         color: Colors.white,
       ),
       clipBehavior: Clip.none,
+      title: isMyProfile? const Text("내 프로필", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)): null,
+      centerTitle: false,
       bottom: PreferredSize(
         preferredSize: preferredSize,
         child: Stack(

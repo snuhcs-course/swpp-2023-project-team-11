@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
-import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: unused_import
@@ -26,18 +26,19 @@ class FriendsScreen extends GetView<FriendsScreenController> {
         ),
       ),
       body: controller.obx(
-        (state) {
-          if (state!.isEmpty) {
-            return const Center(child: Text("현재 검색되는 유저가 존재하지 않습니다"));
-          }
-          return SmartRefresher(
-              enablePullDown: true,
-              header: const WaterDropHeader(),
-              controller: controller.refreshController,
-              onRefresh: controller.onRefresh,
-              child: _buildUserList(state));
-        },
-        onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
+              (state) {
+            if (state!.isEmpty) {
+              return const Center(child: Text("현재 검색되는 유저가 존재하지 않습니다"));
+            }
+            return SmartRefresher(
+                enablePullDown: true,
+                header: const WaterDropHeader(),
+                controller: controller.refreshController,
+                onRefresh: controller.onRefresh,
+                child: _buildUserList(state));
+          },
+          onLoading: const Center(
+            child: CircularProgressIndicator(color: MyColor.orange_1,),)
       ),
     );
   }
@@ -68,26 +69,40 @@ class FriendsScreen extends GetView<FriendsScreenController> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
-                  size: const Size.fromRadius(72),
-                  child: Image.asset(
-                      'assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
+                    size: const Size.fromRadius(72),
+                    child: Image(image: ProfilePic().call(user.email))
+                  // ProfilePic().call(user.email)
+                  // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
                 ),
               ),
-              Positioned(
-                left: 84,
-                top: 96,
-                child: ElevatedButton(
-                  onPressed: () => {print("!")},
-                  style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.white),
-                  child: Icon(
-                    Icons.favorite_outline,
-                    color: Colors.black.withOpacity(0.4),
+              Obx(() {
+                return Positioned(
+                  left: 84,
+                  top: 96,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (controller.heartedUser.value.contains(user)) {
+                        controller.heartedUser.value.remove(user);
+                        controller.heartedUser.refresh();
+                      }
+                      else {
+                        controller.heartedUser.value.add(user);
+                        controller.heartedUser.refresh();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.white),
+                    child: Icon(
+                      controller.heartedUser.value.contains(user)
+                          ? Icons.favorite
+                          : Icons.favorite_outline,
+                      color: Colors.black.withOpacity(0.4),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ]),
             const SizedBox(width: 16),
             Expanded(
@@ -95,10 +110,13 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(user.name,
                         style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff2d3a45))),
                     const SizedBox(height: 4),
                     Text(user.profile.aboutMe,
                         style: TextStyle(
@@ -140,7 +158,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Container(
         decoration:
-            BoxDecoration(color: const Color(0xffF8F1FB), borderRadius: BorderRadius.circular(10)),
+        BoxDecoration(color: const Color(0xffF8F1FB),
+            borderRadius: BorderRadius.circular(10)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
           child: Text(info,
@@ -154,26 +173,26 @@ class FriendsScreen extends GetView<FriendsScreenController> {
     );
   }
 
-  Future<T> withLoadingOverlay<T>({
-    required Future<T> Function() asyncFunction,
-    Widget loadingWidget = const CupertinoActivityIndicator(),
-  }) async {
-    return await Get.showOverlay(
-      asyncFunction: asyncFunction,
-      opacity: 0,
-      opacityColor: Colors.transparent,
-      loadingWidget: Center(
-        child: Obx(
-          () => Material(
-            color: Colors.black54,
-            child: Container(
-              child: Center(child: loadingWidget),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+// Future<T> withLoadingOverlay<T>({
+//   required Future<T> Function() asyncFunction,
+//   Widget loadingWidget = const CupertinoActivityIndicator(),
+// }) async {
+//   return await Get.showOverlay(
+//     asyncFunction: asyncFunction,
+//     opacity: 0,
+//     opacityColor: Colors.transparent,
+//     loadingWidget: Center(
+//       child: Obx(
+//         () => Material(
+//           color: Colors.black54,
+//           child: Container(
+//             child: Center(child: loadingWidget),
+//           ),
+//         ),
+//       ),
+//     ),
+//   );
+// }
 }
 
 // GetPage(

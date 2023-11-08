@@ -11,4 +11,7 @@ class UserController extends GetxController {
   String get userName => _user.name;
   String get userAboutMe => _user.profile.aboutMe;
   String get userEmail => _user.email;
+  Profile get userProfile => _user.profile;
+  Language get userMainLanguage => _user.getMainLanguage;
+  List<Language> get userLanguages => _user.getLanguages;
 }

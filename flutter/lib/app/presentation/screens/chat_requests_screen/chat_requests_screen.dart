@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
-import 'dart:math' as math;
 
 // ignore: unused_import
 import '../../../domain/models/chatting_room.dart';
@@ -22,7 +22,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
       ),
-      body: controller.chattingRoomController.obx(
+      body: controller.chattingRoomListController.obx(
         (state) {
           if (state!.roomForRequested.isEmpty) {
             return _buildEmptyChattingRoomResponse();
@@ -72,13 +72,12 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.withOpacity(0.4),
-                border: Border.all(width: 1.5, color: const Color(0xff9f75d1))),
-            width: 54,
-            height: 54,
+          GestureDetector(
+            onTap: (){controller.onProfileTap(chatroom.initiator, chatroom);},
+            child: CircleAvatar(
+                radius: 30,
+                backgroundImage: ProfilePic().call(chatroom.initiator.email)
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -109,9 +108,8 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             ),
           ),
           const SizedBox(width: 12),
-          Transform.rotate(
-            angle: -math.pi / 2,
-            child: PopupMenuButton(
+            PopupMenuButton(
+              icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
               itemBuilder: (context) {
                 return [
                   const PopupMenuItem<int>(value: 0, child: Text("삭제")),
@@ -125,9 +123,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                   controller.onAcceptButtonTap(chatroom);
                 }
               },
-              color: const Color(0xff2d3a45).withOpacity(0.4),
             ),
-          )
         ],
       ),
     );

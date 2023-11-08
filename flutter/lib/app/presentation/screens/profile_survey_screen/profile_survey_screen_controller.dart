@@ -13,6 +13,7 @@ import 'package:mobile_app/app/presentation/screens/make_profile_screen/make_pro
 import 'package:mobile_app/app/presentation/screens/password_screen/password_screen_controller.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/widgets/complete_dialog.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/core/utils/loading_util.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 class ProfileSurveyScreenController extends GetxController {
@@ -32,9 +33,12 @@ class ProfileSurveyScreenController extends GetxController {
   int _bundleIndex = -1;
 
   QuestionBundle? get getCurrentQuestionBundle =>
-      _bundleIndex >= _questionBundleList.length ? null : _questionBundleList[_bundleIndex];
+      _bundleIndex >= _questionBundleList.length
+          ? null
+          : _questionBundleList[_bundleIndex];
 
-  List<Enum> get getCurrentQuestionOptions => getCurrentQuestionBundle?.answerOptions ?? [];
+  List<Enum> get getCurrentQuestionOptions =>
+      getCurrentQuestionBundle?.answerOptions ?? [];
   final chatTextList = <(String, SenderType)>[].obs;
 
   final openKeywordBoard = false.obs;
@@ -43,7 +47,8 @@ class ProfileSurveyScreenController extends GetxController {
   final StreamController<QuestionBundle> _bundleStreamController =
       StreamController<QuestionBundle>();
 
-  Stream<QuestionBundle> get getQuestionBundleStream => _bundleStreamController.stream;
+  Stream<QuestionBundle> get getQuestionBundleStream =>
+      _bundleStreamController.stream;
 
   @override
   void onInit() {
@@ -76,7 +81,8 @@ class ProfileSurveyScreenController extends GetxController {
 
   final Map<Type, List<Enum>> answerMap = {};
 
-  Stream<String?> getIntervalQuestionStream(QuestionBundle questionBundle) async* {
+  Stream<String?> getIntervalQuestionStream(
+      QuestionBundle questionBundle) async* {
     await Future.delayed(const Duration(milliseconds: 50));
     for (final question in questionBundle.questions) {
       yield question;
@@ -104,7 +110,8 @@ class ProfileSurveyScreenController extends GetxController {
   }
 
   Future<void> _answerInChat() async {
-    final answerForPriorIndex = answerMap[getCurrentQuestionBundle!.getAnswerType]!;
+    final answerForPriorIndex =
+        answerMap[getCurrentQuestionBundle!.getAnswerType]!;
     final parsedAnswerText = answerForPriorIndex.join(", ");
     chatTextList.add((parsedAnswerText, SenderType.me));
     scrollToBottom();
@@ -159,17 +166,19 @@ class ProfileSurveyScreenController extends GetxController {
 
     [user.name, user.email, user.profile.toJson(), user.type].forEach(print);
 
-    await _signUpUseCase(
-        email: emailInfo.email,
-        emailToken: emailInfo.emailToken,
-        password: password,
-        user: user,
-        onFail: () {
-          print("Fail on creating user");
-        },
-        onSuccess: (user) {
-          toMainScreen(user);
-        });
+    LoadingUtil.withLoadingOverlay(asyncFunction: () async {
+      await _signUpUseCase(
+          email: emailInfo.email,
+          emailToken: emailInfo.emailToken,
+          password: password,
+          user: user,
+          onFail: () {
+            print("Fail on creating user");
+          },
+          onSuccess: (user) {
+            toMainScreen(user);
+          });
+    });
 
     // 로직 성공한 뒤, Get.offNamed(Routes.MAIN);
   }

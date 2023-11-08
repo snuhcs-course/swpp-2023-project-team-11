@@ -53,7 +53,7 @@ enum MainButtonType {
 }
 
 class SmallButton extends StatelessWidget {
-  final void Function() onPressed;
+  final void Function()? onPressed;
   final String text;
 
   const SmallButton({
@@ -86,6 +86,42 @@ class SmallButton extends StatelessWidget {
           color: textColor,
           fontSize: 18,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class ExtraSmallButton extends StatelessWidget {
+  final void Function()? onPressed;
+  final String text;
+
+  const ExtraSmallButton({
+    required this.onPressed,
+    required this.text,
+  });
+
+  final Color buttonColor = const Color(0xffff9162);
+  final Color textColor = Colors.white;
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+          backgroundColor: buttonColor,
+          disabledBackgroundColor: const Color(0xffd3d3d3),
+          padding: const EdgeInsets.all(6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          minimumSize: const Size(90, 0)
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
