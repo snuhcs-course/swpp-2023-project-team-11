@@ -163,7 +163,7 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
             user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
     else:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
-        prev_texts = None
+        prev_texts = []
 
     new_intimacy_value = calculate_intimacy(
         curr_texts, prev_texts, recent_intimacy, user_id)
@@ -200,14 +200,13 @@ def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
 
 def calculate_intimacy(
     curr_texts: List[Text],
-    prev_texts: List[Text] | None,
+    prev_texts: List[Text],
     recent_intimacy: Intimacy,
     user_id: int,
 ) -> int:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
-    if prev_texts is None:
+    if len(prev_texts) == 0:
         weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
-        prev_texts = []
     else:
         weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
 
