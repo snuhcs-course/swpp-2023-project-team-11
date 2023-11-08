@@ -51,7 +51,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           controller.onNewChatRequestTap();
         },
         child: const Padding(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(16),
           child: Text(
             "새로운 채팅 요청",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff9f75d1)),
@@ -61,8 +61,8 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
       if (controller.newChatRequestExists.value != null && controller.newChatRequestExists.value!)
         const Positioned(
           // draw a red marble
-          top: 4,
-          right: 0,
+          top: 12,
+          right: 8,
           child: Icon(Icons.brightness_1, size: 14, color: Color(0xffff733d)),
         )
     ]);
@@ -162,14 +162,11 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
               icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
               itemBuilder: (context) {
                 return [
-                  const PopupMenuItem<int>(value: 0, child: Text("알림 음소거")),
                   const PopupMenuItem<int>(value: 1, child: Text("채팅방 나가기", style: TextStyle(color: MyColor.orange_1),)),
                 ];
               },
               onSelected: (value) {
-                if (value == 0) {
-                  print("알림 음소거");
-                } else if (value == 1) {
+                if (value == 1) {
                   controller.onChattingRoomLeaveTap(chatroom);
                 }
               },
