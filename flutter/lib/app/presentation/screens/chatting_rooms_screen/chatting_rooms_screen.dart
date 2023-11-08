@@ -140,7 +140,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
                         Text(
-                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일",
+                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1)))
                       ],
