@@ -155,7 +155,7 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     # Get Intimacy info
     intimacies = get_all_intimacies(user_id, chatting_id, 2, None, db)
     if len(intimacies) == 0:
-        return IntimacyNotExistException()
+        raise IntimacyNotExistException()
     recent_intimacy = intimacies[0]
 
     if len(intimacies) > 1:
