@@ -72,9 +72,12 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(
-              radius: 30,
-              backgroundImage: ProfilePic().call(chatroom.initiator.email)
+          GestureDetector(
+            onTap: (){controller.onProfileTap(chatroom.initiator, chatroom);},
+            child: CircleAvatar(
+                radius: 30,
+                backgroundImage: ProfilePic().call(chatroom.initiator.email)
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -106,6 +109,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           ),
           const SizedBox(width: 12),
             PopupMenuButton(
+              icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
               itemBuilder: (context) {
                 return [
                   const PopupMenuItem<int>(value: 0, child: Text("삭제")),
@@ -119,7 +123,6 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                   controller.onAcceptButtonTap(chatroom);
                 }
               },
-              color: const Color(0xff2d3a45).withOpacity(0.4),
             ),
         ],
       ),

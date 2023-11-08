@@ -5,6 +5,8 @@ import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
+import 'package:mobile_app/app/presentation/widgets/basic_dialog.dart';
+import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -16,14 +18,14 @@ class ChattingRoomsScreenController extends GetxController{
 
   final ChattingRoomListController chattingRoomController = Get.find<ChattingRoomListController>();
   final UserController userController = Get.find<UserController>();
-  RefreshController refreshController = RefreshController(initialRefresh: false);
+  RefreshController refreshController = RefreshController(initialRefresh: true);
 
   void onNewChatRequestTap() {
     Get.toNamed(Routes.Maker(nextRoute: Routes.CHAT_REQUESTS));
   }
 
   void onRefresh() async{
-    await chattingRoomController.onReady();
+    await chattingRoomController.reloadRooms();
     newChatRequestExists.value = (chattingRoomController.numRequestedRooms != 0);
 
     // if failed, use refreshFailed()
@@ -43,6 +45,32 @@ class ChattingRoomsScreenController extends GetxController{
           textColor: Colors.white,
           fontSize: 15.0
       );
+    }
+  }
+
+  void onChattingRoomLeaveTap(ChattingRoom chattingRoom) {
+    bool quitable = true;
+    if(chattingRoom.isApproved){
+      Get.dialog(
+          BasicDialog(
+            title: '정말로 진행중인 채팅에서 나갈건가요?',
+            contentWidget: const SizedBox.shrink(),
+            mainLogicButton: MainButton(
+              mainButtonType: MainButtonType.key,
+              text: "네",
+              onPressed: (){},
+            ),
+            leftSubButton: MainButton(
+              mainButtonType: MainButtonType.light,
+              text: "아니요",
+              onPressed: (){quitable = false;},
+            ),
+          )
+      );
+    }
+
+    if(quitable){
+
     }
   }
 

@@ -53,6 +53,7 @@ class ChattingRoomListController extends GetxController
     print("use case 호출해서 session 열기");
     _centerChatStream = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
       print("receive");
+      // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom.
       final targetRoomController = Get.find<ValidChattingRoomController>(
         tag: chat.chattingRoomId.toString(),
       );
@@ -94,6 +95,7 @@ class ChattingRoomListController extends GetxController
   }
 
   void _injectDependencyForAddedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+    // add a controller for a chatroom if it is not already present (the chatroom should be a valid one)
     for (final newChattingRoom in newValidChattingRooms) {
       final newOneAlreadyExisted = _validRooms.any((element) => element.id == newChattingRoom.id);
       if (!newOneAlreadyExisted) {
@@ -109,6 +111,7 @@ class ChattingRoomListController extends GetxController
   }
 
   void _removeDependencyForRemovedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+    // after fetching chatrooms, if it is different from original list of chatrooms, it means we need to remove some.
     for (final priorChattingRoom in _validRooms) {
       final priorOneExistsInNewOnes =
           newValidChattingRooms.any((element) => element.id == priorChattingRoom.id);
@@ -137,7 +140,7 @@ class ChattingRoomListController extends GetxController
     );
   }
 
-  void acceptChattingRequest(ChattingRoom chattingRoom) async {
+  Future<void> acceptChattingRequest(ChattingRoom chattingRoom) async {
     await _acceptChattingRequestUseCase.call(
       chattingRoomId: chattingRoom.id,
       whenSuccess: (chattingRoom) {

@@ -170,7 +170,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                 if (value == 0) {
                   print("알림 음소거");
                 } else if (value == 1) {
-                  print("채팅방 나가기");
+                  controller.onChattingRoomLeaveTap(chatroom);
                 }
               },
               // color: const Color(0xff2d3a45).withOpacity(0.4),
