@@ -154,6 +154,38 @@ class TestService(unittest.TestCase):
         self.assertEqual(texts[0].id, seq_ids[3])
         self.assertEqual(texts[1].id, seq_ids[2])
 
+    @inject_db
+    def test_get_all_intimacies(self, db: DbSession):
+        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        timestamp = datetime.now()
+        db.execute(
+            insert(Intimacy)
+            .values(list({
+                "user_id": self.initiator_id,
+                "chatting_id": chatting.id,
+                "intimacy": i,
+                "timestamp": timestamp + timedelta(seconds=i)
+            } for i in range(5)))
+        )
+
+        intimacies = get_all_intimacies(self.responder_id, None, None, None, db)
+        self.assertEqual(len(intimacies), 0)
+        
+        intimacies = get_all_intimacies(self.initiator_id, None, None, None, db)
+        self.assertEqual(len(intimacies), 5)
+        self.assertEqual(intimacies[1].intimacy, 3)
+        self.assertEqual(intimacies[3].intimacy, 1)
+        self.assertEqual(intimacies[4].intimacy, 0)
+
+        intimacies = get_all_intimacies(self.initiator_id, -1, None, None, db)
+        self.assertEqual(len(intimacies), 0)
+
+        intimacies = get_all_intimacies(self.initiator_id, None, 3, None, db)
+        self.assertEqual(len(intimacies), 3)
+        
+        intimacies = get_all_intimacies(self.initiator_id, None, None, timestamp + timedelta(seconds=2.5), db)
+        self.assertEqual(len(intimacies), 3)
+
     @patch("src.chatting.service.requests.post")  # patch for clova
     @inject_db
     def test_create_intimacy(self, mock_post, db: DbSession):
