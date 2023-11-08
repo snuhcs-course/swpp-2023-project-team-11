@@ -34,11 +34,22 @@ class ChattingRoomsScreenController extends GetxController{
   }
 
   void onChattingRoomTap(ChattingRoom chattingRoom) {
-    if (chattingRoom.isApproved) {
+    print("${chattingRoom.isApproved} and ${chattingRoom.isTerminated}");
+    if (chattingRoom.isApproved && !chattingRoom.isTerminated) {
       Get.toNamed(Routes.Maker(nextRoute: Routes.ROOM), arguments: chattingRoom);
-    } else {
+    } else if(!chattingRoom.isApproved){
       Fluttertoast.showToast(
           msg: "수락되지 않은 채팅방입니다",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: MyColor.orange_1,
+          textColor: Colors.white,
+          fontSize: 15.0
+      );
+    } else{
+      Fluttertoast.showToast(
+          msg: "더 이상 사용하지 않는 채팅방입니다",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
