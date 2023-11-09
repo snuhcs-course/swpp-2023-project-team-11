@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:get/get.dart';
+import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/disconnect_chatting_channel_use_case.dart';
@@ -12,6 +14,7 @@ import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.da
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
+import 'package:mobile_app/main.dart';
 
 class ChattingRoomListController extends GetxController
     with StateMixin<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
@@ -64,6 +67,10 @@ class ChattingRoomListController extends GetxController
     });
   }
 
+  bool checkSp(int chatRoomId){
+    return sp.containsKey(chatRoomId.toString());
+  }
+
   void _updateRoomsOnlyForNewOnes({
     List<ChattingRoom>? validRooms,
     List<ChattingRoom>? terminatedRooms,
@@ -73,6 +80,17 @@ class ChattingRoomListController extends GetxController
     if (validRooms != null) {
       _injectDependencyForAddedValidRooms(validRooms);
       _removeDependencyForRemovedValidRooms(validRooms);
+
+      // sort the valid rooms according to their datetime of most recent chat
+      validRooms.sort((ChattingRoom room1, ChattingRoom room2){
+        if(!checkSp(room1.id) || !checkSp(room2.id)) {
+          print("not in sp yet!");
+          return 0;
+        }
+        DateTime dateTime1 = Chat.fromJson(json.decode(sp.getString(room1.id.toString())!)).sentAt;
+        DateTime dateTime2 = Chat.fromJson(json.decode(sp.getString(room2.id.toString())!)).sentAt;
+        return dateTime2.compareTo(dateTime1);
+      });
       _validRooms = validRooms;
       print("valid room, ${_validRooms.length}개");
     }
