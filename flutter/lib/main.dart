@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/routes/get_pages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'routes/named_routes.dart';
 
-void main() {
+late SharedPreferences sp;
+
+void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  sp = await SharedPreferences.getInstance();
   runApp(const MyApp());
 }
 

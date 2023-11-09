@@ -141,6 +141,10 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
+                        (chatroom.isApproved && !chatroom.isTerminated)? Text(
+                            controller.timeToDisplay(chatroom),
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1))):
                         Text(
                             "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
                             style: const TextStyle(
@@ -149,12 +153,15 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      chatroom.isTerminated?"종료된 채팅방입니다": chatroom.isApproved?"채팅룸의 가장 최근 대화":"아직 상대가 수락하지 않았습니다",
+                      chatroom.isTerminated?"종료된 채팅방입니다": (chatroom.isApproved? (controller.checkSp(chatroom.id)? controller.latestChatMessage(chatroom.id): "채팅을 시작해봐요!") : "아직 상대가 수락하지 않았습니다"),
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xff2d3a45).withOpacity(0.8)),
-                    )
+                    ),
+                    // ElevatedButton(onPressed: (){
+                    //   print("${controller.spC.getString(chatroom.id.toString())} is what i found from sp - decoding");
+                    // }, child: Icon(Icons.favorite))
                   ],
                 ),
               ),
