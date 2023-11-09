@@ -113,7 +113,9 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
   }
 
   Widget _buildChatroomContainer(ChattingRoom chatroom, BuildContext context) {
-    return GestureDetector(
+    if (chatroom.isTerminated) return const SizedBox.shrink();
+    else {
+      return GestureDetector(
       onTap: () {
         controller.onChattingRoomTap(chatroom);
       },
@@ -176,6 +178,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         ),
       ),
     );
+    }
   }
 }
 

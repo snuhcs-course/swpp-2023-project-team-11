@@ -21,10 +21,13 @@ class ChattingServiceImpl implements ChattingService {
     chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
     final subscription = chatSocketChannel!.stream.listen((event) {
       final decoded = jsonDecode(event);
+
+      print("data layer : socket received $decoded");
       if (decoded["type"] == "system") {
         print("system message : ${decoded["body"]}");
       }
       if (decoded["type"] == "message") {
+        print("message type received");
         final body = decoded["body"];
         final chat = Chat.fromJson(body);
         onMessageChatReceive(chat);
@@ -34,6 +37,7 @@ class ChattingServiceImpl implements ChattingService {
       "type": "system",
       "body": {"session_key": sessionKey}
     }));
+    print(sessionKey);
 
     return subscription;
   }
@@ -76,6 +80,8 @@ class ChattingServiceImpl implements ChattingService {
     }
   }
 
+
+
   @override
   Future<void> sendChat({required String chatText, required String chattingRoomId}) async {
     chatSocketChannel!.sink.add(jsonEncode(
@@ -87,5 +93,10 @@ class ChattingServiceImpl implements ChattingService {
         },
       },
     ));
+  }
+
+  @override
+  void closeChannel() {
+    chatSocketChannel!.sink.close();
   }
 }

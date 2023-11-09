@@ -27,4 +27,6 @@ abstract class ChattingService {
   Future<void> sendChat({required String chatText, required String chattingRoomId});
 
   StreamSubscription initChatConnection({required String sessionKey, required void Function(Chat chat) onMessageChatReceive,});
+
+  void closeChannel();
 }

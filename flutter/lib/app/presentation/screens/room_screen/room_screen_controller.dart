@@ -11,16 +11,17 @@ class RoomScreenController extends GetxController {
 
   final ChattingRoom chattingRoom = Get.arguments as ChattingRoom;
 
+  final FocusNode chattingFocusNode = FocusNode();
+
   late final ValidChattingRoomController validChattingRoomController =
       Get.find<ValidChattingRoomController>(
     tag: chattingRoom.id.toString(),
   );
 
-  void scrollDownToBottom() {
-    scrollCon.animateTo(scrollCon.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+  void scrollDownToBottom([int? milliseconds]) {
+    scrollCon.animateTo(scrollCon.position.maxScrollExtent,
+        duration: Duration(milliseconds: milliseconds?? 200), curve: Curves.linear);
   }
-
-
 
   String get userEmail => Get.find<UserController>().userEmail;
   final ScrollController scrollCon = ScrollController();
@@ -46,10 +47,24 @@ class RoomScreenController extends GetxController {
     chattingCon.addListener(() {
       enableSendButton(chattingCon.text.isNotEmpty);
     });
+    chattingFocusNode.addListener(() async {
+      print(chattingFocusNode.hasFocus);
+      if (chattingFocusNode.hasFocus) {
+        await Future.delayed(const Duration(milliseconds: 160));
+        scrollDownToBottom(110);
+        await Future.delayed(const Duration(milliseconds: 110));
+        scrollDownToBottom(50);
+      } else {
+
+      }
+    });
   }
+
   @override
-  void onReady() {
+  void onReady() async {
     super.onReady();
+    scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
+    await Future.delayed(const Duration(milliseconds: 60));
     scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
   }
 
@@ -57,10 +72,10 @@ class RoomScreenController extends GetxController {
   void onClose() {
     super.onClose();
     chattingCon.dispose();
+    chattingFocusNode.dispose();
   }
 
   RoomScreenController({
     required SendChatUseCase sendChatUseCase,
   }) : _sendChatUseCase = sendChatUseCase;
 }
-
