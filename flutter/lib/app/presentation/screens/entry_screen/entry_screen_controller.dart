@@ -33,7 +33,6 @@ class EntryScreenController extends GetxController {
   }
 
   void onSignInButtonTap() {
-    _automaticSignInUseCase.call(onFail: (){}, onSuccess: (User user){onSignInSuccess(user);});
     Get.bottomSheet(
       SignInBottomSheet(
         emailCon: emailCon,

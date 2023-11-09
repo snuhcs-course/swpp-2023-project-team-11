@@ -13,11 +13,10 @@ class AutomaticSignInUseCase {
   }) async {
 
     final storedSessionKey = await _authService.getSessionKey;
-    print("current sessionkey: ${storedSessionKey}");
     if (storedSessionKey == null) {
       print("Automatic signin fail. Try signing in");
       onFail();
-    } //ZLTrtNwuQGqfdNov_d56O17C3sDFgsvS2mGwos46Bv4=
+    }
     else{
       await _authService.setAuthorized(accessToken: storedSessionKey);
       final result = await _userRepository.readUserBySessionId();
