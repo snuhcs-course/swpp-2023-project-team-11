@@ -39,7 +39,7 @@ class RoomScreen extends GetView<RoomScreenController> {
                 text: chatVm.text,
                 senderType: chatVm.senderType,
                 sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
-              ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?240:0);
+              ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
             },
             separatorBuilder: (context, index) {
               return const SizedBox(height: 10);
