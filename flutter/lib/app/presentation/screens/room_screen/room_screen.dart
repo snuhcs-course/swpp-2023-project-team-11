@@ -58,6 +58,7 @@ class RoomScreen extends GetView<RoomScreenController> {
               onPressed: controller.enableSendButton.value? controller.onSendButtonTap: null,
               hintText: "선택 완료 시 우측 보내기 버튼 클릭",
               context: context,
+              focusNode: controller.chattingFocusNode,
             ),
         ),
       ),

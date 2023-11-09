@@ -75,18 +75,18 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: false,
       actions: [
         if (additionalAction != null) additionalAction!,
-        ElevatedButton(
-          onPressed: () => {print("!")},
-          style: ElevatedButton.styleFrom(
-              shape: const CircleBorder(),
-              backgroundColor: const Color(0xfff8f1fb),
-              foregroundColor: Colors.white),
-          child: const Icon(
-            Icons.notifications_none_rounded,
-            color: Color(0xff9f75d1),
-            size: 30,
-          ),
-        ),
+        // ElevatedButton(
+        //   onPressed: () => {print("!")},
+        //   style: ElevatedButton.styleFrom(
+        //       shape: const CircleBorder(),
+        //       backgroundColor: const Color(0xfff8f1fb),
+        //       foregroundColor: Colors.white),
+        //   child: const Icon(
+        //     Icons.notifications_none_rounded,
+        //     color: Color(0xff9f75d1),
+        //     size: 30,
+        //   ),
+        // ),
       ],
     );
   }

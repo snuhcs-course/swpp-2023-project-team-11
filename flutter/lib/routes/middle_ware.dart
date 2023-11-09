@@ -4,6 +4,7 @@ import 'package:mobile_app/app/data/service_implements/auth_service_impl.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
+import 'package:mobile_app/app/domain/use_cases/disconnect_chatting_channel_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_all_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/leave_chatting_use_case.dart';
@@ -17,26 +18,30 @@ class MainMiddleWare extends GetMiddleware {
   List<Bindings>? onBindingsStart(List<Bindings>? bindings) {
     User user = Get.arguments as User;
     Get.put<UserController>(UserController(user: user));
-    final ChattingRepositoryImpl chattingRepositoryImpl =
-        ChattingRepositoryImpl();
+    final ChattingRepositoryImpl chattingRepositoryImpl = ChattingRepositoryImpl();
     final ChattingServiceImpl chattingServiceImpl = ChattingServiceImpl();
     Get.put<ChattingRoomListController>(
       ChattingRoomListController(
-          fetchChattingRoomsUseCase: FetchChattingRoomsUseCase(
-            chattingRepository: chattingRepositoryImpl,
-          ),
-          acceptChattingRequestUseCase: AcceptChattingRequestUseCase(
-            chattingRepository: chattingRepositoryImpl,
-          ),
-          openChatConnectionUseCase: OpenChatConnectionUseCase(
-            chattingService: ChattingServiceImpl(),
-            authService: AuthServiceImpl(),
-          ),
-          fetchAllChatUseCase: FetchAllChatUseCase(
-            chattingService: chattingServiceImpl,
-          ),
-          leaveChattingRoomUseCase: LeaveChattingRoomUseCase(
-              chattingRepository: chattingRepositoryImpl)),
+        fetchChattingRoomsUseCase: FetchChattingRoomsUseCase(
+          chattingRepository: chattingRepositoryImpl,
+        ),
+        acceptChattingRequestUseCase: AcceptChattingRequestUseCase(
+          chattingRepository: chattingRepositoryImpl,
+        ),
+        openChatConnectionUseCase: OpenChatConnectionUseCase(
+          chattingService: ChattingServiceImpl(),
+          authService: AuthServiceImpl(),
+        ),
+        fetchAllChatUseCase: FetchAllChatUseCase(
+          chattingService: chattingServiceImpl,
+        ),
+        leaveChattingRoomUseCase: LeaveChattingRoomUseCase(
+          chattingRepository: chattingRepositoryImpl,
+        ),
+        disconnectChattingChannelUseCase: DisconnectChattingChannelUseCase(
+          chattingService: chattingServiceImpl,
+        ),
+      ),
     );
 
     return super.onBindingsStart(bindings);

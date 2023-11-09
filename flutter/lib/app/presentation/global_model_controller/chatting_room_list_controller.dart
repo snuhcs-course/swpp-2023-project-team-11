@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
+import 'package:mobile_app/app/domain/use_cases/disconnect_chatting_channel_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_all_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/leave_chatting_use_case.dart';
@@ -35,7 +36,7 @@ class ChattingRoomListController extends GetxController
         requestingRooms,
         requestedRooms,
       ) async {
-        if (validRooms.isNotEmpty && _centerChatStreamSubscription == null) {
+        if (_centerChatStreamSubscription == null) {
           await _openChatConnection();
         }
         _updateRoomsOnlyForNewOnes(
@@ -171,11 +172,11 @@ class ChattingRoomListController extends GetxController
 
   void deleteAllValidChattingRoomDependency() async {
     await _centerChatStreamSubscription!.cancel();
+    _disconnectChattingChannelUseCase.call();
     _centerChatStreamSubscription = null;
     _validRooms.forEach((chatRoom) {
       Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
     });
-
   }
 
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;
@@ -183,16 +184,19 @@ class ChattingRoomListController extends GetxController
   final OpenChatConnectionUseCase _openChatConnectionUseCase;
   final FetchAllChatUseCase _fetchAllChatUseCase;
   final LeaveChattingRoomUseCase _leaveChattingRoomUseCase;
+  final DisconnectChattingChannelUseCase _disconnectChattingChannelUseCase;
 
   ChattingRoomListController(
       {required FetchChattingRoomsUseCase fetchChattingRoomsUseCase,
       required AcceptChattingRequestUseCase acceptChattingRequestUseCase,
       required OpenChatConnectionUseCase openChatConnectionUseCase,
       required FetchAllChatUseCase fetchAllChatUseCase,
+      required DisconnectChattingChannelUseCase disconnectChattingChannelUseCase,
       required LeaveChattingRoomUseCase leaveChattingRoomUseCase})
       : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
         _acceptChattingRequestUseCase = acceptChattingRequestUseCase,
         _fetchAllChatUseCase = fetchAllChatUseCase,
         _openChatConnectionUseCase = openChatConnectionUseCase,
+        _disconnectChattingChannelUseCase = disconnectChattingChannelUseCase,
         _leaveChattingRoomUseCase = leaveChattingRoomUseCase;
 }

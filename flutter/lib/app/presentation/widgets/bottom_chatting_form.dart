@@ -7,12 +7,14 @@ class BottomChattingForm extends StatelessWidget {
   final String? hintText;
   final VoidCallback? onPressed;
   final BuildContext context;
+  final FocusNode? focusNode;
   const BottomChattingForm({
     super.key,
     required this.textEditingController,
     required this.onPressed,
     this.hintText,
     required this.context,
+    this.focusNode,
   });
 
   @override
@@ -30,6 +32,7 @@ class BottomChattingForm extends StatelessWidget {
             child: MainTextFormField(
               textEditingController: textEditingController,
               hintText: hintText,
+              focusNode: focusNode,
             ),
           ),
           const SizedBox(width: 16),
