@@ -14,29 +14,37 @@ import 'package:mobile_app/core/utils/loading_util.dart';
 
 import '../../../domain/models/chatting_room.dart';
 
-class ChatRequestsScreenController extends GetxController{
-  final ChattingRoomListController chattingRoomListController = Get.find<ChattingRoomListController>();
+class ChatRequestsScreenController extends GetxController {
+  final ChattingRoomListController chattingRoomListController =
+      Get.find<ChattingRoomListController>();
   final requestable = true.obs;
 
-  Future <void> onAcceptButtonTap(ChattingRoom chattingRoom) async {
-    await chattingRoomListController.acceptChattingRequest(chattingRoom);
+  Future<void> onAcceptButtonTap(ChattingRoom chattingRoom) async {
+    LoadingUtil.withLoadingOverlay(asyncFunction: () async  {
+      await chattingRoomListController.acceptChattingRequest(chattingRoom);
+    });
+
   }
 
-  void onProfileTap(User you, ChattingRoom chattingRoom){
+  void onProfileTap(User you, ChattingRoom chattingRoom) {
     // need to display profile details of this user
-    Get.bottomSheet(UserInfoDetailBottomSheet(onAcceptButtonTap: () async {
-      requestable.value = false;
-      await onAcceptButtonTap(chattingRoom);
-      Fluttertoast.showToast(msg: "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: MyColor.orange_1,
-          textColor: Colors.white,
-          fontSize: 15.0);
-      Get.back();
+    Get.bottomSheet(UserInfoDetailBottomSheet(
+      onAcceptButtonTap: () async {
+        requestable.value = false;
+        Get.back();
+        await onAcceptButtonTap(chattingRoom);
+        Fluttertoast.showToast(
+            msg: "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: MyColor.orange_1,
+            textColor: Colors.white,
+            fontSize: 15.0);
+      },
+      user: you,
+    ));
 
-    }, user: you));
   }
 
   void onBrowseFriendsButtonTap() {

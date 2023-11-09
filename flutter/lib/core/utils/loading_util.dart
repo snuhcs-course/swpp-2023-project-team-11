@@ -13,7 +13,7 @@ class LoadingUtil {
       opacityColor: Colors.transparent,
       loadingWidget: Center(
         child: Material(
-          color: Colors.black54,
+          color: Colors.black12,
           child: Center(child: loadingWidget),
         ),
       ),

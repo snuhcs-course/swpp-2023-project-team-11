@@ -169,8 +169,8 @@ class ChattingRoomListController extends GetxController
     await reloadRooms();
   }
 
-  void deleteAllValidChattingRoomDependency() {
-    _centerChatStreamSubscription!.cancel();
+  void deleteAllValidChattingRoomDependency() async {
+    await _centerChatStreamSubscription!.cancel();
     _centerChatStreamSubscription = null;
     _validRooms.forEach((chatRoom) {
       Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
