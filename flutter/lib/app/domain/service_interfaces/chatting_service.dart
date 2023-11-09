@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/result.dart';
 
@@ -24,5 +26,5 @@ abstract class ChattingService {
   ///
   Future<void> sendChat({required String chatText, required String chattingRoomId});
 
-  Stream initChatConnection({required String sessionKey, required void Function(Chat chat) onMessageChatReceive,});
+  StreamSubscription initChatConnection({required String sessionKey, required void Function(Chat chat) onMessageChatReceive,});
 }

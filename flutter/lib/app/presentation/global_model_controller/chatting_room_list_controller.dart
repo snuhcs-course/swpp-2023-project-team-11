@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ffi';
 
 import 'package:get/get.dart';
@@ -13,7 +14,7 @@ import 'package:mobile_app/app/presentation/global_model_controller/user_control
 
 class ChattingRoomListController extends GetxController
     with StateMixin<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
-  Stream? _centerChatStream;
+  StreamSubscription? _centerChatStreamSubscription;
   List<ChattingRoom> _validRooms = [];
 
   List<ChattingRoom> _requestingRooms = [];
@@ -34,7 +35,7 @@ class ChattingRoomListController extends GetxController
         requestingRooms,
         requestedRooms,
       ) async {
-        if (validRooms.isNotEmpty && _centerChatStream == null) {
+        if (validRooms.isNotEmpty && _centerChatStreamSubscription == null) {
           await _openChatConnection();
         }
         _updateRoomsOnlyForNewOnes(
@@ -52,7 +53,7 @@ class ChattingRoomListController extends GetxController
 
   Future<void> _openChatConnection() async {
     print("use case 호출해서 session 열기");
-    _centerChatStream = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
+    _centerChatStreamSubscription = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
       print("receive");
       // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom.
       final targetRoomController = Get.find<ValidChattingRoomController>(
@@ -169,9 +170,12 @@ class ChattingRoomListController extends GetxController
   }
 
   void deleteAllValidChattingRoomDependency() {
+    _centerChatStreamSubscription!.cancel();
+    _centerChatStreamSubscription = null;
     _validRooms.forEach((chatRoom) {
       Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
     });
+
   }
 
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;
