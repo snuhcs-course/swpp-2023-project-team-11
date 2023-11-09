@@ -140,14 +140,14 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
                         Text(
-                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일",
+                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1)))
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      chatroom.isApproved?"채팅룸의 가장 최근 대화":"아직 상대가 수락하지 않았습니다",
+                      chatroom.isTerminated?"종료된 채팅방입니다": chatroom.isApproved?"채팅룸의 가장 최근 대화":"아직 상대가 수락하지 않았습니다",
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,

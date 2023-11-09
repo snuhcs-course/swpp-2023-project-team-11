@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
+import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
 
 class UserController extends GetxController {
   final User _user;
@@ -14,4 +15,9 @@ class UserController extends GetxController {
   Profile get userProfile => _user.profile;
   Language get userMainLanguage => _user.getMainLanguage;
   List<Language> get userLanguages => _user.getLanguages;
+
+  @override
+  void onClose() {
+    super.onClose();
+  }
 }

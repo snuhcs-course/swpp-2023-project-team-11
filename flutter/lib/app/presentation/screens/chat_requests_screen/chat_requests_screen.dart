@@ -69,62 +69,65 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
   Widget _buildChatroomContainer(ChattingRoom chatroom, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: (){controller.onProfileTap(chatroom.initiator, chatroom);},
-            child: CircleAvatar(
+      child: GestureDetector(
+        onTap: () {
+          controller.onProfileTap(chatroom.initiator, chatroom);
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
                 radius: 30,
                 backgroundImage: ProfilePic().call(chatroom.initiator.email)
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(chatroom.initiator.name,
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
-                    const SizedBox(width: 8),
-                    Text(
-                        "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일",
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xffff9162)))
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "상대(아직 친구가 아닌 사람)가 보낸 메세지",
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xff2d3a45).withOpacity(0.8)),
-                )
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(chatroom.initiator.name,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
+                      const SizedBox(width: 8),
+                      Text(
+                          "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xffff9162)))
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "상대(아직 친구가 아닌 사람)가 보낸 메세지",
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xff2d3a45).withOpacity(0.8)),
+                  )
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-            PopupMenuButton(
-              icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
-              itemBuilder: (context) {
-                return [
-                  const PopupMenuItem<int>(value: 0, child: Text("삭제")),
-                  const PopupMenuItem<int>(value: 1, child: Text("수락")),
-                ];
-              },
-              onSelected: (value) {
-                if (value == 0) {
-                  print("삭제");
-                } else if (value == 1) {
-                  controller.onAcceptButtonTap(chatroom);
-                }
-              },
-            ),
-        ],
+            const SizedBox(width: 12),
+              PopupMenuButton(
+                icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
+                itemBuilder: (context) {
+                  return [
+                    const PopupMenuItem<int>(value: 0, child: Text("삭제")),
+                    const PopupMenuItem<int>(value: 1, child: Text("수락")),
+                  ];
+                },
+                onSelected: (value) {
+                  if (value == 0) {
+                    print("삭제");
+                  } else if (value == 1) {
+                    controller.onAcceptButtonTap(chatroom);
+                  }
+                },
+              ),
+          ],
+        ),
       ),
     );
   }

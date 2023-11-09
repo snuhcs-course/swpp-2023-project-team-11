@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ffi';
 
 import 'package:get/get.dart';
@@ -12,13 +13,8 @@ import 'package:mobile_app/app/presentation/global_model_controller/chatting_roo
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 
 class ChattingRoomListController extends GetxController
-    with
-        StateMixin<
-            ({
-              List<ChattingRoom> roomForMain,
-              List<ChattingRoom> roomForRequested
-            })> {
-  Stream? _centerChatStream;
+    with StateMixin<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
+  StreamSubscription? _centerChatStreamSubscription;
   List<ChattingRoom> _validRooms = [];
 
   List<ChattingRoom> _requestingRooms = [];
@@ -39,7 +35,7 @@ class ChattingRoomListController extends GetxController
         requestingRooms,
         requestedRooms,
       ) async {
-        if (validRooms.isNotEmpty && _centerChatStream == null) {
+        if (validRooms.isNotEmpty && _centerChatStreamSubscription == null) {
           await _openChatConnection();
         }
         _updateRoomsOnlyForNewOnes(
@@ -57,8 +53,7 @@ class ChattingRoomListController extends GetxController
 
   Future<void> _openChatConnection() async {
     print("use case 호출해서 session 열기");
-    _centerChatStream =
-        await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
+    _centerChatStreamSubscription = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
       print("receive");
       // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom.
       final targetRoomController = Get.find<ValidChattingRoomController>(
@@ -101,33 +96,27 @@ class ChattingRoomListController extends GetxController
     );
   }
 
-  void _injectDependencyForAddedValidRooms(
-      List<ChattingRoom> newValidChattingRooms) {
+  void _injectDependencyForAddedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+    print('inject');
     // add a controller for a chatroom if it is not already present (the chatroom should be a valid one)
     for (final newChattingRoom in newValidChattingRooms) {
-      final newOneAlreadyExisted =
-          _validRooms.any((element) => element.id == newChattingRoom.id);
-      if (!newOneAlreadyExisted) {
-        Get.put<ValidChattingRoomController>(
+      Get.put<ValidChattingRoomController>(
           ValidChattingRoomController(
             chattingRoom: newChattingRoom,
             fetchAllChatUseCase: _fetchAllChatUseCase,
           ),
           tag: newChattingRoom.id.toString(),
-        );
-      }
+          permanent: true);
     }
   }
 
-  void _removeDependencyForRemovedValidRooms(
-      List<ChattingRoom> newValidChattingRooms) {
+  void _removeDependencyForRemovedValidRooms(List<ChattingRoom> newValidChattingRooms) {
     // after fetching chatrooms, if it is different from original list of chatrooms, it means we need to remove some.
     for (final priorChattingRoom in _validRooms) {
-      final priorOneExistsInNewOnes = newValidChattingRooms
-          .any((element) => element.id == priorChattingRoom.id);
+      final priorOneExistsInNewOnes =
+          newValidChattingRooms.any((element) => element.id == priorChattingRoom.id);
       if (!priorOneExistsInNewOnes) {
-        Get.delete<ValidChattingRoomController>(
-            tag: priorChattingRoom.id.toString());
+        Get.delete<ValidChattingRoomController>(tag: priorChattingRoom.id.toString(), force: true);
       }
     }
   }
@@ -136,9 +125,8 @@ class ChattingRoomListController extends GetxController
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
       email: Get.find<UserController>().userEmail,
-      whenSuccess:
-          (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
-        print("fetch 채팅룸 성공");
+      whenSuccess: (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
+        print("fetch 채팅룸 성공 in reloadRooms");
         _updateRoomsOnlyForNewOnes(
           validRooms: validRooms,
           terminatedRooms: terminatedRooms,
@@ -158,7 +146,7 @@ class ChattingRoomListController extends GetxController
       whenSuccess: (chattingRoom) {
         print("accept success");
         // TODO 이거 refetch 안하고 최적화 하려면 로컬 메모리에서 처리
-        _updateRoomsOnlyForNewOnes();
+        _updateRoomsOnlyForNewOnes(validRooms: [chattingRoom, ..._validRooms]);
       },
       whenFail: () {
         print("accept 실패");
@@ -169,15 +157,25 @@ class ChattingRoomListController extends GetxController
 
   Future<void> leaveChattingRoom(ChattingRoom chattingRoom) async {
     await _leaveChattingRoomUseCase.call(
-        chattingRoomId: chattingRoom.id,
-        whenSuccess: (chattingRoom) {
-          print("Successfully terminated the chatroom");
-          _updateRoomsOnlyForNewOnes();
-        },
-        whenFail: () {
-          print("terminate 실패");
-        },);
+      chattingRoomId: chattingRoom.id,
+      whenSuccess: (chattingRoom) {
+        print("Successfully terminated the chatroom");
+        _updateRoomsOnlyForNewOnes();
+      },
+      whenFail: () {
+        print("terminate 실패");
+      },
+    );
     await reloadRooms();
+  }
+
+  void deleteAllValidChattingRoomDependency() async {
+    await _centerChatStreamSubscription!.cancel();
+    _centerChatStreamSubscription = null;
+    _validRooms.forEach((chatRoom) {
+      Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
+    });
+
   }
 
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;

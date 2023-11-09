@@ -13,6 +13,8 @@ class AcceptChattingRequestUseCase {
     final result = await _chattingRepository.updateChattingRoom(chattingRoomId: chattingRoomId);
     switch(result) {
       case Success(: final data) : {
+        print("new fetched chatting room id");
+        print(data.id);
         whenSuccess(data);
       }
       case Fail() : {

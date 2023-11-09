@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -13,12 +14,12 @@ class ChattingServiceImpl implements ChattingService {
   static const _chatWebSocketUrl = "ws://3.35.9.226:8000/ws/connect";
 
   @override
-  Stream initChatConnection({
+  StreamSubscription initChatConnection({
     required String sessionKey,
     required void Function(Chat chat) onMessageChatReceive,
   }) {
     chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
-    chatSocketChannel!.stream.listen((event) {
+    final subscription = chatSocketChannel!.stream.listen((event) {
       final decoded = jsonDecode(event);
       if (decoded["type"] == "system") {
         print("system message : ${decoded["body"]}");
@@ -34,7 +35,7 @@ class ChattingServiceImpl implements ChattingService {
       "body": {"session_key": sessionKey}
     }));
 
-    return chatSocketChannel!.stream;
+    return subscription;
   }
 
   @override

@@ -16,6 +16,10 @@ class RoomScreenController extends GetxController {
     tag: chattingRoom.id.toString(),
   );
 
+  void scrollDownToBottom() {
+    scrollCon.animateTo(scrollCon.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+  }
+
 
 
   String get userEmail => Get.find<UserController>().userEmail;
@@ -42,6 +46,11 @@ class RoomScreenController extends GetxController {
     chattingCon.addListener(() {
       enableSendButton(chattingCon.text.isNotEmpty);
     });
+  }
+  @override
+  void onReady() {
+    super.onReady();
+    scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
   }
 
   @override
