@@ -47,7 +47,7 @@ class ChattingRoomsScreenController extends GetxController{
     DateTime timeOfChat = timeOfLatestChatMessage(chattingRoom).toLocal();
     Duration difference = DateTime.timestamp().difference(timeOfChat.add(timeOfChat.timeZoneOffset)); // 여기 시간 계산이 왜 이상한지를 모르겠네요ㅠ
 
-    print("${difference.inMinutes} is the difference in time^^");
+    // print("${difference.inMinutes} is the difference in time^^");
     if(difference.compareTo(Duration(hours: 1)) < 0){
       return "${difference.inMinutes} 분 전";
     }else if (difference.compareTo(Duration(days: 1)) < 0){
