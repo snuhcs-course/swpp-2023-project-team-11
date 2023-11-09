@@ -107,7 +107,7 @@ class FriendDetailScreenController extends GetxController {
 
   void onRequestButtonTap() {
     LoadingUtil.withLoadingOverlay(asyncFunction: () async {
-      _requestChattingUseCase.call(
+      await _requestChattingUseCase.call(
         counterPartEmail: user.email,
         whenSuccess: _whenRequestSuccess,
         whenFail: () {
