@@ -54,7 +54,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           padding: EdgeInsets.all(16),
           child: Text(
             "새로운 채팅 요청",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff9f75d1)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: MyColor.purple),
           ),
         ),
       ),
@@ -76,7 +76,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         children: [
           const Text(
             "아직 아무도 친구가 되지 않았어요!",
-            style: TextStyle(color: Color(0xff9f75d1), fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 10,
@@ -144,11 +144,11 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                         (chatroom.isApproved && !chatroom.isTerminated)? Text(
                             controller.checkSp(chatroom.id)? "${controller.timeToDisplay(chatroom)} id-${chatroom.id}" : "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1))):
+                                fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple)):
                         Text(
                             "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1)))
+                                fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple))
                       ],
                     ),
                     const SizedBox(height: 4),

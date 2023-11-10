@@ -32,6 +32,7 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final Widget? additionalAction;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +48,7 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
           fontWeight: FontWeight.bold,
         ),
       ),
+      actions: [if (additionalAction != null) additionalAction!,],
     );
   }
 
@@ -56,6 +58,7 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
   const ChattingRoomAppBar({
     required this.title,
     super.key,
+    this.additionalAction
   });
 }
 

@@ -5,6 +5,7 @@ import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 
 class RoomScreenController extends GetxController {
   final SendChatUseCase _sendChatUseCase;
@@ -39,6 +40,10 @@ class RoomScreenController extends GetxController {
   void onSendButtonTap() {
     _sendChatUseCase.call(chatText: chattingCon.text, chattingRoomId: chattingRoom.id.toString());
     chattingCon.text = "";
+  }
+
+  void onSnekiTap() {
+    Get.toNamed(Routes.Maker(nextRoute: Routes.ROADMAP), arguments: chattingRoom);
   }
 
   @override

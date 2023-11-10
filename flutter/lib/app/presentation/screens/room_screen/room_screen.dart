@@ -20,7 +20,13 @@ class RoomScreen extends GetView<RoomScreenController> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        appBar: ChattingRoomAppBar(title: controller.chattingRoomTitle),
+        appBar: ChattingRoomAppBar(title: controller.chattingRoomTitle,
+        additionalAction: IconButton(
+          icon: Image.asset("assets/images/sneki_holding_here.png"),
+          onPressed: controller.onSnekiTap,
+
+        ),
+        ),
         backgroundColor: MyColor.purple,
         body: Container(
           decoration: const BoxDecoration(

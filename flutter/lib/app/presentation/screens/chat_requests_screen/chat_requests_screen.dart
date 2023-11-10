@@ -43,7 +43,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
         children: [
           const Text(
             "새로운 채팅 요청이 지금은 없어요!",
-            style: TextStyle(color: Color(0xff9f75d1), fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 36,
