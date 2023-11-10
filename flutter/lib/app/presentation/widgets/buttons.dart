@@ -158,13 +158,6 @@ class BottomSnekiButton extends StatelessWidget {
           const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
         bottom: MediaQuery.of(context).padding.bottom / 2 + 24,
       ),
-      // decoration: BoxDecoration(
-      //   gradient: LinearGradient(
-      //     colors: [MyColor.purple, Colors.transparent,],
-      //     begin: Alignment.bottomCenter,
-      //     end: Alignment.center
-      //   )
-      // ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

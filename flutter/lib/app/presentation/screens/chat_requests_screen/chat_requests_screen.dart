@@ -79,7 +79,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           children: [
             CircleAvatar(
                 radius: 30,
-                backgroundImage: ProfilePic().call(chatroom.initiator.email)
+                backgroundImage: ProfilePic.call(chatroom.initiator.email)
             ),
             const SizedBox(width: 16),
             Expanded(

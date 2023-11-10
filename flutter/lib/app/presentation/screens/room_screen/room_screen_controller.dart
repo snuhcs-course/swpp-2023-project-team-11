@@ -37,6 +37,14 @@ class RoomScreenController extends GetxController {
     }
   }
 
+  String get opponentEmail {
+    if (userEmail == chattingRoom.initiator.email) {
+      return chattingRoom.responder.email;
+    } else {
+      return chattingRoom.initiator.email;
+    }
+  }
+
   void onSendButtonTap() {
     _sendChatUseCase.call(chatText: chattingCon.text, chattingRoomId: chattingRoom.id.toString());
     chattingCon.text = "";

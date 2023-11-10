@@ -18,29 +18,17 @@ class ProfileScreen extends GetView<ProfileScreenController> {
       backgroundColor: Colors.white,
       appBar:
       FriendDetailAppBar(
-        profileImage: ProfilePic().call(controller.userController.userEmail),
+        profileImage: ProfilePic.call(controller.userController.userEmail),
         userName: "${controller.userController.userName}",
         userEmail: "${controller.userController.userEmail}",
         isMyProfile: true,
       ),
-
-      // NotiAppBar(
-      //   title: Text(
-      //     "내 프로필",
-      //     style: TextStyle(
-      //         fontSize: 20,
-      //         fontWeight: FontWeight.w700,
-      //         color: Color(0xff2d3a45)),
-      //   ),
-      // ),
       body: Padding(
         padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // _buildSimpleProfile(),
-              // const SizedBox(height: 20),
               _buildAboutMeContainer(),
               const SizedBox(height: 24),
 
@@ -69,53 +57,13 @@ class ProfileScreen extends GetView<ProfileScreenController> {
               _buildLikeContainer(),
               SizedBox(height: 24),
               MainButton(mainButtonType: MainButtonType.key, text: "로그아웃", onPressed: controller.onLogOutButtonTap),
-
+              SizedBox(height: 100)
             ],
           ),
         ),
       ),
 
     );
-  }
-
-  Row _buildSimpleProfile() {
-    return Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: SizedBox.fromSize(
-                    size: const Size.fromRadius(70),
-                    child: Image.asset('assets/images/snek_profile_img_1.webp'),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(controller.userController.userName,
-                        style: const TextStyle(
-                            color: Color(0xff2d3a45),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 24)),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      children: [
-                        Container(
-                          width: 120,
-                          decoration: BoxDecoration(border: Border.all(color: Colors.white, width: 2), borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Text(controller.userController.userAboutMe,
-                              style: const TextStyle(
-                                  color: Color(0xff2d3a45),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 20)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            );
   }
 
   Container _buildLikeContainer() {

@@ -6,6 +6,8 @@ import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:characters/characters.dart';
+
 
 // ignore: unused_import
 import 'chatting_rooms_screen_controller.dart';
@@ -102,6 +104,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
 
   Widget _buildChatroomList(List<ChattingRoom> chattingRooms) {
     return ListView.separated(
+        padding: EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return _buildChatroomContainer(chattingRooms[index], context);
@@ -126,8 +129,8 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 24,
-              backgroundImage: ProfilePic().call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
+              radius: 27,
+              backgroundImage: ProfilePic.call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -142,18 +145,18 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
                         (chatroom.isApproved && !chatroom.isTerminated)? Text(
-                            controller.checkSp(chatroom.id)? "${controller.timeToDisplay(chatroom)} id-${chatroom.id}" : "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                            controller.checkSp(chatroom.id)? "${controller.timeToDisplay(chatroom)} id-${chatroom.id}" : "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 id-${chatroom.id}",
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple)):
                         Text(
-                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 id-${chatroom.id}",
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple))
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      chatroom.isTerminated?"종료된 채팅방입니다": (chatroom.isApproved? (controller.checkSp(chatroom.id)? controller.latestChatMessage(chatroom.id): "채팅을 시작해봐요!") : "아직 상대가 수락하지 않았습니다"),
+                      chatroom.isTerminated?"종료된 채팅방입니다": (chatroom.isApproved? (controller.checkSp(chatroom.id)? (controller.latestChatMessage(chatroom.id).characters.take(25).toString() + ((controller.latestChatMessage(chatroom.id).characters.length > 30)? "...":"")): "채팅을 시작해봐요!") : "아직 상대가 수락하지 않았습니다"),
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,

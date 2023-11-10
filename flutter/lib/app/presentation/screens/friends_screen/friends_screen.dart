@@ -45,6 +45,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
 
   Widget _buildUserList(List<User> users) {
     return ListView.separated(
+      padding: EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, index) {
@@ -70,7 +71,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
                     size: const Size.fromRadius(60),
-                    child: Image(image: ProfilePic().call(user.email))
+                    child: Image(image: ProfilePic.call(user.email))
                   // ProfilePic().call(user.email)
                   // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
                 ),

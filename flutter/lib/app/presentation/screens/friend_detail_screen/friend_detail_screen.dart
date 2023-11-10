@@ -7,7 +7,6 @@ import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_detail_column.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
-import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
 import 'friend_detail_screen_controller.dart';
@@ -20,7 +19,7 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: FriendDetailAppBar(
-        profileImage: ProfilePic().call(controller.user.email),
+        profileImage: ProfilePic.call(controller.user.email),
         // AssetImage(
         //   'assets/images/snek_profile_img_${Random().nextInt(5) + 1}.webp',
         // ),

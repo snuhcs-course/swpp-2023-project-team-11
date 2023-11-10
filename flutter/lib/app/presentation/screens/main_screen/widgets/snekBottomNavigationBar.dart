@@ -45,14 +45,6 @@ class SnekBottomNavigationBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: item.icon,
             )
-            // child: AnimatedSize(
-            //   duration: const Duration(milliseconds: 900),
-            //   child: Icon(
-            //     icon.icon,
-            //     size: currentIcon == icon.id ? 26 : 23,
-            //     color: currentIcon == icon.id ? primaryColor : Colors.black,
-            //   ),
-            // ),
           ),
         )
             .toList(),
@@ -60,92 +52,3 @@ class SnekBottomNavigationBar extends StatelessWidget {
     );
   }
 }
-
-
-//
-// import 'package:flutter/material.dart';
-//
-// class SnekBottomNaviagtionBar extends StatefulWidget {
-//
-//   final void Function(int) onTap;
-//   final int currIndex;
-//   final List<BottomNavigationBarItem> items;
-//
-//   @override
-//   State<SnekBottomNaviagtionBar> createState() => _SnekBottomNaviagtionBarState();
-//
-//   const SnekBottomNaviagtionBar({
-//     required this.onTap,
-//     this.currIndex = 0, required this.items,
-//   });
-// }
-//
-// class _SnekBottomNaviagtionBarState extends State<SnekBottomNaviagtionBar>{
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       decoration: BoxDecoration(borderRadius: BorderRadius.circular(100)),
-//       color: Colors.white,
-//       child: Row(
-//         children: [
-//
-//
-//         ],
-//       ),
-//     )
-//   }
-//
-// }
-//
-// IconButton(
-// icon: Image.asset("assets/images/sneki_holding_here.png"),
-// onPressed: controller.onSnekiTap,
-//
-// ),
-//
-// //class Bird extends StatefulWidget {
-// //   const Bird({
-// //     super.key,
-// //     this.color = const Color(0xFFFFE306),
-// //     this.child,
-// //   });
-// //
-// //   final Color color;
-// //   final Widget? child;
-// //
-// //   @override
-// //   State<Bird> createState() => _BirdState();
-// // }
-// //
-// // class _BirdState extends State<Bird> {
-// //   double _size = 1.0;
-// //
-// //   void grow() {
-// //     setState(() { _size += 0.1; });
-// //   }
-// //
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Container(
-// //       color: widget.color,
-// //       transform: Matrix4.diagonal3Values(_size, _size, 1.0),
-// //       child: widget.child,
-// //     );
-// //   }
-// // }
-//
-//
-// // BottomNavigationBar(
-// //           onTap: (index) {
-// //             controller.currentIndex(index);
-// //           },
-// //           currentIndex: controller.currentIndex.value,
-// //           items: const [
-// //             BottomNavigationBarItem(
-// //               icon: Icon(Icons.abc),
-// //               label: "0",
-// //             ),
-// //             BottomNavigationBarItem(icon: Icon(Icons.abc), label: "1"),
-// //             BottomNavigationBarItem(icon: Icon(Icons.abc), label: "2"),
-// //           ],
-// //         ),
