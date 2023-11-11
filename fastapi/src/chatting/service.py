@@ -230,7 +230,10 @@ def calculate_intimacy(
 
 
 def flatten_texts(texts: List[Text]) -> str:
-    return ".".join(text.msg for text in texts)
+    #len(text.msg)<50 이하인 것만 join
+    texts = list(filter(lambda text: len(text.msg) < 50, texts))
+    result = '.'.join(text.msg for text in texts)
+    return result
 
 
 def call_clova_api(text) -> requests.Response:
