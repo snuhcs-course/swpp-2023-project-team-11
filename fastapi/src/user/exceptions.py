@@ -44,3 +44,8 @@ class InvalidLocationException(HTTPException):
 class InvalidLanguageException(HTTPException):
     def __init__(self):
         super().__init__(400, detail='invalid language(s)')
+
+
+class InvalidUserException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail="user does not exist")

@@ -8,6 +8,7 @@ from src.auth.exceptions import *
 from src.auth.models import Session
 from src.constants import HASH_SECRET
 from src.database import DbConnector
+from src.user.exceptions import InvalidUserException
 from src.user.models import User, EmailVerification, Email
 
 

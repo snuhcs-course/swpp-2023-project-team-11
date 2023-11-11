@@ -4,7 +4,6 @@ import unittest
 from src.auth.dependencies import *
 from src.auth.service import *
 from src.database import Base, DbConnector
-from src.user.models import Language, Profile
 from tests.utils import *
 
 

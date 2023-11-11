@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session as DbSession
 
-from src.auth.exceptions import InvalidUserException
 from src.chatting.schemas import CreateChattingRequest
 from src.database import DbConnector
+from src.user.exceptions import InvalidUserException
 from src.user.models import User, EmailVerification, Email
 
 
