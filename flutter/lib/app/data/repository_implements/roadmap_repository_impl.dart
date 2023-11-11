@@ -41,9 +41,10 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
       {required int chattingRoomId}) async {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/intimacy";
+    print(chattingRoomId);
 
     try {
-      final response = await dio.get<Map<String, dynamic>>(baseUrl + path,
+      final response = await dio.post<Map<String, dynamic>>(baseUrl + path,
           queryParameters: {"chatting_id": chattingRoomId});
       final data = response.data;
       if (data == null) throw Exception();

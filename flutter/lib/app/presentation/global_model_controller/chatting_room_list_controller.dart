@@ -5,6 +5,7 @@ import 'dart:ffi';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
+import 'package:mobile_app/app/domain/models/intimacy.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/disconnect_chatting_channel_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/fetch_all_chat_use_case.dart';
@@ -12,6 +13,7 @@ import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/leave_chatting_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
+import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/main.dart';
@@ -64,7 +66,33 @@ class ChattingRoomListController extends GetxController
         tag: chat.chattingRoomId.toString(),
       );
       targetRoomController.addChat(chat);
+      // every time we listen to a new chat, change the most recent chat for that chatroom
+      sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
+      // need to check number of chat. To be used for updating intimacy
+
+      if (checkIntimacyUpdateCondition(chat)){
+        sp.setString(chat.chattingRoomId.toString() + "/lastIntimacyUpdate", DateTime.timestamp().toString());
+        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){}, whenFail: (){});
+      }
+
+      print("happily new chat");
     });
+  }
+
+  bool checkIntimacyUpdateCondition(Chat chat){
+    int numChat = sp.containsKey(chat.chattingRoomId.toString() + "/numChat")? sp.getInt(chat.chattingRoomId.toString() + "/numChat")! : 0;
+    sp.setInt(chat.chattingRoomId.toString() + "/numChat", numChat+1);
+    DateTime lastIntimacyUpdateTimeStamp = sp.containsKey(chat.chattingRoomId.toString() + "/lastIntimacyUpdate")?DateTime.parse(sp.getString(chat.chattingRoomId.toString() + "/lastIntimacyUpdate")!): DateTime.timestamp();
+    print(lastIntimacyUpdateTimeStamp);
+
+    // return true when this is 1st, 11st, ... chat to the chatroom after listening
+    // return true when this chat is more than 1 minutes later than the last update
+    if(numChat % 10 == 0) return true;
+    if(DateTime.timestamp().difference(lastIntimacyUpdateTimeStamp).compareTo(Duration(minutes: 1)) > 0){
+      return true;
+    }
+    return false;
+
   }
 
   bool checkSp(int chatRoomId){
@@ -203,6 +231,7 @@ class ChattingRoomListController extends GetxController
   final FetchAllChatUseCase _fetchAllChatUseCase;
   final LeaveChattingRoomUseCase _leaveChattingRoomUseCase;
   final DisconnectChattingChannelUseCase _disconnectChattingChannelUseCase;
+  final UpdateIntimacyUseCase _updateIntimacyUseCase;
 
   ChattingRoomListController(
       {required FetchChattingRoomsUseCase fetchChattingRoomsUseCase,
@@ -210,11 +239,14 @@ class ChattingRoomListController extends GetxController
       required OpenChatConnectionUseCase openChatConnectionUseCase,
       required FetchAllChatUseCase fetchAllChatUseCase,
       required DisconnectChattingChannelUseCase disconnectChattingChannelUseCase,
-      required LeaveChattingRoomUseCase leaveChattingRoomUseCase})
+      required LeaveChattingRoomUseCase leaveChattingRoomUseCase,
+      required UpdateIntimacyUseCase updateIntimacyUseCase
+      })
       : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
         _acceptChattingRequestUseCase = acceptChattingRequestUseCase,
         _fetchAllChatUseCase = fetchAllChatUseCase,
         _openChatConnectionUseCase = openChatConnectionUseCase,
         _disconnectChattingChannelUseCase = disconnectChattingChannelUseCase,
-        _leaveChattingRoomUseCase = leaveChattingRoomUseCase;
+        _leaveChattingRoomUseCase = leaveChattingRoomUseCase,
+        _updateIntimacyUseCase = updateIntimacyUseCase;
 }
