@@ -231,8 +231,10 @@ def calculate_intimacy(
 
 def flatten_texts(texts: List[Text]) -> str:
     #len(text.msg)<50 이하인 것만 join
-    texts = list(filter(lambda text: len(text.msg) < 50, texts))
+    
     result = '.'.join(text.msg for text in texts)
+    if len(result) > 999:
+        result = result[:999]
     return result
 
 
