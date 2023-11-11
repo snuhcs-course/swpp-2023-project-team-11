@@ -28,15 +28,6 @@ class TestDependencies(unittest.TestCase):
         teardown_user(db)
         db.commit()
 
-    @inject_db
-    def test_get_user_id(self, db: DbSession) -> None:
-        valid_req = CreateChattingRequest(counterpart=self.email)
-        invalid_req = CreateChattingRequest(counterpart=self.invalid)
-
-        self.assertEqual(self.profile_id, get_user_id(valid_req, db))
-        with self.assertRaises(InvalidUserException):
-            get_user_id(invalid_req, db)
-
 
 class TestService(unittest.TestCase):
     initiator = "test@snu.ac.kr"

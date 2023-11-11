@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session as DbSession
 
-from src.auth.dependencies import get_session
+from src.auth.dependencies import check_session
 from src.auth.models import Session
 from src.auth.schemas import SessionResponse
 from src.auth.service import create_session
@@ -45,12 +45,13 @@ def create_user(req: CreateUserRequest, db: DbSession = Depends(DbConnector.get_
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(session: Session = Depends(get_session)):
-    return from_user(session.user)
+def get_me(user_id: Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
+    user = service.get_user_by_id(user_id, db)
+    return from_user(user, db)
 
 
 @router.get("/all", response_model=List[UserResponse])
-def get_all_users(session: Session = Depends(get_session), db: DbSession = Depends(DbConnector.get_db)):
-    targets = service.get_target_users(session.user, db)
-    return list(from_user(user) for user in service.sort_target_users(session.user, targets))
-
+def get_all_users(user_id: Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
+    user = service.get_user_by_id(user_id, db)
+    targets = service.get_target_users(user, db)
+    return list(from_user(user) for user in service.sort_target_users(user, targets))

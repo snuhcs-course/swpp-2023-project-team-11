@@ -87,6 +87,14 @@ def check_verification_token(req: CreateUserRequest, db: DbSession) -> int:
     return verification.id
 
 
+def get_user_by_id(user_id: int, db: DbSession) -> User:
+    user = db.query(User).where(User.user_id == user_id).first()
+    if user is None:
+        raise InvalidUserException()
+    
+    return user
+
+
 def get_user_by_email(email: str, db: DbSession) -> User:
     user = db.query(User).join(User.verification).join(
         EmailVerification.email).where(Email.email == email).first()

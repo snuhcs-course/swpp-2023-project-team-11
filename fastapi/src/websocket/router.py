@@ -12,15 +12,15 @@ async def websocket(socket: WebSocket, manager: WebSocketManager = Depends(get_s
     await socket.accept()
 
     try:
-        session = await service.authenticate_socket(socket)
+        user_id, session_key = await service.authenticate_socket(socket)
     except WebSocketDisconnect:
         return
 
-    await manager.add_socket(session.user_id, session.session_key, socket)
+    await manager.add_socket(user_id, session_key, socket)
 
     try:
         while True:
             msg = await socket.receive_json()
-            await service.handle_message(session.user_id, msg, socket, manager)
+            await service.handle_message(user_id, msg, socket, manager)
     except WebSocketDisconnect:
-        await manager.remove_socket(session.user_id, session.session_key, socket)
+        await manager.remove_socket(user_id, session_key, socket)

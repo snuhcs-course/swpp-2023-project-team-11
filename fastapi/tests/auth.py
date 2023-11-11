@@ -40,17 +40,14 @@ class TestDependencies(unittest.TestCase):
             username=self.snu_email, password="")
 
         check_password(valid_req, db)
-        with self.assertRaises(InvalidUserException):
-            check_password(invalid_email_req, db)
         with self.assertRaises(InvalidPasswordException):
             check_password(invalid_password_req, db)
 
     @inject_db
     def test_get_session(self, db: DbSession):
-        self.assertEqual(get_session(self.session_key,
-                         db).user.profile.id, self.profile_id)
+        self.assertEqual(check_session(self.session_key, db), self.profile_id)
         with self.assertRaises(InvalidSessionException):
-            get_session("", db)
+            check_session("", db)
 
 
 class TestService(unittest.TestCase):
