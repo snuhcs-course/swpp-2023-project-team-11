@@ -14,8 +14,10 @@ class UpdateIntimacyUseCase{
     final result = await _roadmapRepository.updateIntimacy(chattingRoomId: chattingRoomId);
     switch (result) {
       case Success(:final data):
+        print("updating intimacy success");
         whenSuccess(data);
       case Fail(:final issue):
+        print("updating intimacy fail");
         whenFail();
     }
   }

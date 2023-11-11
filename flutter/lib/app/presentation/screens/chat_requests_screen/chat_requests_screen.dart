@@ -78,7 +78,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-                radius: 30,
+                radius: 27,
                 backgroundImage: ProfilePic.call(chatroom.initiator.email)
             ),
             const SizedBox(width: 16),
@@ -100,7 +100,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "상대(아직 친구가 아닌 사람)가 보낸 메세지",
+                    "${chatroom.initiator.name}님의 채팅 요청이 왔어요!",
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,

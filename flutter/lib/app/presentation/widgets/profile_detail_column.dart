@@ -206,6 +206,7 @@ class ProfileDetailColumn extends StatelessWidget{
   Container _buildMainLanguageContainer() {
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "사용하는 주언어",
