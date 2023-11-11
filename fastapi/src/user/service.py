@@ -1,7 +1,8 @@
 import base64
 from datetime import datetime
 from email.message import EmailMessage
-import hmac, hashlib
+import hmac
+import hashlib
 import numpy as np
 import pandas as pd
 import random
@@ -27,9 +28,11 @@ def create_verification_code(email: str, db: DbSession) -> int:
         db.add(EmailCode(email=Email(email=email), code=code))
         db.flush()
     elif obj.code is None:
-        db.execute(insert(EmailCode).values({"email_id": obj.id, "code": code}))
+        db.execute(insert(EmailCode).values(
+            {"email_id": obj.id, "code": code}))
     else:
-        db.execute(update(EmailCode).values(code=code).where(EmailCode.email_id == obj.id))
+        db.execute(update(EmailCode).values(
+            code=code).where(EmailCode.email_id == obj.id))
 
     return code
 
@@ -47,7 +50,8 @@ def send_code_via_email(email: str, code: int) -> None:
 
 
 def check_verification_code(req: VerificationRequest, db: DbSession) -> int:
-    code = db.query(EmailCode).join(EmailCode.email).filter(Email.email == req.email).first()
+    code = db.query(EmailCode).join(EmailCode.email).filter(
+        Email.email == req.email).first()
     if code is None or code.code != req.code:
         raise InvalidEmailCodeException()
 
@@ -56,14 +60,18 @@ def check_verification_code(req: VerificationRequest, db: DbSession) -> int:
 
 def create_verification(email: str, email_id: int, db: DbSession) -> str:
     payload = bytes(email + str(datetime.now()), 'utf-8')
-    signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
+    signature = hmac.new(HASH_SECRET, payload,
+                         digestmod=hashlib.sha256).digest()
     token = base64.urlsafe_b64encode(signature).decode('utf-8')
 
-    verification = db.query(EmailVerification).where(EmailVerification.email_id == email_id).first()
+    verification = db.query(EmailVerification).where(
+        EmailVerification.email_id == email_id).first()
     if verification is None:
-        db.execute(insert(EmailVerification).values({"token": token, "email_id": email_id}))
+        db.execute(insert(EmailVerification).values(
+            {"token": token, "email_id": email_id}))
     elif verification.user is None:
-        db.execute(update(EmailVerification).values(token=token).where(EmailVerification.email_id == email_id))
+        db.execute(update(EmailVerification).values(
+            token=token).where(EmailVerification.email_id == email_id))
     else:
         raise EmailVerification(email)
 
@@ -71,11 +79,21 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
 
 
 def check_verification_token(req: CreateUserRequest, db: DbSession) -> int:
-    verification = db.query(EmailVerification).join(EmailVerification.email).filter(Email.email == req.email).first()
+    verification = db.query(EmailVerification).join(
+        EmailVerification.email).filter(Email.email == req.email).first()
     if verification is None or verification.token != req.token:
         raise InvalidEmailTokenException()
-    
+
     return verification.id
+
+
+def get_user_by_email(email: str, db: DbSession) -> User:
+    user = db.query(User).join(User.verification).join(
+        EmailVerification.email).where(Email.email == email).first()
+    if user is None:
+        raise InvalidUserException()
+
+    return user
 
 
 def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> int:
@@ -85,27 +103,33 @@ def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> 
 
     salt, hash = create_salt_hash(req.password)
     profile_id = create_profile(req.profile, db)
-    create_user_item(profile_id, user_food, "food_id", Food, req.profile.foods, InvalidFoodException, db)
-    create_user_item(profile_id, user_movie, "movie_id", Movie, req.profile.movies, InvalidMovieException, db)
-    create_user_item(profile_id, user_hobby, "hobby_id", Hobby, req.profile.hobbies, InvalidHobbyException, db)
-    create_user_item(profile_id, user_location, "location_id", Location, req.profile.locations, InvalidLocationException, db)
+    create_user_item(profile_id, user_food, "food_id", Food,
+                     req.profile.foods, InvalidFoodException, db)
+    create_user_item(profile_id, user_movie, "movie_id", Movie,
+                     req.profile.movies, InvalidMovieException, db)
+    create_user_item(profile_id, user_hobby, "hobby_id", Hobby,
+                     req.profile.hobbies, InvalidHobbyException, db)
+    create_user_item(profile_id, user_location, "location_id",
+                     Location, req.profile.locations, InvalidLocationException, db)
 
-    lang_id = db.scalar(select(Language.id).where(Language.name == req.main_language))
+    lang_id = db.scalar(select(Language.id).where(
+        Language.name == req.main_language))
     if lang_id is None:
         raise InvalidLanguageException()
 
     try:
         db.execute(insert(User).values({
-                "user_id": profile_id,
-                "verification_id": verification_id,
-                "lang_id": lang_id,
-                "salt": salt,
-                "hash": hash,
-            }))
+            "user_id": profile_id,
+            "verification_id": verification_id,
+            "lang_id": lang_id,
+            "salt": salt,
+            "hash": hash,
+        }))
     except IntegrityError:
         raise EmailInUseException(req.email)
-    
-    create_user_item(profile_id, user_lang, "lang_id", Language, req.languages, InvalidLanguageException, db)
+
+    create_user_item(profile_id, user_lang, "lang_id", Language,
+                     req.languages, InvalidLanguageException, db)
 
     return profile_id
 
@@ -113,7 +137,8 @@ def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> 
 def create_salt_hash(password: str) -> (str, str):
     salt = base64.b64encode(random.randbytes(16)).decode()
     payload = bytes(password + salt, 'utf-8')
-    signature = hmac.new(HASH_SECRET, payload, digestmod=hashlib.sha256).digest()
+    signature = hmac.new(HASH_SECRET, payload,
+                         digestmod=hashlib.sha256).digest()
     hash = base64.b64encode(signature).decode()
 
     return (salt, hash)
@@ -121,15 +146,15 @@ def create_salt_hash(password: str) -> (str, str):
 
 def create_profile(profile: ProfileData, db: DbSession) -> int:
     return db.scalar(insert(Profile).values({
-            "name": profile.name,
-            "birth": profile.birth,
-            "sex": profile.sex,
-            "major": profile.major,
-            "admission_year": profile.admission_year,
-            "about_me": profile.about_me,
-            "mbti": profile.mbti,
-            "nation_code": profile.nation_code,
-        }).returning(Profile.id))
+        "name": profile.name,
+        "birth": profile.birth,
+        "sex": profile.sex,
+        "major": profile.major,
+        "admission_year": profile.admission_year,
+        "about_me": profile.about_me,
+        "mbti": profile.mbti,
+        "nation_code": profile.nation_code,
+    }).returning(Profile.id))
 
 
 def create_user_item(profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException], db: DbSession):
@@ -145,7 +170,8 @@ def create_user_item(profile_id: int, table: Table, column: str, model: type[Bas
 
 
 def get_target_users(user: User, db: DbSession) -> List[User]:
-    filter = (Profile.nation_code != KOREA_CODE) if user.profile.nation_code == KOREA_CODE else (Profile.nation_code == KOREA_CODE)
+    filter = (Profile.nation_code != KOREA_CODE) if user.profile.nation_code == KOREA_CODE else (
+        Profile.nation_code == KOREA_CODE)
     me = alias(user_lang, 'M')
     you = alias(user_lang, 'Y')
     return list(db.query(User).join(User.profile).where(filter).where(
