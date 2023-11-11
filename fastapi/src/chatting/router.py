@@ -20,7 +20,7 @@ def get_all_chattings(is_approved: bool, user_id: int = Depends(check_session),
 
 
 @router.post("/", response_model=ChattingResponse)
-def create_chatting(responder_id: int = Depends(get_user_id), user_id: int = Depends(check_session),
+def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int = Depends(check_session),
                     db: DbSession = Depends(DbConnector.get_db)):
     chatting = service.create_chatting(user_id, responder_id, db)
     db.commit()

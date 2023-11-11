@@ -6,5 +6,5 @@ from src.database import DbConnector
 from src.user.service import get_user_by_email
 
 
-def get_user_id(req: CreateChattingRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
+def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
     return get_user_by_email(req.counterpart, db).user_id
