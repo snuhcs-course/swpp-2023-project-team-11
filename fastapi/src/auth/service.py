@@ -32,8 +32,6 @@ def create_session(user_id: int, db: DbSession) -> str:
             {"session_key": session_key, "user_id": user_id}))
     except IntegrityError:
         raise InternalServerError()  # Hash Collision
-    else:
-        db.commit()
 
     return session_key
 
@@ -41,5 +39,3 @@ def create_session(user_id: int, db: DbSession) -> str:
 def delete_session(session_key: str, db: DbSession):
     if db.scalar(delete(Session).where(Session.session_key == session_key).returning(Session.session_key)) != session_key:
         raise InvalidSessionException()
-
-    db.commit()

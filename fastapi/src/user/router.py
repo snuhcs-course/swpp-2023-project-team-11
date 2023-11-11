@@ -37,8 +37,8 @@ def create_email_verification(req: VerificationRequest, email_id: int = Depends(
 def create_user(req: CreateUserRequest, verification_id: int = Depends(check_verification_token),
                 db: DbSession = Depends(DbConnector.get_db)):
     user_id = service.create_user(req, verification_id, db)
-    db.commit()
     session_key = create_session(user_id, db)
+    db.commit()
 
     return SessionResponse(access_token=session_key, token_type="bearer")
 

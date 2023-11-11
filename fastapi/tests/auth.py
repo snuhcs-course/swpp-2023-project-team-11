@@ -9,7 +9,6 @@ from tests.utils import *
 
 class TestDependencies(unittest.TestCase):
     snu_email = "test@snu.ac.kr"
-    naver_email = "test@naver.com"
     password = "password"
     session_key = "session_key"
 
@@ -34,8 +33,6 @@ class TestDependencies(unittest.TestCase):
     def test_check_password(self, db: DbSession):
         valid_req = OAuth2PasswordRequestForm(
             username=self.snu_email, password=self.password)
-        invalid_email_req = OAuth2PasswordRequestForm(
-            username=self.naver_email, password=self.password)
         invalid_password_req = OAuth2PasswordRequestForm(
             username=self.snu_email, password="")
 
@@ -65,18 +62,20 @@ class TestService(unittest.TestCase):
         db.commit()
 
     @inject_db
-    def test_create_delete_session(self, db: DbSession):
+    def test_create_session(self, db: DbSession):
         session_key = create_session(self.profile_id, db)
         with self.assertRaises(IntegrityError):
             db.execute(insert(Session).values(
                 {"session_key": session_key, "user_id": self.profile_id}))
-        db.commit()
+
+    @inject_db
+    def test_delete_session(self, db: DbSession):
+        session_key = create_session(self.profile_id, db)
         delete_session(session_key, db)
         with self.assertRaises(InvalidSessionException):
             delete_session(session_key, db)
         with self.assertRaises(InvalidSessionException):
             delete_session("", db)
-        db.commit()
 
 
 if __name__ == '__main__':
