@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session as DbSession
 
 from src.auth.dependencies import check_session
-from src.auth.models import Session
 from src.auth.schemas import SessionResponse
 from src.auth.service import create_session
 from src.database import DbConnector
@@ -26,8 +25,8 @@ def create_verification_code(email: str = Depends(check_snu_email), db: DbSessio
 
 
 @router.post("/email/verify", response_model=VerificationResponse)
-def create_email_verification(req: VerificationRequest, db: DbSession = Depends(DbConnector.get_db)):
-    email_id = service.check_verification_code(req, db)
+def create_email_verification(req: VerificationRequest, email_id: int = Depends(check_verification_code),
+                              db: DbSession = Depends(DbConnector.get_db)):
     token = service.create_verification(req.email, email_id, db)
     db.commit()
 
@@ -35,8 +34,8 @@ def create_email_verification(req: VerificationRequest, db: DbSession = Depends(
 
 
 @router.post("/sign_up", response_model=SessionResponse)
-def create_user(req: CreateUserRequest, db: DbSession = Depends(DbConnector.get_db)):
-    verification_id = service.check_verification_token(req, db)
+def create_user(req: CreateUserRequest, verification_id: int = Depends(check_verification_token),
+                db: DbSession = Depends(DbConnector.get_db)):
     user_id = service.create_user(req, verification_id, db)
     db.commit()
     session_key = create_session(user_id, db)

@@ -19,6 +19,15 @@ from src.user.schemas import *
 from src.user.models import *
 
 
+def get_verification_code(email: str, db: DbSession) -> EmailCode:
+    code = db.scalar(select(EmailCode).join(
+        EmailCode.email).where(Email.email == email))
+    if code is None:
+        raise InvalidEmailCodeException()
+
+    return code
+
+
 def create_verification_code(email: str, db: DbSession) -> int:
     # 100000 ≤ code ≤ 999999
     code = 100000 + max(0, min(int(random.random() * 900000), 900000))
@@ -49,13 +58,13 @@ def send_code_via_email(email: str, code: int) -> None:
         smtp.send_message(msg)
 
 
-def check_verification_code(req: VerificationRequest, db: DbSession) -> int:
-    code = db.query(EmailCode).join(EmailCode.email).filter(
-        Email.email == req.email).first()
-    if code is None or code.code != req.code:
-        raise InvalidEmailCodeException()
+def get_verification(email: str, db: DbSession) -> EmailVerification:
+    verification = db.scalar(select(EmailVerification).join(
+        EmailVerification.email).filter(Email.email == email))
+    if verification is None:
+        raise InvalidEmailTokenException()
 
-    return code.email_id
+    return verification
 
 
 def create_verification(email: str, email_id: int, db: DbSession) -> str:
@@ -73,25 +82,16 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
         db.execute(update(EmailVerification).values(
             token=token).where(EmailVerification.email_id == email_id))
     else:
-        raise EmailVerification(email)
+        raise EmailInUseException(email)
 
     return token
-
-
-def check_verification_token(req: CreateUserRequest, db: DbSession) -> int:
-    verification = db.query(EmailVerification).join(
-        EmailVerification.email).filter(Email.email == req.email).first()
-    if verification is None or verification.token != req.token:
-        raise InvalidEmailTokenException()
-
-    return verification.id
 
 
 def get_user_by_id(user_id: int, db: DbSession) -> User:
     user = db.query(User).where(User.user_id == user_id).first()
     if user is None:
         raise InvalidUserException()
-    
+
     return user
 
 
@@ -204,7 +204,8 @@ def sort_target_users(user: User, targets: List[User]) -> List[User]:
         df_target["similarity"] = get_similarity(df_me, df_target)
         df_targets = pd.concat([df_targets, df_target])
 
-    user_ids = df_targets.sort_values(by=["similarity"], ascending=False).loc[:, "id"]
+    user_ids = df_targets.sort_values(
+        by=["similarity"], ascending=False).loc[:, "id"]
 
     for user_id in user_ids:
         targets_sorted.append(user_dict[user_id])

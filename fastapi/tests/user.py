@@ -11,6 +11,12 @@ from tests.utils import *
 class TestDependencies(unittest.TestCase):
     snu_email = "test@snu.ac.kr"
     naver_email = "test@naver.com"
+    code = 100000
+    token = "token"
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        Base.metadata.create_all(bind=DbConnector.engine)
 
     def test_check_snu_email(self):
         valid_req = EmailRequest(email=self.snu_email)
@@ -19,6 +25,41 @@ class TestDependencies(unittest.TestCase):
         self.assertEqual(check_snu_email(valid_req), self.snu_email)
         with self.assertRaises(InvalidEmailException):
             self.assertEqual(check_snu_email(invalid_req), self.naver_email)
+
+    @inject_db
+    def test_check_verification_code(self, db: DbSession) -> None:
+        valid_req = VerificationRequest(email=self.snu_email, code=self.code)
+        invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
+        invalid_code_req = VerificationRequest(email=self.snu_email, code=0)
+
+        db.add(EmailCode(code=self.code, email=Email(email=self.snu_email)))
+        db.flush()
+
+        check_verification_code(valid_req, db)
+        with self.assertRaises(InvalidEmailCodeException):
+            check_verification_code(invalid_email_req, db)
+        with self.assertRaises(InvalidEmailCodeException):
+            check_verification_code(invalid_code_req, db)
+
+    @inject_db
+    def test_check_verification_token(self, db: DbSession) -> None:
+        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
+                          nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
+        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile,
+                                      main_language="", languages=[])
+        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
+                                              main_language="", languages=[])
+        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile,
+                                              main_language="", languages=[])
+
+        db.add(EmailVerification(token=self.token, email=Email(email=self.snu_email)))
+        db.flush()
+
+        check_verification_token(valid_req, db)
+        with self.assertRaises(InvalidEmailTokenException):
+            check_verification_token(invalid_email_req, db)
+        with self.assertRaises(InvalidEmailTokenException):
+            check_verification_token(invalid_token_req, db)
 
 
 class TestService(unittest.TestCase):
@@ -124,21 +165,6 @@ class TestService(unittest.TestCase):
         send_code_via_email(self.email, self.code)
 
     @inject_db
-    def test_check_verification_code(self, db: DbSession) -> None:
-        valid_req = VerificationRequest(email=self.email, code=self.code)
-        invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
-        invalid_code_req = VerificationRequest(email=self.email, code=0)
-
-        db.add(EmailCode(code=self.code, email=Email(email=self.email)))
-        db.flush()
-
-        check_verification_code(valid_req, db)
-        with self.assertRaises(InvalidEmailCodeException):
-            check_verification_code(invalid_email_req, db)
-        with self.assertRaises(InvalidEmailCodeException):
-            check_verification_code(invalid_code_req, db)
-
-    @inject_db
     def test_create_verification(self, db: DbSession):
         email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
 
@@ -150,26 +176,6 @@ class TestService(unittest.TestCase):
             create_verification(self.email, email_id, db),
             db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
             )
-
-    @inject_db
-    def test_check_verification_token(self, db: DbSession) -> None:
-        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
-                          nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
-        valid_req = CreateUserRequest(email=self.email, token=self.token, password="", profile=profile,
-                                      main_language="", languages=[])
-        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
-                                              main_language="", languages=[])
-        invalid_token_req = CreateUserRequest(email=self.email, token="", password="", profile=profile,
-                                              main_language="", languages=[])
-
-        db.add(EmailVerification(token=self.token, email=Email(email=self.email)))
-        db.flush()
-
-        check_verification_token(valid_req, db)
-        with self.assertRaises(InvalidEmailTokenException):
-            check_verification_token(invalid_email_req, db)
-        with self.assertRaises(InvalidEmailTokenException):
-            check_verification_token(invalid_token_req, db)
 
     def test_create_user(self):
         for db in DbConnector.get_db():
