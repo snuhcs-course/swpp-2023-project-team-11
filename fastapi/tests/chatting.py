@@ -259,9 +259,10 @@ class TestService(unittest.TestCase):
             )
         )
         db.commit()
-        self.assertIn(get_topic('C', db).topic, ["I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topic('B', db).topic, "I'm so mad")
-        self.assertEqual(get_topic('A', db).topic, "I'm so good")
+        self.assertIn(get_topics('C', 1, db)[0].topic, ["I'm so sad", "I'm so happy"])
+        self.assertEqual(get_topics('B', 1, db)[0].topic, "I'm so mad")
+        self.assertEqual(get_topics('A', 1, db)[0].topic, "I'm so good")
+        self.assertEqual(get_topics('C', 2, db)[0].topic, "I'm so sad" or "I'm so happy")
 
     def test_flatten_texts(self):
         texts = [
