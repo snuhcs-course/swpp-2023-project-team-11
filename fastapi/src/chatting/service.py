@@ -255,7 +255,7 @@ def call_clova_api(text) -> requests.Response:
 
     response = requests.post(CLOVA_API_URL, data=data, headers=headers)
     if response.status_code != 200:
-        raise ExternalApiError("sentimental")
+        raise ClovaApiException()
     return response
 
 
@@ -267,7 +267,7 @@ def call_papago_api(text) -> requests.Response:
     data = {"source": "auto", "target": "ko", "text": text}
     response = requests.post(PAPAGO_API_URL, data=data, headers=headers)
     if response.status_code != 200:
-        raise ExternalApiError("translation")
+        raise PapagoApiException()
     return response
 
 
