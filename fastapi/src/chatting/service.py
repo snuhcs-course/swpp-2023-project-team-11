@@ -5,6 +5,7 @@ import json
 import numpy as np
 import requests
 from sqlalchemy import insert, update, desc, or_
+from sqlalchemy import func
 from sqlalchemy.orm import Session as DbSession
 
 from src.chatting.constants import *
@@ -183,10 +184,12 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     return new_intimacy
 
 
-def get_topic(tag: str, db: DbSession) -> Topic:
-    topics = db.query(Topic).where(Topic.tag == tag).all()
-    idx = random.randint(0, len(topics) - 1)
-    return topics[idx]
+def get_topics(tag: str, limit: int | None, db: DbSession) -> List[Topic]:
+    if limit is None :
+        limit = 1
+    topics = db.query(Topic).where(Topic.tag == tag).order_by(func.random()).limit(limit).all()
+    
+    return topics
 
 
 def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
