@@ -530,6 +530,20 @@ class TestService(unittest.TestCase):
         self.assertEqual(weight_1.all(), expected_weight1.all())
         self.assertEqual(weight_2.all(), expected_weight2.all())
         self.assertEqual(weight_3.all(), expected_weight3.all())
+    
+    def test_get_user_mbti(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "thai_food"],
+            movies=["horror", "action", "comedy"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+        my_user = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        self.assertEqual(get_user_mbti(my_user), "isfj")
+        
+        
 
 
 if __name__ == "__main__":
