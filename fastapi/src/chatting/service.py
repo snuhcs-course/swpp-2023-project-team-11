@@ -4,6 +4,7 @@ from typing import List, Any
 import json
 import numpy as np
 import requests
+from sqlalchemy import insert, update, desc, or_, func
 from numpy import ndarray, dtype
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
@@ -185,10 +186,10 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     return new_intimacy
 
 
-def get_topic(tag: str, db: DbSession) -> Topic:
-    topics = db.query(Topic).where(Topic.tag == tag).all()
-    idx = random.randint(0, len(topics) - 1)
-    return topics[idx]
+def get_topics(tag: str, limit: int, db: DbSession) -> List[Topic]:
+    topics = db.query(Topic).where(Topic.tag == tag).order_by(func.random()).limit(limit).all()
+    
+    return topics
 
 
 def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
@@ -234,7 +235,12 @@ def calculate_intimacy(
 
 
 def flatten_texts(texts: List[Text]) -> str:
-    return ".".join(text.msg for text in texts)
+    #len(text.msg)<50 이하인 것만 join
+    
+    result = '.'.join(text.msg for text in texts)
+    if len(result) > 999:
+        result = result[:999]
+    return result
 
 
 def call_clova_api(text) -> requests.Response:

@@ -59,12 +59,13 @@ def create_intimacy(chatting_id: int, session: Session = Depends(get_session),
 
 
 @router.get("/topic", response_model=TopicResponse)
-def get_topic_recommendation(chatting_id: int, session: Session = Depends(get_session),
+def get_topic_recommendation(chatting_id: int, limit: int = 1, session: Session = Depends(get_session),
                              db: DbSession = Depends(DbConnector.get_db)):
     intimacy = service.get_recent_intimacy(session.user_id, chatting_id, db)
     tag = service.get_tag_by_intimacy(intimacy)
-    topic = service.get_topic(tag, db)
-    return from_topic(topic)
+    topics = service.get_topics(tag, limit, db)
+
+    return list(from_topic(topic) for topic in topics)
 
 # # TODO get intimacy endpoint 두 개 다 없애고 get chatting에 Intimacy 추가해서 보내기
 # @router.get("/intimacy", response_model=IntimacyResponse)
