@@ -478,10 +478,10 @@ def score_turn_delta(
 
 # todo: set the appropriate weight according to user similarity
 def set_weight(initiator: User, responser: User) -> ndarray[float]:
-    """It is not used now, but will be used by applying cosine similarity between users to adjust weights"""
-
+    # get user similarity
     similarity = get_similarity(get_user_dataframe(initiator), get_user_dataframe(responser))
 
+    # set weight
     if similarity<0.2:
         # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
         weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
@@ -493,4 +493,9 @@ def set_weight(initiator: User, responser: User) -> ndarray[float]:
         weight = np.array([0.1, 0.17, 0.13, 0.17, 0.13, 0.17, 0.13])
     else:
         weight = np.array([0.1, 0.16, 0.14, 0.16, 0.14, 0.16, 0.14])
+
+    
     return weight
+
+def get_user_mbti(user: User) -> str:
+    return user.profile.mbti
