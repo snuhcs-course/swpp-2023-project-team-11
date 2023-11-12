@@ -262,7 +262,19 @@ class TestService(unittest.TestCase):
         self.assertIn(get_topics('C', 1, db)[0].topic, ["I'm so sad", "I'm so happy"])
         self.assertEqual(get_topics('B', 1, db)[0].topic, "I'm so mad")
         self.assertEqual(get_topics('A', 1, db)[0].topic, "I'm so good")
-        self.assertEqual(get_topics('C', 2, db)[0].topic, "I'm so sad" or "I'm so happy")
+        #get_topics 함수의 return 값이 random 정렬 되었는지 확인
+        test_list = get_topics('C', 2, db)
+        self.assertNotEqual(test_list[0].topic, test_list[1].topic)
+        self.assertEqual(len(test_list), 2)
+        if test_list[0] == "I'm so sad":
+            self.assertEqual(test_list[1].topic, "I'm so happy")
+        elif test_list[0] == "I'm so happy":
+            self.assertEqual(test_list[1].topic, "I'm so sad")
+
+        #topic 개수보다 많은 개수를 요청할 경우
+        self.assertEqual(len(get_topics('C', 3, db)), 2)
+        self.assertEqual(len(get_topics('C', 4, db)), 2)
+        self.assertEqual(len(get_topics('B', 5, db)), 1)
 
     def test_flatten_texts(self):
         texts = [

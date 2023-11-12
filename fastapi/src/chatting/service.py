@@ -4,8 +4,7 @@ from typing import List
 import json
 import numpy as np
 import requests
-from sqlalchemy import insert, update, desc, or_
-from sqlalchemy import func
+from sqlalchemy import insert, update, desc, or_, func
 from sqlalchemy.orm import Session as DbSession
 
 from src.chatting.constants import *
@@ -184,9 +183,7 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     return new_intimacy
 
 
-def get_topics(tag: str, limit: int | None, db: DbSession) -> List[Topic]:
-    if limit is None :
-        limit = 1
+def get_topics(tag: str, limit: int, db: DbSession) -> List[Topic]:
     topics = db.query(Topic).where(Topic.tag == tag).order_by(func.random()).limit(limit).all()
     
     return topics
