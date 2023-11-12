@@ -1,9 +1,10 @@
 import random
-from typing import List
+from typing import List, Any
 
 import json
 import numpy as np
 import requests
+from numpy import ndarray, dtype
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
 
@@ -11,7 +12,7 @@ from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.exceptions import ExternalApiError
-
+from src.user.service import *
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
     query = (
@@ -164,9 +165,10 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     else:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
         prev_texts = []
-
+    initiator = db.query(Chatting.initiator).where(Chatting.id == chatting_id).first()
+    responser = db.query(Chatting.responser).where(Chatting.id == chatting_id).first()
     new_intimacy_value = calculate_intimacy(
-        curr_texts, prev_texts, recent_intimacy, user_id)
+        curr_texts, prev_texts, recent_intimacy, user_id, initiator, responser)
     new_intimacy = db.scalar(
         insert(Intimacy)
         .values(
@@ -203,12 +205,14 @@ def calculate_intimacy(
     prev_texts: List[Text],
     recent_intimacy: Intimacy,
     user_id: int,
+    initiator: User,
+    responser: User
 ) -> int:
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     if len(prev_texts) == 0:
         weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
     else:
-        weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
+        weight = set_weight(initiator, responser)
 
     curr_flatten: str = flatten_texts(curr_texts)
     curr_translated: str = translate_text(curr_flatten)
@@ -466,6 +470,21 @@ def score_turn_delta(
         return 10
 
 
-def change_weight(weight: List[float]) -> List[float]:
+# todo: set the appropriate weight according to user similarity
+def set_weight(initiator: User, responser: User) -> ndarray[float]:
     """It is not used now, but will be used by applying cosine similarity between users to adjust weights"""
+
+    similarity = get_similarity(get_user_dataframe(initiator), get_user_dataframe(responser))
+
+    if similarity<0.2:
+        # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
+        weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
+    elif similarity < 0.4:
+        weight = np.array([0.1, 0.19, 0.11, 0.19, 0.11, 0.19, 0.11])
+    elif similarity < 0.6:
+        weight = np.array([0.1, 0.18, 0.12, 0.18, 0.12, 0.18, 0.12])
+    elif similarity < 0.8:
+        weight = np.array([0.1, 0.17, 0.13, 0.17, 0.13, 0.17, 0.13])
+    else:
+        weight = np.array([0.1, 0.16, 0.14, 0.16, 0.14, 0.16, 0.14])
     return weight
