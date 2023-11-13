@@ -522,16 +522,17 @@ class TestService(unittest.TestCase):
         weight_1 = set_weight(me, you1)
         weight_2 = set_weight(me, you2)
         weight_3 = set_weight(me, you3)
-        #
-        expected_weight1 = np.array([0.1, 0.19, 0.11, 0.19, 0.11, 0.19, 0.11])
-        expected_weight2 = np.array([0.1, 0.18, 0.12, 0.18, 0.12, 0.18, 0.12])
-        expected_weight3 = np.array([0.1, 0.17, 0.13, 0.17, 0.13, 0.17, 0.13])
+        
+        expected_weight1 = np.array([0.16, 0.18, 0.1, 0.18, 0.10, 0.18, 0.1])
+        expected_weight2 = np.array([0.16, 0.16, 0.12, 0.16, 0.12, 0.16, 0.12])
+        expected_weight3 = np.array([0.16, 0.17, 0.11, 0.17, 0.11, 0.17, 0.11])
 
-        self.assertEqual(weight_1.all(), expected_weight1.all())
-        self.assertEqual(weight_2.all(), expected_weight2.all())
-        self.assertEqual(weight_3.all(), expected_weight3.all())
+        self.assertTrue(np.allclose(weight_1, expected_weight1))
+        self.assertTrue(np.allclose(weight_2, expected_weight2))
+        self.assertTrue(np.allclose(weight_3, expected_weight3))
+
     
-    def test_get_user_mbti(self):
+    def test_get_mbti_f(self):
         my_profile = Profile(
             name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             mbti="isfj", nation_code=82,
@@ -540,8 +541,17 @@ class TestService(unittest.TestCase):
             locations=["up", "down"],
             hobbies=["soccer", "golf"]
         )
+        your_profile = Profile(
+            name="abdula", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+        
         my_user = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
-        self.assertEqual(get_user_mbti(my_user), "isfj")
+        your_user = User(user_id=1, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile)
+        self.assertEqual(get_mbti_f(my_user, your_user), 1)
         
         
 
