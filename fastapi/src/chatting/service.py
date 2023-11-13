@@ -8,7 +8,7 @@ from sqlalchemy import insert, update, desc, or_, func
 from numpy import ndarray, dtype
 from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
-
+from collections import Counter
 from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
@@ -493,9 +493,32 @@ def set_weight(initiator: User, responser: User) -> ndarray[float]:
         weight = np.array([0.1, 0.17, 0.13, 0.17, 0.13, 0.17, 0.13])
     else:
         weight = np.array([0.1, 0.16, 0.14, 0.16, 0.14, 0.16, 0.14])
-
     
+
+    #set weight according to mbti F, revise sentiment weight
+    num_F = get_mbti_f(initiator, responser)
+
+    if num_F == 0 : 
+        
+        weight[0] += 0.03
+        for i in range(1,7):
+            weight[i] -= 0.005
+    elif num_F == 1 :
+        weight[0] += 0.06
+        for i in range(1,7):
+            weight[i] -= 0.01
+    elif num_F == 2 :
+        weight[0] += 0.09
+        for i in range(1,7):
+            weight[i] -= 0.015
+
     return weight
 
-def get_user_mbti(user: User) -> str:
-    return user.profile.mbti
+def get_mbti_f(initiator: User, responser: User) -> int:
+    initiator_mbti = initiator.profile.mbti
+    responser_mbti = responser.profile.mbti
+    num_F = 0
+    num_F += initiator_mbti.count('F')
+    num_F += responser_mbti.count('F')
+
+    return num_F
