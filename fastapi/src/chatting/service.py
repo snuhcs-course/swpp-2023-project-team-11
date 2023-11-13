@@ -518,7 +518,8 @@ def get_mbti_f(initiator: User, responser: User) -> int:
     initiator_mbti = initiator.profile.mbti
     responser_mbti = responser.profile.mbti
     num_F = 0
-    num_F += initiator_mbti.count('F')
-    num_F += responser_mbti.count('F')
-
+    if initiator_mbti is not None:
+        num_F += initiator_mbti.count('f')
+    if responser_mbti is not None:
+        num_F += responser_mbti.count('f')
     return num_F
