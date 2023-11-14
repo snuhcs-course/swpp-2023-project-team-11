@@ -44,13 +44,13 @@ def create_user(req: CreateUserRequest, verification_id: int = Depends(check_ver
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(user_id: Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
+def get_me(user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
     user = service.get_user_by_id(user_id, db)
     return from_user(user, db)
 
 
 @router.get("/all", response_model=List[UserResponse])
-def get_all_users(user_id: Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
+def get_all_users(user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)):
     user = service.get_user_by_id(user_id, db)
     targets = service.get_target_users(user, db)
     return list(from_user(user) for user in service.sort_target_users(user, targets))

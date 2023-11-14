@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session as DbSession
 from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
-from src.exceptions import ExternalApiError
 from src.user.service import *
 
 
