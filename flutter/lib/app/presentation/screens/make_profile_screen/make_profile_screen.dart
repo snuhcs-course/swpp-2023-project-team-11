@@ -56,11 +56,11 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 verticalPadding: 15,
               ),
               const SizedBox(height: 8),
-              Text("닉네임은 최대 12자까지 가능해요.",
+              Text("닉네임은 한글/영문/숫자로, 최대 8자까지 가능해요.",
                   style: TextStyle(
                       color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
-                      fontSize: 14)),
+                      fontSize: 13)),
               const SizedBox(height: 20),
               const Text("자신을 소개하는 문장을 입력해주세요",
                   style: TextStyle(
@@ -79,7 +79,7 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                   style: TextStyle(
                       color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
-                      fontSize: 14)),
+                      fontSize: 13)),
               const SizedBox(height: 12),
               if (controller.isForeign) const Text("주로 사용하는 언어",
                   style: TextStyle(
@@ -173,6 +173,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                     } else {
                       controller.selectedMainLanguage.value =
                           language.keys.first;
+                      controller.selectedLanguages.value.remove(controller.mainLanguage);
+                      controller.selectedLanguages.refresh();
                     }
                   },
                   child: Container(
@@ -264,8 +266,13 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                       controller.selectedLanguages.value.remove(language.values.first);
                       controller.selectedLanguages.refresh();
                     } else {
-                      controller.selectedLanguages.value.add(language.values.first);
-                      controller.selectedLanguages.refresh();
+                      if(controller.selectedMainLanguage.value != "" && language.keys.first == controller.selectedMainLanguage.value){
+
+                      }else{
+                        controller.selectedLanguages.value.add(language.values.first);
+                        controller.selectedLanguages.refresh();
+                      }
+
                     }
                   },
                   child: Container(

@@ -27,7 +27,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
                   fontWeight: FontWeight.w700,
                 )),
             const SizedBox(height: 8),
-            Text("*6자 이상, 20자 이하의 영문",
+            Text("*6자 이상, 20자 이하의 숫자/영문",
                 style: TextStyle(
                     color: const Color(0xff2d3a45).withOpacity(0.8),
                     fontWeight: FontWeight.w400,

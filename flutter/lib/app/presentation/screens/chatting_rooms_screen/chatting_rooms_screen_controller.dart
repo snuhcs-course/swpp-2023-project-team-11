@@ -136,7 +136,9 @@ class ChattingRoomsScreenController extends GetxController{
   @override
   void onReady() {
     super.onReady();
+    print("before refresh");
     onRefresh(); // call refresh once at the beginning to update..
+    print("after refresh");
   }
 
 

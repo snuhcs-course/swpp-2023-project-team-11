@@ -109,6 +109,10 @@ class ProfileScreenController extends GetxController{
     });
   }
 
+  void onProfileEditTap() async{
+    print("editing profile");
+  }
+
   void onLogOutSuccess(){
     Get.find<ChattingRoomListController>().deleteAllValidChattingRoomDependency();
     Get.offAllNamed(Routes.ENTRY);

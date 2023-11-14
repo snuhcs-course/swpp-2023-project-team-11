@@ -22,6 +22,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         userName: "${controller.userController.userName}",
         userEmail: "${controller.userController.userEmail}",
         isMyProfile: true,
+        actionFunction: controller.onProfileEditTap,
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 16, left: 24, right: 24),

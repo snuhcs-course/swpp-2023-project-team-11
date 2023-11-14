@@ -73,4 +73,36 @@ class UserRepositoryImpl implements UserRepository {
 
   }
 
+  @override
+  Future<Result<int, DefaultIssue>> editUserProfile(
+      {required Map<String, dynamic> createData, required Map<String, dynamic> deleteData}) async {
+    final Dio dio = DioInstance.getDio;
+
+    const path_create = "/user/tag/create";
+    const path_delete = "/user/tag/delete";
+
+    try{
+      final response = dio.put(baseUrl + path_create, data: createData);
+    } on DioException catch(e) {
+      // 이걸로 분기를 해서 대응해라
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    }
+
+    try{
+      final response = dio.put(baseUrl + path_delete, data: createData);
+    } on DioException catch(e) {
+      // 이걸로 분기를 해서 대응해라
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    }
+
+    return Result.success(0);
+
+  }
+
+
+
 }

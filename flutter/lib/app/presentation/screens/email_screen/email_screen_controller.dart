@@ -57,6 +57,7 @@ class EmailScreenController extends GetxController {
     int codeInput = int.parse(codeCon.text);
     verifiable.value = false;
     Timer(Duration(seconds: 1), () {verifiable.value = true;});
+    FocusManager.instance.primaryFocus?.unfocus();
 
     await _emailVerifyUseCase(
         codeInput: codeInput,
