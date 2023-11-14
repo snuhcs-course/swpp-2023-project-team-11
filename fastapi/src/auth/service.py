@@ -12,7 +12,9 @@ from src.constants import HASH_SECRET
 from src.exceptions import InternalServerError
 
 
-def get_user_by_session(session_key: int, db: DbSession) -> int:
+def get_user_by_session(session_key: str, db: DbSession) -> int:
+    """Raises `InvalidSessionException`"""
+
     session = db.query(Session).filter(
         Session.session_key == session_key).first()
     if session is None:
@@ -22,6 +24,8 @@ def get_user_by_session(session_key: int, db: DbSession) -> int:
 
 
 def create_session(user_id: int, db: DbSession) -> str:
+    """Raises `InternalServerError`"""
+
     payload = bytes(str(user_id) + ' ' + str(datetime.now()), 'utf-8')
     signature = hmac.new(HASH_SECRET, payload,
                          digestmod=hashlib.sha256).digest()
@@ -37,5 +41,7 @@ def create_session(user_id: int, db: DbSession) -> str:
 
 
 def delete_session(session_key: str, db: DbSession):
+    """Raises `InvalidSessionException`"""
+
     if db.scalar(delete(Session).where(Session.session_key == session_key).returning(Session.session_key)) != session_key:
         raise InvalidSessionException()

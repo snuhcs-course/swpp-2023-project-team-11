@@ -8,4 +8,4 @@ class InvalidPasswordException(HTTPException):
 
 class InvalidSessionException(HTTPException):
     def __init__(self):
-        super().__init__(400, detail="session does not exist")
+        super().__init__(401, detail="session does not exist")

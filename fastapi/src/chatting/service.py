@@ -40,6 +40,8 @@ def create_chatting(user_id: int, responder_id: int, db: DbSession) -> Chatting:
 
 
 def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
+    """Raises `ChattingNotExistException`"""
+
     chatting = db.scalar(
         update(Chatting)
         .values(is_approved=True)
@@ -51,6 +53,7 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
         raise ChattingNotExistException()
 
     timestamp = datetime.now()
+    # FIXME insert_intimacy로 따로 만들기
     db.execute(
         insert(Intimacy).values(
             [
@@ -74,6 +77,8 @@ def approve_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
 
 
 def terminate_chatting(user_id: int, chatting_id: int, db: DbSession) -> Chatting:
+    """Raises `ChattingNotExistException`"""
+
     chatting = db.scalar(
         update(Chatting)
         .values(is_terminated=True)
@@ -148,6 +153,8 @@ def get_all_intimacies(
 
 
 def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
+    """Raises `ChattingNotExistException`, `ClovaApiError`, `PapagoApiError`"""
+
     # Previous 20 texts from chatting
     curr_texts = get_all_texts(user_id, chatting_id, -1, 20, None, db)
 
@@ -158,7 +165,8 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     recent_intimacy = intimacies[0]
 
     if len(intimacies) > 1:
-        prev_texts = get_all_texts(user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
+        prev_texts = get_all_texts(
+            user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
     else:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
         prev_texts = []
@@ -208,6 +216,8 @@ def calculate_intimacy(
     initiator: User,
     responser: User
 ) -> int:
+    """Raises `ClovaApiError`, `PapagoApiError`"""
+
     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
     if len(prev_texts) == 0:
         weight = np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])
@@ -242,6 +252,8 @@ def flatten_texts(texts: List[Text]) -> str:
 
 
 def call_clova_api(text) -> requests.Response:
+    """Raises `ClovaApiException`"""
+
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLOVA_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLOVA_CLIENT_SECRET,
@@ -256,6 +268,8 @@ def call_clova_api(text) -> requests.Response:
 
 
 def call_papago_api(text) -> requests.Response:
+    """Raises `PapagoApiException`"""
+
     headers = {
         "X-NCP-APIGW-API-KEY-ID": PAPAGO_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": PAPAGO_CLIENT_SECRET,
@@ -268,6 +282,8 @@ def call_papago_api(text) -> requests.Response:
 
 
 def translate_text(text: str) -> str:
+    """Raises PapagoApiException"""
+
     if text == '':
         # No need to translate
         return text
@@ -278,6 +294,8 @@ def translate_text(text: str) -> str:
 
 
 def get_sentiment(text: str) -> int:
+    """Raises ClovaApiException"""
+
     if text == '':
         return 0
 
@@ -294,6 +312,8 @@ def get_sentiment(text: str) -> int:
 
 
 def null_if_empty(func):
+    """Decorator pattern"""
+
     def wrapper(texts: List[Text], *args, **kwargs) -> float | None:
         if len(texts) == 0:
             return None
@@ -304,6 +324,8 @@ def null_if_empty(func):
 
 
 def get_delta(prev: float | None, curr: float | None) -> float | None:
+    """Decorator pattern"""
+
     if prev is None or curr is None:
         return None
     return curr - prev

@@ -20,6 +20,7 @@ from src.user.models import *
 
 
 def get_verification_code(email: str, db: DbSession) -> EmailCode:
+    """Raises `InvalidEmailCodeException`"""
     code = db.scalar(select(EmailCode).join(
         EmailCode.email).where(Email.email == email))
     if code is None:
@@ -59,6 +60,8 @@ def send_code_via_email(email: str, code: int) -> None:
 
 
 def get_verification(email: str, db: DbSession) -> EmailVerification:
+    """Raises `InvalidEmailTokenException`"""
+
     verification = db.scalar(select(EmailVerification).join(
         EmailVerification.email).filter(Email.email == email))
     if verification is None:
@@ -68,6 +71,8 @@ def get_verification(email: str, db: DbSession) -> EmailVerification:
 
 
 def create_verification(email: str, email_id: int, db: DbSession) -> str:
+    """Raises `EmailInUseException`"""
+
     payload = bytes(email + str(datetime.now()), 'utf-8')
     signature = hmac.new(HASH_SECRET, payload,
                          digestmod=hashlib.sha256).digest()
@@ -88,6 +93,8 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
 
 
 def get_user_by_id(user_id: int, db: DbSession) -> User:
+    """Raises `InvalidUserException`"""
+
     user = db.query(User).where(User.user_id == user_id).first()
     if user is None:
         raise InvalidUserException()
@@ -96,6 +103,8 @@ def get_user_by_id(user_id: int, db: DbSession) -> User:
 
 
 def get_user_by_email(email: str, db: DbSession) -> User:
+    """Raises `InvalidUserException`"""
+
     user = db.query(User).join(User.verification).join(
         EmailVerification.email).where(Email.email == email).first()
     if user is None:
@@ -105,6 +114,9 @@ def get_user_by_email(email: str, db: DbSession) -> User:
 
 
 def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> int:
+    """Raises `InvalidFoodException`, `InvalidMovieException`, `InvalidHobbyException`,
+    `InvalidLocationException`, `InvalidLanguageException`, `EmailInUseException`"""
+
     # Add foreign user's main language to available languages list
     if req.profile.nation_code != KOREA_CODE and req.main_language not in req.languages:
         req.languages.append(req.main_language)
@@ -166,6 +178,8 @@ def create_profile(profile: ProfileData, db: DbSession) -> int:
 
 
 def create_user_item(profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException], db: DbSession):
+    """Raises `@exception`"""
+
     if len(items) == 0:
         return
     try:
