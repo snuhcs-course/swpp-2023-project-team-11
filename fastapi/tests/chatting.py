@@ -159,10 +159,12 @@ class TestService(unittest.TestCase):
             } for i in range(5)))
         )
 
-        intimacies = get_all_intimacies(self.responder_id, None, None, None, db)
+        intimacies = get_all_intimacies(
+            self.responder_id, None, None, None, db)
         self.assertEqual(len(intimacies), 0)
-        
-        intimacies = get_all_intimacies(self.initiator_id, None, None, None, db)
+
+        intimacies = get_all_intimacies(
+            self.initiator_id, None, None, None, db)
         self.assertEqual(len(intimacies), 5)
         self.assertEqual(intimacies[1].intimacy, 3)
         self.assertEqual(intimacies[3].intimacy, 1)
@@ -173,8 +175,9 @@ class TestService(unittest.TestCase):
 
         intimacies = get_all_intimacies(self.initiator_id, None, 3, None, db)
         self.assertEqual(len(intimacies), 3)
-        
-        intimacies = get_all_intimacies(self.initiator_id, None, None, timestamp + timedelta(seconds=2.5), db)
+
+        intimacies = get_all_intimacies(
+            self.initiator_id, None, None, timestamp + timedelta(seconds=2.5), db)
         self.assertEqual(len(intimacies), 3)
 
     @patch("src.chatting.service.requests.post")  # patch for clova
@@ -250,10 +253,11 @@ class TestService(unittest.TestCase):
             )
         )
         db.commit()
-        self.assertIn(get_topics('C', 1, db)[0].topic, ["I'm so sad", "I'm so happy"])
+        self.assertIn(get_topics('C', 1, db)[0].topic, [
+                      "I'm so sad", "I'm so happy"])
         self.assertEqual(get_topics('B', 1, db)[0].topic, "I'm so mad")
         self.assertEqual(get_topics('A', 1, db)[0].topic, "I'm so good")
-        #get_topics 함수의 return 값이 random 정렬 되었는지 확인
+        # get_topics 함수의 return 값이 random 정렬 되었는지 확인
         test_list = get_topics('C', 2, db)
         self.assertNotEqual(test_list[0].topic, test_list[1].topic)
         self.assertEqual(len(test_list), 2)
@@ -262,7 +266,7 @@ class TestService(unittest.TestCase):
         elif test_list[0] == "I'm so happy":
             self.assertEqual(test_list[1].topic, "I'm so sad")
 
-        #topic 개수보다 많은 개수를 요청할 경우
+        # topic 개수보다 많은 개수를 요청할 경우
         self.assertEqual(len(get_topics('C', 3, db)), 2)
         self.assertEqual(len(get_topics('C', 4, db)), 2)
         self.assertEqual(len(get_topics('B', 5, db)), 1)
@@ -481,39 +485,40 @@ class TestService(unittest.TestCase):
         )
 
         your_profile1 = Profile(
-            name="sangin", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             mbti=None, nation_code=82,
             foods=["italian_food", "japan_food"], movies=["romance", "action"],
             locations=["up", "jahayeon"],
             hobbies=["golf"])
 
         your_profile2 = Profile(
-            name="abdula", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            name="abdula", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             mbti=None, nation_code=0,
             foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
             locations=['up', "down", "jahayeon"],
             hobbies=["soccer"])
 
         your_profile3 = Profile(
-            name="jiho", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            name="jiho", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
             nation_code=1, mbti=None,
             foods=["japan_food"], movies=["action"],
             locations=["jahayeon"],
             hobbies=["golf", "soccer", "book"])
 
-        me = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
-        you1 = User(user_id=1, verification_id=2, lang_id=2, salt="2", hash="2", profile=your_profile1)
-        you2 = User(user_id=2, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile2)
-        you3 = User(user_id=3, verification_id=4, lang_id=4, salt="4", hash="4", profile=your_profile3)
+        me = User(user_id=0, verification_id=1, lang_id=1,
+                  salt="1", hash="1", profile=my_profile)
+        you1 = User(user_id=1, verification_id=2, lang_id=2,
+                    salt="2", hash="2", profile=your_profile1)
+        you2 = User(user_id=2, verification_id=3, lang_id=3,
+                    salt="3", hash="3", profile=your_profile2)
+        you3 = User(user_id=3, verification_id=4, lang_id=4,
+                    salt="4", hash="4", profile=your_profile3)
 
         # 0.3780, 0.6324, 0.4082
         weight_1 = set_weight(me, you1)
         weight_2 = set_weight(me, you2)
         weight_3 = set_weight(me, you3)
-        
+
         expected_weight1 = np.array([0.16, 0.18, 0.1, 0.18, 0.10, 0.18, 0.1])
         expected_weight2 = np.array([0.16, 0.16, 0.12, 0.16, 0.12, 0.16, 0.12])
         expected_weight3 = np.array([0.16, 0.17, 0.11, 0.17, 0.11, 0.17, 0.11])
@@ -521,30 +526,6 @@ class TestService(unittest.TestCase):
         self.assertTrue(np.allclose(weight_1, expected_weight1))
         self.assertTrue(np.allclose(weight_2, expected_weight2))
         self.assertTrue(np.allclose(weight_3, expected_weight3))
-
-    
-    def test_get_mbti_f(self):
-        my_profile = Profile(
-            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti="isfj", nation_code=82,
-            foods=["korean_food", "thai_food"],
-            movies=["horror", "action", "comedy"],
-            locations=["up", "down"],
-            hobbies=["soccer", "golf"]
-        )
-        your_profile = Profile(
-            name="abdula", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti=None, nation_code=0,
-            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
-            locations=['up', "down", "jahayeon"],
-            hobbies=["soccer"])
-        
-        my_user = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
-        your_user = User(user_id=1, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile)
-        self.assertEqual(get_mbti_f(my_user, your_user), 1)
-        
-        
 
 
 if __name__ == "__main__":

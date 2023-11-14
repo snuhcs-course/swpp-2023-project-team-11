@@ -215,10 +215,10 @@ def sort_target_users(user: User, targets: List[User]) -> List[User]:
 def get_user_dataframe(user: User) -> pd.DataFrame:
     my_dict = {
         "id": user.user_id,
-        "foods": list([food for food in user.profile.foods]),
-        "movies": list([movie for movie in user.profile.movies]),
-        "hobbies": list([hobby for hobby in user.profile.hobbies]),
-        "locations": list([location for location in user.profile.locations])
+        "foods": list(food for food in user.profile.foods),
+        "movies": list(movie for movie in user.profile.movies),
+        "hobbies": list(hobby for hobby in user.profile.hobbies),
+        "locations": list(location for location in user.profile.locations)
     }
     return pd.DataFrame.from_dict(my_dict, orient="index").T
 
@@ -238,3 +238,14 @@ def get_similarity(df_me: pd.DataFrame, df_target: pd.DataFrame) -> float:
     similarity = cnt / np.sqrt((my_size * target_size))
 
     return similarity
+
+
+def get_mbti_f(initiator: User, responser: User) -> int:
+    initiator_mbti = initiator.profile.mbti
+    responser_mbti = responser.profile.mbti
+    num_F = 0
+    if initiator_mbti is not None:
+        num_F += initiator_mbti.count('f')
+    if responser_mbti is not None:
+        num_F += responser_mbti.count('f')
+    return num_F

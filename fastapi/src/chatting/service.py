@@ -509,15 +509,3 @@ def set_weight(initiator: User, responser: User) -> np.ndarray[float]:
             weight[i] -= 0.015
 
     return weight
-
-
-def get_mbti_f(initiator: User, responser: User) -> int:
-    # FIXME move to user domain
-    initiator_mbti = initiator.profile.mbti
-    responser_mbti = responser.profile.mbti
-    num_F = 0
-    if initiator_mbti is not None:
-        num_F += initiator_mbti.count('f')
-    if responser_mbti is not None:
-        num_F += responser_mbti.count('f')
-    return num_F

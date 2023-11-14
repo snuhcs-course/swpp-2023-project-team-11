@@ -373,7 +373,28 @@ class TestService(unittest.TestCase):
 
         result = sort_target_users(me, [])
         self.assertEqual(result, [])
-
+    
+    def test_get_mbti_f(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "thai_food"],
+            movies=["horror", "action", "comedy"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+        your_profile = Profile(
+            name="abdula", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+        
+        my_user = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        your_user = User(user_id=1, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile)
+        self.assertEqual(get_mbti_f(my_user, your_user), 1)
+        
 
 if __name__ == '__main__':
     unittest.main()
