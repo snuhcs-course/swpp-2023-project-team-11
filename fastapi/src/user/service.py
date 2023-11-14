@@ -167,10 +167,10 @@ def sort_target_users(user: User, targets: List[User]) -> List[User]:
     df_targets = pd.DataFrame()
     for target in targets:
         df_target = get_user_dataframe(target)
-        df_target["count"] = count_intersection(df_me, df_target)
+        df_target["similarity"] = get_similarity(df_me, df_target)
         df_targets = pd.concat([df_targets, df_target])
 
-    user_ids = df_targets.sort_values(by=["count"], ascending=False).loc[:, "id"]
+    user_ids = df_targets.sort_values(by=["similarity"], ascending=False).loc[:, "id"]
 
     for user_id in user_ids:
         targets_sorted.append(user_dict[user_id])
@@ -188,13 +188,18 @@ def get_user_dataframe(user: User) -> pd.DataFrame:
     return pd.DataFrame.from_dict(my_dict, orient="index").T
 
 
-def count_intersection(df_me: pd.DataFrame, df_target: pd.DataFrame) -> int:
+def get_similarity(df_me: pd.DataFrame, df_target: pd.DataFrame) -> float:
     cnt = 0
+    my_size = 0
+    target_size = 0
     features = ["foods", "movies", "hobbies", "locations"]
 
     for feature in features:
         my_list = np.array(df_me.loc[:, feature].to_list()).flatten()
         target_list = np.array(df_target.loc[:, feature].to_list()).flatten()
         cnt += len(set(my_list) & set(target_list))
+        my_size += len(my_list)
+        target_size += len(target_list)
+    similarity = cnt / np.sqrt((my_size * target_size))
 
-    return cnt
+    return similarity

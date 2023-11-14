@@ -259,17 +259,32 @@ class TestService(unittest.TestCase):
             )
         )
         db.commit()
-        self.assertIn(get_topic('C', db).topic, ["I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topic('B', db).topic, "I'm so mad")
-        self.assertEqual(get_topic('A', db).topic, "I'm so good")
+        self.assertIn(get_topics('C', 1, db)[0].topic, ["I'm so sad", "I'm so happy"])
+        self.assertEqual(get_topics('B', 1, db)[0].topic, "I'm so mad")
+        self.assertEqual(get_topics('A', 1, db)[0].topic, "I'm so good")
+        #get_topics 함수의 return 값이 random 정렬 되었는지 확인
+        test_list = get_topics('C', 2, db)
+        self.assertNotEqual(test_list[0].topic, test_list[1].topic)
+        self.assertEqual(len(test_list), 2)
+        if test_list[0] == "I'm so sad":
+            self.assertEqual(test_list[1].topic, "I'm so happy")
+        elif test_list[0] == "I'm so happy":
+            self.assertEqual(test_list[1].topic, "I'm so sad")
+
+        #topic 개수보다 많은 개수를 요청할 경우
+        self.assertEqual(len(get_topics('C', 3, db)), 2)
+        self.assertEqual(len(get_topics('C', 4, db)), 2)
+        self.assertEqual(len(get_topics('B', 5, db)), 1)
 
     def test_flatten_texts(self):
         texts = [
             Text(
                 id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
+            ),
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi I'm the text longer than 1000 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357,", timestamp=datetime.now()),
         ]
-        expected_result = "Hello"
+        expected_result = "Hello.Hi I'm the text longer than 1000 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214"
         result = flatten_texts(texts)
         self.assertEqual(result, expected_result)
 
@@ -463,12 +478,82 @@ class TestService(unittest.TestCase):
         result = score_turn_delta(prev_texts, curr_texts, user_id)
         self.assertEqual(result, expected_result)
 
-    def test_change_weight(self):
+    def test_set_weight(self):
         # Test case 1: Change weight of parameters
-        weight = [0.1, 0.3, 0, 0.3, 0, 0.3, 0]
-        expected_result = [0.1, 0.3, 0, 0.3, 0, 0.3, 0]
-        result = change_weight(weight)
-        self.assertEqual(result, expected_result)
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "thai_food"],
+            movies=["horror", "action", "comedy"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+
+        your_profile1 = Profile(
+            name="sangin", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=82,
+            foods=["italian_food", "japan_food"], movies=["romance", "action"],
+            locations=["up", "jahayeon"],
+            hobbies=["golf"])
+
+        your_profile2 = Profile(
+            name="abdula", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+
+        your_profile3 = Profile(
+            name="jiho", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            nation_code=1, mbti=None,
+            foods=["japan_food"], movies=["action"],
+            locations=["jahayeon"],
+            hobbies=["golf", "soccer", "book"])
+
+        me = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        you1 = User(user_id=1, verification_id=2, lang_id=2, salt="2", hash="2", profile=your_profile1)
+        you2 = User(user_id=2, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile2)
+        you3 = User(user_id=3, verification_id=4, lang_id=4, salt="4", hash="4", profile=your_profile3)
+
+        # 0.3780, 0.6324, 0.4082
+        weight_1 = set_weight(me, you1)
+        weight_2 = set_weight(me, you2)
+        weight_3 = set_weight(me, you3)
+        
+        expected_weight1 = np.array([0.16, 0.18, 0.1, 0.18, 0.10, 0.18, 0.1])
+        expected_weight2 = np.array([0.16, 0.16, 0.12, 0.16, 0.12, 0.16, 0.12])
+        expected_weight3 = np.array([0.16, 0.17, 0.11, 0.17, 0.11, 0.17, 0.11])
+
+        self.assertTrue(np.allclose(weight_1, expected_weight1))
+        self.assertTrue(np.allclose(weight_2, expected_weight2))
+        self.assertTrue(np.allclose(weight_3, expected_weight3))
+
+    
+    def test_get_mbti_f(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "thai_food"],
+            movies=["horror", "action", "comedy"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+        your_profile = Profile(
+            name="abdula", birth=date(1999, 5, 14)
+            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+        
+        my_user = User(user_id=0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        your_user = User(user_id=1, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile)
+        self.assertEqual(get_mbti_f(my_user, your_user), 1)
+        
+        
 
 
 if __name__ == "__main__":

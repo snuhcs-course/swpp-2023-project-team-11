@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy import insert, delete, select
 import unittest
 
@@ -258,6 +259,63 @@ class TestService(unittest.TestCase):
         targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
         self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
 
+    def test_get_user_dataframe(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "japan_food"],
+            movies=["horror"],
+            locations=["up", "down", "jahayeon"],
+            hobbies=["soccer", "golf"]
+        )
+        me = User(user_id = 0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
+        df_answer = pd.DataFrame.from_dict({
+            "id":0,
+            "foods":["korean_food", "japan_food"],
+            "movies":["horror"],
+            "hobbies": ["soccer", "golf"],
+            "locations":["up", "down", "jahayeon"],
+                              }, orient="index").T
+        df_me = get_user_dataframe(me)
+        features = ["id", "foods", "movies", "hobbies", "locations"]
+        for feature in features:
+            self.assertEqual(df_me.loc[:, feature].values, df_answer.loc[:, feature].values)
+
+    def test_get_similarity(self):
+        df_me1 = pd.DataFrame.from_dict({
+            "id":0,
+            "foods":["korean_food", "italian_food", "chinese_food"],
+            "movies":["horror", "action", "romance"],
+            "hobbies": ["soccer", "book"],
+            "locations":["jahayeon"],
+                              }, orient="index").T
+        df_target1 = pd.DataFrame.from_dict({
+            "id":2,
+            "foods":["korean_food", "japan_food"],
+            "movies":["horror"],
+            "hobbies": ["soccer", "golf"],
+            "locations":["up", "down", "jahayeon"],
+                              }, orient="index").T
+
+        df_me2 = pd.DataFrame.from_dict({
+            "id": 0,
+            "foods": ["korean_food", "italian_food", "chinese_food"],
+            "movies": ["horror", "action", "romance"],
+            "hobbies": ["soccer", "book"],
+            "locations": ["jahayeon"],
+        }, orient="index").T
+        df_target2 = pd.DataFrame.from_dict({
+            "id": 2,
+            "foods": ["japan_food"],
+            "movies": ["thriller", "drama", "comedy"],
+            "hobbies": ["golf"],
+            "locations": ["up", "down"],
+        }, orient="index").T
+
+        self.assertEqual(get_similarity(df_me1, df_target1), 4/np.sqrt(72))
+        self.assertEqual(get_similarity(df_me2, df_target2), 0)
+
+
     def test_sort_target_users(self):
         my_profile = Profile(
             name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
@@ -298,13 +356,14 @@ class TestService(unittest.TestCase):
         you3 = User(user_id = 3, verification_id=4, lang_id=4, salt="4", hash="4", profile=your_profile3)
         yous = [you1, you2, you3]
 
+        # 0.5345, 0.7826, 0.5773
         result = sort_target_users(me, yous)
         self.assertEqual(result[0].user_id, 2)
         self.assertEqual(result[0].profile.name, "abdula")
-        self.assertEqual(result[1].user_id, 1)
-        self.assertEqual(result[1].profile.name, "sangin")
-        self.assertEqual(result[2].user_id, 3)
-        self.assertEqual(result[2].profile.name, "jiho")
+        self.assertEqual(result[1].user_id, 3)
+        self.assertEqual(result[1].profile.name, "jiho")
+        self.assertEqual(result[2].user_id, 1)
+        self.assertEqual(result[2].profile.name, "sangin")
 
         result = sort_target_users(me, [])
         self.assertEqual(result, [])
