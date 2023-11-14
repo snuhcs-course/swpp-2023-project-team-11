@@ -1,4 +1,4 @@
-from typing import Generator, Any
+from typing import AsyncGenerator, Generator, Any
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
@@ -35,7 +35,7 @@ class DbConnector:
             db.close()
 
     @classmethod
-    async def get_async_db(cls):
+    async def get_async_db(cls) -> AsyncGenerator[AsyncSession, Any]:
         db = cls.AsyncSessionLocal()
         try:
             yield db
