@@ -163,13 +163,11 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
         prev_texts = []
 
-    # FIXME query
-    initiator = db.query(Chatting.initiator).where(
-        Chatting.id == chatting_id).first()
-    responser = db.query(Chatting.responser).where(
-        Chatting.id == chatting_id).first()
+    chatting = db.query(Chatting).where(Chatting.id == chatting_id).first()
+    if chatting is None:
+        raise ChattingNotExistException()
     new_intimacy_value = calculate_intimacy(
-        curr_texts, prev_texts, recent_intimacy, user_id, initiator, responser)
+        curr_texts, prev_texts, recent_intimacy, user_id, chatting.initiator, chatting.responser)
     new_intimacy = db.scalar(
         insert(Intimacy)
         .values(
