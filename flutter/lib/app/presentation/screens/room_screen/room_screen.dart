@@ -42,6 +42,14 @@ class RoomScreen extends GetView<RoomScreenController> {
                 return ChatMessage(
                   text: chatVm.text,
                   senderType: chatVm.senderType,
+                  key: ValueKey(chatVm.sequenceId),
+                  tempProxy: chatVm.temp,
+                  needsDelete: chatVm.needsDelete,
+                  onDelete: () {
+                    print(chatVm.sequenceId);
+                    print("try delete");
+                    controller.onChatDeleteButtonTap(chatVm.sequenceId);
+                  },
                   sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
                 ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
               },

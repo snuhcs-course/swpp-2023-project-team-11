@@ -13,8 +13,7 @@ import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 
-class ChattingRoomListController extends GetxController
-    with StateMixin<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
+class ChattingRoomListController extends SuperController<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
   StreamSubscription? _centerChatStreamSubscription;
   List<ChattingRoom> _validRooms = [];
 
@@ -27,6 +26,7 @@ class ChattingRoomListController extends GetxController
   @override
   Future<void> onReady() async {
     super.onReady();
+    print("onReady");
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
       email: Get.find<UserController>().userEmail,
@@ -199,4 +199,28 @@ class ChattingRoomListController extends GetxController
         _openChatConnectionUseCase = openChatConnectionUseCase,
         _disconnectChattingChannelUseCase = disconnectChattingChannelUseCase,
         _leaveChattingRoomUseCase = leaveChattingRoomUseCase;
+
+  @override
+  void onDetached() {
+    print("onDetached");
+  }
+
+  @override
+  void onInactive() {
+    print("onInactive");
+  }
+
+  @override
+  void onPaused() {
+    print("onPaused");
+  }
+
+  @override
+  void onResumed() async {
+    print("onResumed");
+    print("stream paused : ${_centerChatStreamSubscription?.isPaused}");
+    if (_centerChatStreamSubscription?.isPaused==true) {
+      await _openChatConnection();
+    }
+  }
 }
