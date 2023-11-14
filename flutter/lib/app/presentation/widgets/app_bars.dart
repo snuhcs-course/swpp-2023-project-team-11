@@ -134,7 +134,9 @@ class FriendDetailAppBar extends StatelessWidget
       centerTitle: false,
       actions: isMyProfile
           ? [
-              PopupMenuButton(itemBuilder: (context) {
+              PopupMenuButton(
+                  icon: Icon(Icons.settings),
+                  itemBuilder: (context) {
                 return [
                   const PopupMenuItem<int>(
                       value: 0,
