@@ -195,10 +195,9 @@ def get_topics(tag: str, limit: int, db: DbSession) -> List[Topic]:
 
 
 def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
-    # FIXME not intimacy but intimacy.intimacy
-    if intimacy is None or intimacy <= 40:
+    if intimacy is None or intimacy.intimacy <= 40:
         return "C"
-    elif intimacy <= 70:
+    elif intimacy.intimacy <= 70:
         return "B"
     else:
         return "A"
