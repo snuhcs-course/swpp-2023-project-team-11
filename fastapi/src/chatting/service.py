@@ -1,19 +1,17 @@
-import random
-from typing import List, Any
+from typing import List
 
 import json
 import numpy as np
 import requests
 from sqlalchemy import insert, update, desc, or_, func
-from numpy import ndarray, dtype
-from sqlalchemy import insert, update, desc, or_
 from sqlalchemy.orm import Session as DbSession
-from collections import Counter
+
 from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.exceptions import ExternalApiError
 from src.user.service import *
+
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
     query = (
@@ -161,13 +159,16 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
     recent_intimacy = intimacies[0]
 
     if len(intimacies) > 1:
-        prev_texts: get_all_texts(
-            user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
+        prev_texts = get_all_texts(user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
     else:
         # we cannot calculate delta value with only one intimacy (which is definitely a default value)
         prev_texts = []
-    initiator = db.query(Chatting.initiator).where(Chatting.id == chatting_id).first()
-    responser = db.query(Chatting.responser).where(Chatting.id == chatting_id).first()
+
+    # FIXME query
+    initiator = db.query(Chatting.initiator).where(
+        Chatting.id == chatting_id).first()
+    responser = db.query(Chatting.responser).where(
+        Chatting.id == chatting_id).first()
     new_intimacy_value = calculate_intimacy(
         curr_texts, prev_texts, recent_intimacy, user_id, initiator, responser)
     new_intimacy = db.scalar(
@@ -187,12 +188,14 @@ def create_intimacy(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
 
 
 def get_topics(tag: str, limit: int, db: DbSession) -> List[Topic]:
-    topics = db.query(Topic).where(Topic.tag == tag).order_by(func.random()).limit(limit).all()
-    
+    topics = db.query(Topic).where(Topic.tag == tag).order_by(
+        func.random()).limit(limit).all()
+
     return topics
 
 
 def get_tag_by_intimacy(intimacy: Intimacy | None) -> str:
+    # FIXME not intimacy but intimacy.intimacy
     if intimacy is None or intimacy <= 40:
         return "C"
     elif intimacy <= 70:
@@ -235,8 +238,7 @@ def calculate_intimacy(
 
 
 def flatten_texts(texts: List[Text]) -> str:
-    #len(text.msg)<50 이하인 것만 join
-    
+    # len(text.msg)<50 이하인 것만 join
     result = '.'.join(text.msg for text in texts)
     if len(result) > 999:
         result = result[:999]
@@ -476,13 +478,13 @@ def score_turn_delta(
         return 10
 
 
-# todo: set the appropriate weight according to user similarity
-def set_weight(initiator: User, responser: User) -> ndarray[float]:
+def set_weight(initiator: User, responser: User) -> np.ndarray[float]:
     # get user similarity
-    similarity = get_similarity(get_user_dataframe(initiator), get_user_dataframe(responser))
+    similarity = get_similarity(get_user_dataframe(
+        initiator), get_user_dataframe(responser))
 
     # set weight
-    if similarity<0.2:
+    if similarity < 0.2:
         # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
         weight = np.array([0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1])
     elif similarity < 0.4:
@@ -493,28 +495,28 @@ def set_weight(initiator: User, responser: User) -> ndarray[float]:
         weight = np.array([0.1, 0.17, 0.13, 0.17, 0.13, 0.17, 0.13])
     else:
         weight = np.array([0.1, 0.16, 0.14, 0.16, 0.14, 0.16, 0.14])
-    
 
-    #set weight according to mbti F, revise sentiment weight
+    # set weight according to mbti F, revise sentiment weight
     num_F = get_mbti_f(initiator, responser)
 
-    if num_F == 0 : 
-        
+    if num_F == 0:
         weight[0] += 0.03
-        for i in range(1,7):
+        for i in range(1, 7):
             weight[i] -= 0.005
-    elif num_F == 1 :
+    elif num_F == 1:
         weight[0] += 0.06
-        for i in range(1,7):
+        for i in range(1, 7):
             weight[i] -= 0.01
-    elif num_F == 2 :
+    elif num_F == 2:
         weight[0] += 0.09
-        for i in range(1,7):
+        for i in range(1, 7):
             weight[i] -= 0.015
 
     return weight
 
+
 def get_mbti_f(initiator: User, responser: User) -> int:
+    # FIXME move to user domain
     initiator_mbti = initiator.profile.mbti
     responser_mbti = responser.profile.mbti
     num_F = 0
