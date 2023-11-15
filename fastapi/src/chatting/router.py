@@ -24,9 +24,9 @@ router = APIRouter(prefix="/chatting", tags=["chatting"])
     .add(InvalidSessionException())
     .build()
 )
-def get_all_chattings(is_approved: bool, user_id: int = Depends(check_session),
+def get_all_chattings(is_approved: bool, limit: int | None = None, user_id: int = Depends(check_session),
                       db: DbSession = Depends(DbConnector.get_db)) -> List[ChattingResponse]:
-    return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved))
+    return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
 
 
 @router.post(

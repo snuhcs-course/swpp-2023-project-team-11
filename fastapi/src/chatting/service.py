@@ -14,12 +14,14 @@ from src.chatting.models import *
 from src.user.service import *
 
 
-# FIXME add limit
-def get_all_chattings(db: DbSession, user_id: int, is_approved: bool) -> List[Chatting]:
+def get_all_chattings(db: DbSession, user_id: int, is_approved: bool, limit: int | None = None) -> List[Chatting]:
     query = db.query(Chatting).where(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)).where(
         Chatting.is_approved == is_approved).order_by(Chatting.is_terminated, desc(Chatting.created_at))
     if is_approved is False:
         query = query.where(Chatting.is_terminated == False)
+    if limit is not None:
+        limit = min(1, limit)
+        query = query.limit(limit)
 
     return query.all()
 
