@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session as DbSession
 
 from src.auth.dependencies import check_session
@@ -25,7 +25,8 @@ router = APIRouter(prefix="/chatting", tags=["chatting"])
     .add(InvalidSessionException())
     .build()
 )
-def get_all_chattings(is_approved: bool, limit: int | None = None, user_id: int = Depends(check_session),
+def get_all_chattings(is_approved: bool = Query(description="get approved chattings or non-approve-chattings"),
+                      limit: int | None = None, user_id: int = Depends(check_session),
                       db: DbSession = Depends(DbConnector.get_db)) -> List[ChattingResponse]:
     return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
 
@@ -83,21 +84,27 @@ def delete_chatting(chatting_id: int, user_id: int = Depends(check_session),
 
 @router.get(
     "/text",
-    description="",
-    summary="",
+    description="Get texts order by timestamp descending",
+    summary="Get recent text",
     responses=ErrorResponseDocsBuilder()
     .add(InvalidSessionException())
     .build()
 )
-def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int | None = None, timestamp: datetime | None = None,
+def get_all_texts(seq_id: int = Query(-1, description="if specified, returns the texts whose sequence Ids are larger than this value"),
+                  limit: int | None = Query(
+                      None, description="if specifed, returns at most specified number of recent texts"),
+                  chatting_id: int | None = Query(
+                      None, description="if specifed, return the texts of specified chatting only"),
+                  timestamp: datetime | None = Query(
+                      None, description="if specified, returns the texts only after specified timestamp"),
                   user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> List[TextResponse]:
     return list(from_text(text) for text in service.get_all_texts(db, user_id, chatting_id, seq_id, limit, timestamp))
 
 
 @router.post(
     "/intimacy",
-    description="",
-    summary="",
+    description="Create intimacy of the user in specified chatting",
+    summary="Create intimacy",
     responses=ErrorResponseDocsBuilder()
     .add(InvalidSessionException())
     .add(ChattingNotExistException())
@@ -106,7 +113,8 @@ def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int |
     .build()
 )
 def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
-                    calculator: service.IntimacyCalculator = Depends(get_intimacy_calculator),
+                    calculator: service.IntimacyCalculator = Depends(
+                        get_intimacy_calculator),
                     db: DbSession = Depends(DbConnector.get_db)) -> IntimacyResponse:
     recent_intimacy, is_default = service.get_intimacy(
         db, user_id, chatting_id)
@@ -139,14 +147,18 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
 
 @router.get(
     "/topic",
-    description="",
-    summary="",
+    description="Get topic recommendation(s)",
+    summary="Get topics",
     responses=ErrorResponseDocsBuilder()
     .add(InvalidSessionException())
     .build()
 )
-def get_topic_recommendation(chatting_id: int, limit: int = 1, user_id: int = Depends(check_session),
-                             db: DbSession = Depends(DbConnector.get_db)) -> TopicResponse:
+def get_topic_recommendation(
+        chatting_id: int,
+        limit: int = Query(
+            1, description="how many topics to return"),
+        user_id: int = Depends(check_session),
+        db: DbSession = Depends(DbConnector.get_db)) -> TopicResponse:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
     topics = service.get_topics(db, tag, limit)
