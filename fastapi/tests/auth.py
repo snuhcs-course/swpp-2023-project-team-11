@@ -1,6 +1,7 @@
-from sqlalchemy import insert
 import unittest
 from unittest.mock import patch, MagicMock, Mock
+
+from sqlalchemy import insert
 
 from src.auth.dependencies import *
 from src.auth.service import *

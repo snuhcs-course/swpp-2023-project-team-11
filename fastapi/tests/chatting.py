@@ -1,6 +1,6 @@
 from datetime import timedelta
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, MagicMock, Mock
 
 from sqlalchemy import insert, delete
 
@@ -13,23 +13,43 @@ from tests.utils import *
 
 class TestDependencies(unittest.TestCase):
     email = "test@snu.ac.kr"
-    invalid = "hello@snu.ac.kr"
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        Base.metadata.create_all(bind=DbConnector.engine)
-        for db in DbConnector.get_db():
-            cls.profile_id = setup_user(db, cls.email)
-            db.commit()
+    @patch('src.auth.dependencies.get_user_by_email')
+    @InjectMock('db')
+    def test_check_counterpart(self, mock_get_user_by_email: MagicMock, db: DbSession):
+        dummy_user = Mock()
+        dummy_user.user_id = 1
+        mock_get_user_by_email.side_effect = lambda db, email: dummy_user
 
-    @classmethod
-    @inject_db
-    def tearDownClass(cls, db: DbSession) -> None:
-        teardown_user(db)
-        db.commit()
+        req = CreateChattingRequest(counterpart=self.email)
+
+        self.assertEqual(check_counterpart(req, db), dummy_user.user_id)
 
 
-class TestService(unittest.TestCase):
+@unittest.skip("This test actually calls external API")
+class TestPapagoClient(unittest.TestCase):
+    client = PapagoClient
+
+    @unittest.skip("This test actually calls external API")
+    def test_translate_text(self):
+        translated = self.client.translate("I am Happy!")
+        self.assertEqual(translated, "나는 행복해!")
+        with self.assertRaises(ExternalApiError):
+            self.client.translate("")
+
+
+class TestClovaClient(unittest.TestCase):
+    client = ClovaClient
+
+    @unittest.skip("This test actually calls external API")
+    def test_get_sentiment(self):
+        response = self.client.get_sentiment("I am Happy!")
+        self.assertEqual(response.status_code, 200)
+        with self.assertRaises(ClovaApiException):
+            self.client.get_sentiment("")
+
+
+class TestDb(unittest.TestCase):
     initiator = "test@snu.ac.kr"
     responder = "hello@snu.ac.kr"
 
@@ -282,20 +302,6 @@ class TestService(unittest.TestCase):
         expected_result = "Hello.Hi I'm the text longer than 1000 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214"
         result = flatten_texts(texts)
         self.assertEqual(result, expected_result)
-
-    @unittest.skip("This test actually calls external API")
-    def test_call_clova_api(self):
-        with self.assertRaises(ExternalApiError):
-            call_clova_api("")
-        response = call_clova_api("I am Happy!")
-        self.assertEqual(response.status_code, 200)
-
-    @unittest.skip("This test actually calls external API")
-    def test_call_papago_api(self):
-        with self.assertRaises(ExternalApiError):
-            call_papago_api("")
-        response = call_papago_api("I am Happy!")
-        self.assertEqual(response.status_code, 200)
 
     @patch("src.chatting.service.requests.post")
     def test_translate_text(self, mock_papago):

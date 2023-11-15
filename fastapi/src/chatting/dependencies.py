@@ -14,4 +14,6 @@ def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConn
 
 
 def get_intimacy_calculator() -> service.IntimacyCalculator:
-    return service.IntimacyCalculator(service.PapagoClient, service.ClovaClient)
+    translation = service.IgnoresEmptyInputTranslationClient(service.PapagoClient)
+    sentiment = service.IgnoresEmptyInputSentimentClient(service.ClovaApiException)
+    return service.IntimacyCalculator(translation, sentiment)

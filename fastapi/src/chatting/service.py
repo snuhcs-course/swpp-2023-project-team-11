@@ -130,6 +130,8 @@ def get_all_intimacies(
 
 
 def get_intimacy(db: DbSession, user_id: int, chatting_id: int) -> Tuple[Intimacy, bool]:
+    """Raises `IntimacyNotExistException`"""
+
     intimacies = get_all_intimacies(db, user_id, chatting_id, limit=2)
     if len(intimacies) == 0:
         raise IntimacyNotExistException()
@@ -177,7 +179,13 @@ def intimacy_tag(intimacy: Intimacy | None) -> str:
         return "A"
 
 
-class Client(ABCMeta):
+class Client(metaclass=ABCMeta):
+    """
+    All methods are defined as class method in order to use client as singleton.
+    For all clients, classes themselves as class object are being used, not the instances of them.
+    In type theory, these objects are level 1 type objects, which are the instances of level 2 type object (ABCMeta).
+    """
+
     @abstractclassmethod
     def api_error(cls) -> HTTPException:
         pass
@@ -203,6 +211,27 @@ class Client(ABCMeta):
         if response.status_code != 200:
             raise cls.api_error()
         return response
+
+
+def WrappedClient(wrappee: Type[Client]) -> Type[Client]:
+    class WrappedClientImpl(wrappee):
+        @classmethod
+        def api_error(cls) -> HTTPException:
+            return wrappee.api_error()
+
+        @classmethod
+        def api_url(cls) -> str:
+            return wrappee.api_url()
+        
+        @classmethod
+        def headers(cls) -> Dict[str, str]:
+            return wrappee.headers()
+        
+        @classmethod
+        def data(cls, text: str) -> str | Dict[str, str]:
+            return wrappee.data(text)
+    
+    return WrappedClientImpl
 
 
 class TranslationClient(Client):
@@ -259,6 +288,27 @@ class PapagoClient(TranslationClient):
         return response["message"]["result"]["translatedText"]
 
 
+def IgnoresEmptyInputTranslationClient(wrappee: Type[TranslationClient]) -> Type[TranslationClient]:
+    """
+    Proxy pattern that ignores empty input.
+    It creates an instance of level 2 type object (ABCMeta), which is level 1 type object.
+    """
+
+    class IgnoreEmptyInputClientImpl(WrappedClient(wrappee)):
+        @classmethod
+        def parse_response(cls, response: requests.Response) -> str:
+            return wrappee.parse_response(response)
+
+        @classmethod
+        def translate(cls, text: str) -> str:
+            if len(text) == 0:
+                return text
+
+            return wrappee.translate(text)
+
+    return IgnoreEmptyInputClientImpl
+
+
 class ClovaClient(SentimentClient):
     API_URL: str = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
     CLIENT_ID: str = os.environ.get('SNEK_CLOVA_CLIENT_ID')
@@ -297,6 +347,27 @@ class ClovaClient(SentimentClient):
         # positive[0~100] negative[0~100]
 
 
+def IgnoresEmptyInputSentimentClient(wrappee: Type[SentimentClient]) -> Type[SentimentClient]:
+    """
+    Proxy pattern that ignores empty input.
+    It creates an instance of level 2 type object (ABCMeta), which is level 1 type object.
+    """
+
+    class IgnoreEmptyInputClientImpl(WrappedClient(wrappee)):
+        @classmethod
+        def parse_response(cls, response: requests.Response) -> float:
+            return wrappee.parse_response(response)
+        
+        @classmethod
+        def get_sentiment(cls, text: str) -> float:
+            if len(text) == 0:
+                return 0
+
+            return wrappee.get_sentiment(text)
+    
+    return IgnoreEmptyInputClientImpl
+
+
 class IntimacyCalculator:
     __translation: Type[TranslationClient]
     __sentiment: Type[SentimentClient]
@@ -314,8 +385,8 @@ class IntimacyCalculator:
         similarity: float | None,
         num_F: int | None,
     ) -> float:
-        curr_translated = self.__translate_texts(curr_texts)
-        sentiment = self.__get_sentiment(curr_translated)
+        curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
+        sentiment = self.__sentiment.get_sentiment(curr_translated)
 
         frequency = self.score_frequency(curr_texts)
         frequency_delta = self.score_frequency_delta(prev_texts, curr_texts)
@@ -330,20 +401,6 @@ class IntimacyCalculator:
         new_intimacy: float = recent_intimacy.intimacy + \
             weight.dot(params.transpose())
         return max(0, min(100, new_intimacy))
-
-    def __translate_texts(self, texts: List[Text]) -> str:
-        text = '.'.join(text.msg for text in texts)
-        if text == '':
-            # No need to translate
-            return text
-
-        return self.__translation.translate(text)
-
-    def __get_sentiment(self, text: str) -> float:
-        if text == '':
-            return 0
-
-        return self.__sentiment.get_sentiment(text)
 
     @staticmethod
     def null_if_empty(func):
