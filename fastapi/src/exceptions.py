@@ -1,6 +1,8 @@
 from typing import Any, Dict, Self
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 
@@ -14,6 +16,7 @@ class ErrorResponseDocsBuilder:
 
     def __init__(self):
         self.__responses = {}
+        self.add(CustomResponseValidationError())
 
     @classmethod
     def __response(cls, description: str) -> Dict[str, Any]:
@@ -34,6 +37,11 @@ class ErrorResponseDocsBuilder:
         return self.__responses
 
 
+class CustomResponseValidationError(HTTPException):
+    def __init__(self, detail: Any = "failed to parse or validate request") -> None:
+        super().__init__(422, detail)
+
+
 class InternalServerError(HTTPException):
     def __init__(self) -> None:
         super().__init__(500, "internal server error")
@@ -42,3 +50,10 @@ class InternalServerError(HTTPException):
 class ExternalApiError(HTTPException):
     def __init__(self, detail: Any = None) -> None:
         super().__init__(502, detail)
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()[0]["msg"]},
+    )
