@@ -40,7 +40,6 @@ def create_chatting(db: DbSession, user_id: int, responder_id: int) -> Chatting:
     )
 
 
-# FIXME extract create_intimacy
 def approve_chatting(db: DbSession, user_id: int, chatting_id: int) -> Chatting:
     """Raises `ChattingNotExistException`"""
 
@@ -53,26 +52,6 @@ def approve_chatting(db: DbSession, user_id: int, chatting_id: int) -> Chatting:
     )
     if chatting is None:
         raise ChattingNotExistException()
-
-    timestamp = datetime.now()
-    db.execute(
-        insert(Intimacy).values(
-            [
-                {
-                    "user_id": user_id,
-                    "chatting_id": chatting_id,
-                    "intimacy": DEFAULT_INTIMACY,
-                    "timestamp": timestamp,
-                },
-                {
-                    "user_id": chatting.initiator_id,
-                    "chatting_id": chatting_id,
-                    "intimacy": DEFAULT_INTIMACY,
-                    "timestamp": timestamp,
-                },
-            ]
-        )
-    )
 
     return chatting
 
@@ -156,11 +135,13 @@ def get_recent_intimacy(
 def create_intimacy(db: DbSession, user_id: int | List[int], chatting_id: int, intimacy: float = DEFAULT_INTIMACY) -> Intimacy:
     if isinstance(user_id, int):
         user_id = [user_id]
+
+    timestamp = datetime.now()
     return db.scalar(insert(Intimacy).values([{
         "user_id": user_id,
         "chatting_id": chatting_id,
         "intimacy": intimacy,
-        "timestamp": datetime.now(),
+        "timestamp": timestamp,
     } for user_id in user_id]).returning(Intimacy))
 
 

@@ -40,7 +40,7 @@ def get_all_chattings(is_approved: bool, limit: int | None = None, user_id: int 
 )
 def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int = Depends(check_session),
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
-    chatting = service.create_chatting(user_id, responder_id, db)
+    chatting = service.create_chatting(db, user_id, responder_id)
     db.commit()
     return from_chatting(chatting)
 
@@ -57,6 +57,7 @@ def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int
 def update_chatting(chatting_id: int, user_id: int = Depends(check_session),
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
     chatting = service.approve_chatting(user_id, chatting_id, db)
+    service.create_intimacy(db, [user_id, chatting.initiator_id], chatting.id)
     db.commit()
     return from_chatting(chatting)
 
