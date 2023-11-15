@@ -2,53 +2,65 @@ from datetime import date
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class EmailRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr = Field(description="SNU email",
+                            examples=["test@snu.ac.kr"])
 
 
 class VerificationRequest(BaseModel):
-    email: EmailStr
-    code: int
+    email: EmailStr = Field(description="SNU email",
+                            examples=["test@snu.ac.kr"])
+    code: int = Field(description="email verification code", examples=[182653])
 
 
 class VerificationResponse(BaseModel):
-    token: str
+    token: str = Field(description="email validation token",
+                       examples=["aljsd837nsdjfdsEjDFf3A_="])
 
 
 class ProfileData(BaseModel):
-    name: str
+    name: str = Field(description="user name", examples=["SNEK"])
     birth: date
     sex: str
     major: str
-    admission_year: int
-    about_me: str | None = None
-    mbti: str | None = None
-    nation_code: int
-    foods: List[str]
-    movies: List[str]
-    hobbies: List[str]
-    locations: List[str]
+    admission_year: int = Field(examples=[2023])
+    about_me: str | None = Field(
+        None, description="self introduction", examples=[None])
+    mbti: str | None = Field(None, description="MBTI", examples=["INTJ"])
+    nation_code: int = Field(examples=[82])
+    foods: List[str] = Field(examples=[[]])
+    movies: List[str] = Field(examples=[[]])
+    hobbies: List[str] = Field(examples=[[]])
+    locations: List[str] = Field(examples=[[]])
 
 
 class CreateUserRequest(BaseModel):
-    email: EmailStr
-    token: str
-    password: str
-    profile: ProfileData
-    main_language: str
-    languages: List[str]
+    email: EmailStr = Field(description="SNU email",
+                            examples=["test@snu.ac.kr"])
+    token: str = Field(description="email validation token",
+                       examples=["aljsd837nsdjfdsEjDFf3A_="])
+    password: str = Field(description="initial password",
+                          examples=["password"])
+    profile: ProfileData = Field(description="user profile")
+    main_language: str = Field(
+        description="user's main language", examples=["korean"])
+    languages: List[str] = Field(
+        description="for korean students: desiring languages, for foreign students: available languages", examples=[["japanese", "english"]])
 
 
 class UserResponse(BaseModel):
-    name: str
-    email: EmailStr
-    profile: ProfileData
-    type: str
-    main_language: str
-    languages: List[str]
+    name: str = Field(description="user name", examples=["SNEK"])
+    email: EmailStr = Field(description="SNU email",
+                            examples=["test@snu.ac.kr"])
+    profile: ProfileData = Field(description="user profile")
+    type: str = Field(description="korean or foreign", examples=["korean"])
+    main_language: str = Field(
+        description="user's main language", examples=["korean"])
+    languages: List[str] = Field(
+        description="for korean students: desiring languages, for foreign students: available languages", examples=[["japanese", "english"]])
 
 
 class UserType(Enum):

@@ -8,6 +8,6 @@ from src.websocket.router import router as websocket_router
 
 app = FastAPI()
 app.include_router(auth_router)
-app.include_router(user_router)
 app.include_router(chatting_router)
+app.include_router(user_router)
 app.include_router(websocket_router)
