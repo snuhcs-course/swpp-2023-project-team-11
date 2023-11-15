@@ -18,7 +18,7 @@ class Chatting(Base):
     created_at: Mapped[datetime] = Column(DateTime, nullable=False)
 
     initiator: Mapped[User] = relationship(foreign_keys=[initiator_id])
-    responser: Mapped[User] = relationship(foreign_keys=[responder_id])
+    responder: Mapped[User] = relationship(foreign_keys=[responder_id])
 
 
 class Text(Base):

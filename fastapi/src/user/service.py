@@ -254,12 +254,12 @@ def get_similarity(df_me: pd.DataFrame, df_target: pd.DataFrame) -> float:
     return similarity
 
 
-def get_mbti_f(initiator: User, responser: User) -> int:
+def get_mbti_f(initiator: User, responder: User) -> int:
     initiator_mbti = initiator.profile.mbti
-    responser_mbti = responser.profile.mbti
+    responder_mbti = responder.profile.mbti
     num_F = 0
     if initiator_mbti is not None:
         num_F += initiator_mbti.count('f')
-    if responser_mbti is not None:
-        num_F += responser_mbti.count('f')
+    if responder_mbti is not None:
+        num_F += responder_mbti.count('f')
     return num_F

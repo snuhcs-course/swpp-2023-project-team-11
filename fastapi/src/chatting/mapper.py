@@ -7,7 +7,7 @@ def from_chatting(chatting: Chatting) -> ChattingResponse:
     return ChattingResponse(
         chatting_id=chatting.id,
         initiator=from_user(chatting.initiator),
-        responder=from_user(chatting.responser),
+        responder=from_user(chatting.responder),
         is_approved=chatting.is_approved,
         is_terminated=chatting.is_terminated,
         created_at=chatting.created_at,

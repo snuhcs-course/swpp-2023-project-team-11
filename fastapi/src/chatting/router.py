@@ -117,7 +117,7 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
         prev_texts = service.get_all_texts(
             db, user_id, chatting_id, limit=20, timestamp=recent_intimacy.timestamp)
         initiator = chatting.initiator
-        responder = chatting.responser
+        responder = chatting.responder
         df_initiator = get_user_dataframe(initiator)
         df_responder = get_user_dataframe(responder)
         similarity = get_similarity(df_initiator, df_responder)
