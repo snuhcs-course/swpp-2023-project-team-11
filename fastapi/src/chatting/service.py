@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractclassmethod
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import json
 import numpy as np
@@ -12,6 +12,14 @@ from src.chatting.constants import *
 from src.chatting.exceptions import *
 from src.chatting.models import *
 from src.user.service import *
+
+
+def get_chatting_by_id(db: DbSession, chatting_id: int) -> Chatting:
+    chatting = db.query(Chatting).where(Chatting.id == chatting_id).first()
+    if chatting is None:
+        raise ChattingNotExistException()
+
+    return chatting
 
 
 def get_all_chattings(db: DbSession, user_id: int, is_approved: bool, limit: int | None = None) -> List[Chatting]:
@@ -121,6 +129,14 @@ def get_all_intimacies(
     return query.all()
 
 
+def get_intimacy(db: DbSession, user_id: int, chatting_id: int) -> Tuple[Intimacy, bool]:
+    intimacies = get_all_intimacies(db, user_id, chatting_id, limit=2)
+    if len(intimacies) == 0:
+        raise IntimacyNotExistException()
+
+    return intimacies[0], len(intimacies) == 1
+
+
 def get_recent_intimacy(
     db: DbSession,
     user_id: int,
@@ -132,59 +148,17 @@ def get_recent_intimacy(
     return intimacies[0]
 
 
-def create_intimacy(db: DbSession, user_id: int | List[int], chatting_id: int, intimacy: float = DEFAULT_INTIMACY) -> Intimacy:
+def create_intimacy(db: DbSession, user_id: int | List[int], chatting_id: int, intimacy: float = DEFAULT_INTIMACY) -> List[Intimacy]:
     if isinstance(user_id, int):
         user_id = [user_id]
 
     timestamp = datetime.now()
-    return db.scalar(insert(Intimacy).values([{
+    return list(db.scalars(insert(Intimacy).values([{
         "user_id": user_id,
         "chatting_id": chatting_id,
         "intimacy": intimacy,
         "timestamp": timestamp,
-    } for user_id in user_id]).returning(Intimacy))
-
-
-# FIXME 분해하기
-def create_intimacy_deprecated(user_id: int, chatting_id: int, db: DbSession) -> Intimacy:
-    """Raises `ChattingNotExistException`, `ClovaApiError`, `PapagoApiError`"""
-
-    # Previous 20 texts from chatting
-    curr_texts = get_all_texts(user_id, chatting_id, -1, 20, None, db)
-
-    # Get Intimacy info
-    intimacies = get_all_intimacies(user_id, chatting_id, 2, None, db)
-    if len(intimacies) == 0:
-        raise IntimacyNotExistException()
-    recent_intimacy = intimacies[0]
-
-    if len(intimacies) > 1:
-        prev_texts = get_all_texts(
-            user_id, chatting_id, -1, 20, recent_intimacy.timestamp, db)
-    else:
-        # we cannot calculate delta value with only one intimacy (which is definitely a default value)
-        prev_texts = []
-
-    # FIXME use get_all_chattings
-    chatting = db.query(Chatting).where(Chatting.id == chatting_id).first()
-    if chatting is None:
-        raise ChattingNotExistException()
-    new_intimacy_value = calculate_new_intimacy(
-        curr_texts, prev_texts, recent_intimacy, user_id, chatting.initiator, chatting.responser)
-    new_intimacy = db.scalar(
-        insert(Intimacy)
-        .values(
-            {
-                "user_id": user_id,
-                "chatting_id": chatting_id,
-                "intimacy": new_intimacy_value,
-                "timestamp": datetime.now(),
-            }
-        )
-        .returning(Intimacy)
-    )
-
-    return new_intimacy
+    } for user_id in user_id]).returning(Intimacy)))
 
 
 def get_topics(db: DbSession, tag: str, limit: int) -> List[Topic]:
@@ -593,25 +567,3 @@ class IntimacyCalculator:
                 weight[i] -= 0.015
 
         return weight
-
-# def calculate_new_intimacy(
-#     curr_texts: List[Text],
-#     prev_texts: List[Text],
-#     recent_intimacy: Intimacy,
-#     user_id: int,
-#     initiator: User,
-#     responser: User
-# ) -> int:
-#     """Raises `ClovaApiError`, `PapagoApiError`"""
-
-#     # sentiment, frequency, frequency_delta, length, length_delta, turn, turn_delta
-
-#     if len(prev_texts) == 0:
-#         weight = set_weight()
-#     else:
-#         # get user similarity
-#         similarity = get_similarity(get_user_dataframe(
-#             initiator), get_user_dataframe(responser))
-#         # set weight according to mbti F, revise sentiment weight
-#         num_F = get_mbti_f(initiator, responser)
-#         weight = set_weight(similarity, num_F)

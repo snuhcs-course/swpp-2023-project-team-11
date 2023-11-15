@@ -13,6 +13,7 @@ from src.chatting.schemas import *
 from src.database import DbConnector
 from src.exceptions import ErrorResponseDocsBuilder
 from src.user.exceptions import InvalidUserException
+from src.user.service import get_similarity, get_mbti_f, get_user_dataframe
 
 router = APIRouter(prefix="/chatting", tags=["chatting"])
 
@@ -56,9 +57,10 @@ def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int
 )
 def update_chatting(chatting_id: int, user_id: int = Depends(check_session),
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
-    chatting = service.approve_chatting(user_id, chatting_id, db)
+    chatting = service.approve_chatting(db, user_id, chatting_id)
     service.create_intimacy(db, [user_id, chatting.initiator_id], chatting.id)
     db.commit()
+
     return from_chatting(chatting)
 
 
@@ -73,8 +75,9 @@ def update_chatting(chatting_id: int, user_id: int = Depends(check_session),
 )
 def delete_chatting(chatting_id: int, user_id: int = Depends(check_session),
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
-    chatting = service.terminate_chatting(user_id, chatting_id, db)
+    chatting = service.terminate_chatting(db, user_id, chatting_id)
     db.commit()
+
     return from_chatting(chatting)
 
 
@@ -88,7 +91,7 @@ def delete_chatting(chatting_id: int, user_id: int = Depends(check_session),
 )
 def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int | None = None, timestamp: datetime | None = None,
                   user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> List[TextResponse]:
-    return list(from_text(text) for text in service.get_all_texts(user_id, chatting_id, seq_id, limit, timestamp, db))
+    return list(from_text(text) for text in service.get_all_texts(db, user_id, chatting_id, seq_id, limit, timestamp))
 
 
 @router.post(
@@ -103,10 +106,35 @@ def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int |
     .build()
 )
 def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
+                    calculator: service.IntimacyCalculator = Depends(),
                     db: DbSession = Depends(DbConnector.get_db)) -> IntimacyResponse:
-    intimacy = service.create_intimacy(user_id, chatting_id, db)
+    recent_intimacy, is_default = service.get_intimacy(
+        db, user_id, chatting_id)
+    chatting = service.get_chatting_by_id(db, chatting_id)
+
+    curr_texts = service.get_all_texts(db, user_id, chatting_id, limit=20)
+    if is_default:
+        prev_texts = service.get_all_texts(
+            db, user_id, chatting_id, limit=20, timestamp=recent_intimacy.timestamp)
+        initiator = chatting.initiator
+        responder = chatting.responser
+        df_initiator = get_user_dataframe(initiator)
+        df_responder = get_user_dataframe(responder)
+        similarity = get_similarity(df_initiator, df_responder)
+        num_F = get_mbti_f(initiator, responder)
+    else:
+        # we cannot calculate delta value with default intimacy
+        prev_texts = []
+        similarity = None
+        num_F = None
+
+    intimacy = calculator.calculate(
+        user_id, curr_texts, prev_texts, recent_intimacy, similarity, num_F)
+    new_intimacy = service.create_intimacy(
+        db, user_id, chatting_id, intimacy)[0]
     db.commit()
-    return from_intimacy(intimacy)
+
+    return from_intimacy(new_intimacy)
 
 
 @router.get(
@@ -119,9 +147,9 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
 )
 def get_topic_recommendation(chatting_id: int, limit: int = 1, user_id: int = Depends(check_session),
                              db: DbSession = Depends(DbConnector.get_db)) -> TopicResponse:
-    intimacy = service.get_recent_intimacy(user_id, chatting_id, db)
+    intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
-    topics = service.get_topics(tag, limit, db)
+    topics = service.get_topics(db, tag, limit)
 
     return list(from_topic(topic) for topic in topics)
 
