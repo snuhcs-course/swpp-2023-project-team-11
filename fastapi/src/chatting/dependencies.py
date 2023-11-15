@@ -13,7 +13,11 @@ def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConn
     return get_user_by_email(db, req.counterpart).user_id
 
 
+# Global intimacy calculator
+__translation = service.IgnoresEmptyInputTranslationClient(service.PapagoClient)
+__sentiment = service.IgnoresEmptyInputSentimentClient(service.ClovaClient)
+__calculator = service.IntimacyCalculator(__translation, __sentiment)
+
+
 def get_intimacy_calculator() -> service.IntimacyCalculator:
-    translation = service.IgnoresEmptyInputTranslationClient(service.PapagoClient)
-    sentiment = service.IgnoresEmptyInputSentimentClient(service.ClovaApiException)
-    return service.IntimacyCalculator(translation, sentiment)
+    return __calculator
