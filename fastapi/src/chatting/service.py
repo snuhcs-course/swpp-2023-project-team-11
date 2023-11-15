@@ -13,12 +13,8 @@ from src.user.service import *
 
 
 def get_all_chattings(user_id: int, is_approved: bool, db: DbSession) -> List[Chatting]:
-    query = (
-        db.query(Chatting)
-        .where(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id))
-        .where(Chatting.is_approved == is_approved)
-        .order_by(Chatting.is_terminated, desc(Chatting.created_at))
-    )
+    query = db.query(Chatting).where(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)).where(
+        Chatting.is_approved == is_approved).order_by(Chatting.is_terminated, desc(Chatting.created_at))
     if is_approved is False:
         query = query.where(Chatting.is_terminated == False)
 

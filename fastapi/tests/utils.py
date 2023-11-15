@@ -1,4 +1,6 @@
 from datetime import date
+from typing import Any, Callable
+from unittest.mock import Mock
 
 from sqlalchemy import insert, delete, select
 from sqlalchemy.orm import Session as DbSession
@@ -61,3 +63,16 @@ def inject_db(func):
             return func(*args, **kwargs, db=db)
 
     return wrapper
+
+
+class InjectMock:
+    param: str
+
+    def __init__(self, param: str) -> None:
+        self.param = param
+
+    def __call__(self, func: Callable) -> Any:
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs, **{self.param: Mock()})
+
+        return wrapper

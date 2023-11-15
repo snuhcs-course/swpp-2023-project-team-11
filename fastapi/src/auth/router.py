@@ -24,7 +24,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     .build()
 )
 def create_session(user_id: int = Depends(check_password), db: DbSession = Depends(DbConnector.get_db)) -> SessionResponse:
-    session_key = service.create_session(user_id, db)
+    session_key = service.generate_session_key(user_id)
+    service.create_session(db, session_key, user_id)
     db.commit()
 
     return SessionResponse(access_token=session_key, token_type="bearer")
@@ -38,5 +39,5 @@ def create_session(user_id: int = Depends(check_password), db: DbSession = Depen
     .add(InvalidSessionException()).build()
 )
 def delete_session(session_key: str = Depends(oauth2_scheme), db: DbSession = Depends(DbConnector.get_db)) -> None:
-    service.delete_session(session_key, db)
+    service.delete_session(db, session_key)
     db.commit()

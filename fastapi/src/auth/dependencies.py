@@ -33,4 +33,4 @@ def check_password(form: OAuth2PasswordRequestForm = Depends(),  db: DbSession =
 def check_session(session_key: str = Depends(oauth2_scheme), db: DbSession = Depends(DbConnector.get_db)) -> int:
     """Raises `InvalidSessionException`"""
 
-    return service.get_user_by_session(session_key, db)
+    return service.get_session_by_key(db, session_key).user_id

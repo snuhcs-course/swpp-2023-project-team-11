@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session as DbSession
 from src.auth.dependencies import check_session
 from src.auth.exceptions import InvalidSessionException
 from src.auth.schemas import SessionResponse
-from src.auth.service import create_session
+from src.auth.service import create_session, generate_session_key
 from src.database import DbConnector
 from src.exceptions import ErrorResponseDocsBuilder
 from src.user.dependencies import *
@@ -69,7 +69,8 @@ def create_email_verification(req: VerificationRequest, email_id: int = Depends(
 def create_user(req: CreateUserRequest, verification_id: int = Depends(check_verification_token),
                 db: DbSession = Depends(DbConnector.get_db)) -> SessionResponse:
     user_id = service.create_user(req, verification_id, db)
-    session_key = create_session(user_id, db)
+    session_key = generate_session_key(user_id)
+    create_session(db, user_id)
     db.commit()
 
     return SessionResponse(access_token=session_key, token_type="bearer")
