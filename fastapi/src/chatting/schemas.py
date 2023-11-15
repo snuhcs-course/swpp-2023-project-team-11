@@ -37,7 +37,5 @@ class IntimacyResponse(BaseModel):
 
 
 class TopicResponse(BaseModel):
-    # FIXME remove topic id
-    topic_id: int
     topic: str = Field(examples=["좋아하는 책에 대한 이야기"])
     tag: str = Field(examples=["C"])

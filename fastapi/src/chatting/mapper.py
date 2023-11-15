@@ -35,7 +35,6 @@ def from_intimacy(intimacy: Intimacy) -> IntimacyResponse:
 
 def from_topic(topic: Topic) -> TopicResponse:
     return TopicResponse(
-        topic_id=topic.id,
         topic=topic.topic,
         tag=topic.tag,
     )
