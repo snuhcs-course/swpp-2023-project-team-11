@@ -73,6 +73,6 @@ class InjectMock:
 
     def __call__(self, func: Callable) -> Any:
         def wrapper(*args, **kwargs):
-            return func(*args, **kwargs, **{self.param: Mock()})
+            return func(*args, **kwargs, **{self.param: Mock(name=f'{self.param}')})
 
         return wrapper

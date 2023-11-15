@@ -15,6 +15,7 @@ from src.user.service import *
 
 
 def get_chatting_by_id(db: DbSession, chatting_id: int) -> Chatting:
+    """Raises `ChattingNotExistException`"""
     chatting = db.query(Chatting).where(Chatting.id == chatting_id).first()
     if chatting is None:
         raise ChattingNotExistException()
@@ -290,7 +291,7 @@ class PapagoClient(TranslationClient):
 
 def IgnoresEmptyInputTranslationClient(wrappee: Type[TranslationClient]) -> Type[TranslationClient]:
     """
-    Proxy pattern that ignores empty input.
+    Proxy + singleton pattern that ignores empty input.
     It creates an instance of level 2 type object (ABCMeta), which is level 1 type object.
     """
 
@@ -349,7 +350,7 @@ class ClovaClient(SentimentClient):
 
 def IgnoresEmptyInputSentimentClient(wrappee: Type[SentimentClient]) -> Type[SentimentClient]:
     """
-    Proxy pattern that ignores empty input.
+    Proxy + singleton pattern that ignores empty input.
     It creates an instance of level 2 type object (ABCMeta), which is level 1 type object.
     """
 
@@ -382,8 +383,8 @@ class IntimacyCalculator:
         curr_texts: List[Text],
         prev_texts: List[Text],
         recent_intimacy: Intimacy,
-        similarity: float | None,
-        num_F: int | None,
+        similarity: float | None = None,
+        num_F: int | None = None,
     ) -> float:
         curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
         sentiment = self.__sentiment.get_sentiment(curr_translated)
@@ -420,8 +421,8 @@ class IntimacyCalculator:
             return None
         return curr - prev
 
-    @null_if_empty
     @staticmethod
+    @null_if_empty
     def get_frequency(texts: List[Text]) -> float | None:
         """An average seconds for 20 texts"""
 
@@ -478,8 +479,8 @@ class IntimacyCalculator:
         else:
             return 10
 
-    @null_if_empty
     @staticmethod
+    @null_if_empty
     def get_avg_length(texts: List[Text]) -> float | None:
         avg_len = 0
         for text in texts:
@@ -531,8 +532,8 @@ class IntimacyCalculator:
             return -5
 
     # scope of rate[0,1]
-    @null_if_empty
     @staticmethod
+    @null_if_empty
     def get_turn(texts: List[Text], user_id: int) -> float | None:
         """How many turns that the user took among provided texts"""
 

@@ -14,7 +14,7 @@ from tests.utils import *
 class TestDependencies(unittest.TestCase):
     email = "test@snu.ac.kr"
 
-    @patch('src.auth.dependencies.get_user_by_email')
+    @patch('src.chatting.dependencies.get_user_by_email')
     @InjectMock('db')
     def test_check_counterpart(self, mock_get_user_by_email: MagicMock, db: DbSession):
         dummy_user = Mock()
@@ -38,15 +38,255 @@ class TestPapagoClient(unittest.TestCase):
             self.client.translate("")
 
 
+class MockClient(Client):
+    @classmethod
+    def api_error(cls) -> HTTPException:
+        return ExternalApiError()
+
+    @classmethod
+    def api_url(cls) -> str:
+        return ''
+
+    @classmethod
+    def headers(cls) -> Dict[str, str]:
+        return {}
+
+    @classmethod
+    def data(cls, text: str) -> str | Dict[str, str]:
+        return ''
+
+    @classmethod
+    def post(cls, text: str) -> requests.Response:
+        return requests.Response()
+
+
+class MockTranslationClient(TranslationClient, MockClient):
+    @classmethod
+    def parse_response(cls, response: requests.Response) -> str:
+        ''
+
+    @classmethod
+    def translate(cls, text: str) -> str:
+        raise cls.api_error()
+
+
+class MockSentimentClient(SentimentClient, MockClient):
+    @classmethod
+    def parse_response(cls, response: requests.Response) -> float:
+        ''
+
+    @classmethod
+    def get_sentiment(cls, text: str) -> float:
+        raise cls.api_error()
+
+
+class TestIgnoresEmptyInputTranslationClient(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.client = IgnoresEmptyInputTranslationClient(MockTranslationClient)
+
+    def test_translate_text(self):
+        self.assertEqual(self.client.translate(''), '')
+        with self.assertRaises(ExternalApiError):
+            self.client.translate('I am Happy!')
+
+
+@unittest.skip("This teset actually calls external API")
 class TestClovaClient(unittest.TestCase):
     client = ClovaClient
 
-    @unittest.skip("This test actually calls external API")
     def test_get_sentiment(self):
-        response = self.client.get_sentiment("I am Happy!")
-        self.assertEqual(response.status_code, 200)
+        sentiment = self.client.get_sentiment("I am Happy!")
+        self.assertGreaterEqual(sentiment, 0)
+        self.assertLessEqual(sentiment, 100)
         with self.assertRaises(ClovaApiException):
             self.client.get_sentiment("")
+
+
+class TestIgnoresEmptyInputSentimentClient(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.client = IgnoresEmptyInputSentimentClient(MockSentimentClient)
+
+    def test_get_sentiment(self):
+        self.assertEqual(self.client.get_sentiment(''), 0)
+        with self.assertRaises(ExternalApiError):
+            self.client.get_sentiment('I am Happy!')
+
+
+class TestIntimacyCalculator(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        translation = Mock()
+        translation.translate = Mock()
+        translation.translate.return_value = '나는 행복해!'
+        sentiment = Mock()
+        sentiment.get_sentiment = Mock()
+        sentiment.get_sentiment.return_value = 9.9933326082
+        cls.calculator = IntimacyCalculator(translation, sentiment)
+
+    def test_calculate(self):
+        timestamp = datetime.now()
+        curr_texts = [
+            Text(id=1, sender_id=1, msg="hello", timestamp=timestamp),
+            Text(id=1, sender_id=1, msg="hello",
+                 timestamp=timestamp - timedelta(seconds=1)),
+            Text(id=1, sender_id=1, msg="you",
+                 timestamp=timestamp - timedelta(seconds=2)),
+            Text(id=1, sender_id=1, msg="what",
+                 timestamp=timestamp - timedelta(seconds=3)),
+            Text(id=1, sender_id=1, msg="bye",
+                 timestamp=timestamp - timedelta(seconds=4)),
+        ]
+        recent_intimacy = Intimacy(
+            id=1, user_id=1, chatting_id=1, intimacy=DEFAULT_INTIMACY, timestamp=timestamp)
+        intimacy = self.calculator.calculate(
+            1, curr_texts, [], recent_intimacy)
+        self.assertEqual(intimacy, 37.49933326082)
+
+    def test_get_frequency(self):
+        timestamp = datetime.now()
+        texts = [
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=1)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=2)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=3)),
+            Text(id=1, chatting_id=1, sender_id=1, msg="",
+                 timestamp=timestamp - timedelta(seconds=8)),
+        ]
+        result = self.calculator.get_frequency(texts)
+        self.assertGreaterEqual(result, 39.9)
+        self.assertLessEqual(result, 40.1)
+
+        self.assertIsNone(self.calculator.get_frequency([]))
+
+    def test_get_frequency_delta(self):
+        self.assertIsNone(self.calculator.get_frequency_delta([], []))
+
+    def test_score_frequency(self):
+        text = Text(id=1, chatting_id=1, sender_id=1, msg="",
+                    timestamp=datetime.now() - timedelta(seconds=1))
+        self.assertEqual(self.calculator.score_frequency([text]), 10)
+
+        text.timestamp = datetime.now() - timedelta(seconds=31)
+        self.assertEqual(self.calculator.score_frequency([text]), 5)
+
+        text.timestamp = datetime.now() - timedelta(seconds=61)
+        self.assertEqual(self.calculator.score_frequency([text]), 3)
+
+        text.timestamp = datetime.now() - timedelta(seconds=91)
+        self.assertEqual(self.calculator.score_frequency([text]), 0)
+
+        text.timestamp = datetime.now() - timedelta(seconds=121)
+        self.assertEqual(self.calculator.score_frequency([text]), -2)
+
+        text.timestamp = datetime.now() - timedelta(seconds=151)
+        self.assertEqual(self.calculator.score_frequency([text]), -4)
+
+        text.timestamp = datetime.now() - timedelta(seconds=181)
+        self.assertEqual(self.calculator.score_frequency([text]), -5)
+
+        self.assertEqual(self.calculator.score_frequency([]), 0)
+
+    def test_score_frequency_delta(self):
+        prev_texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            )
+        ]
+        curr_texts = [
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
+        ]
+        self.assertEqual(self.calculator.score_frequency_delta(
+            prev_texts, curr_texts), 0)
+
+        self.assertEqual(self.calculator.score_frequency_delta([], []), 0)
+
+    def test_score_avg_length(self):
+        texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            )
+        ]
+        result = self.calculator.score_avg_length(texts)
+        self.assertEqual(result, 0)
+
+    def test_score_avg_length_delta(self):
+        # Test case 1: Score average length delta of texts
+        prev_texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            )
+        ]
+        curr_texts = [
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
+        ]
+        result = self.calculator.score_avg_length_delta(prev_texts, curr_texts)
+        self.assertEqual(result, 0)
+
+    def test_get_turn(self):
+        texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            ),
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now()),
+        ]
+        self.assertEqual(self.calculator.get_turn(texts, 1), 0.5)
+
+        self.assertIsNone(self.calculator.get_turn([], -1))
+
+    def test_get_turn_delta(self):
+        # Test case 1: Get turn delta of texts
+        prev_texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            )
+        ]
+        curr_texts = [
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
+        ]
+        self.assertEqual(self.calculator.get_turn_delta(
+            prev_texts, curr_texts, 1), 0)
+
+        self.assertIsNone(self.calculator.get_turn_delta([], [], -1))
+
+    def test_score_turn(self):
+        texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            ),
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now()),
+        ]
+        result = self.calculator.score_turn(texts, 1)
+        self.assertEqual(result, 10)
+
+    def test_score_turn_delta(self):
+        prev_texts = [
+            Text(
+                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+            )
+        ]
+        curr_texts = [
+            Text(id=2, chatting_id=1, sender_id=2,
+                 msg="Hi", timestamp=datetime.now())
+        ]
+        result = self.calculator.score_turn_delta(prev_texts, curr_texts, 1)
+        self.assertEqual(result, 0)
+
+    def test_get_weight(self):
+        weight = self.calculator.get_weight()
+        self.assertTrue(
+            np.all(weight == np.array([0.1, 0.3, 0, 0.3, 0, 0.3, 0])))
+        weight = self.calculator.get_weight(0.1, 2)
+        self.assertTrue(np.all(weight == np.array(
+            [0.19, 0.185, 0.085, 0.185, 0.085, 0.185, 0.085])))
 
 
 class TestDb(unittest.TestCase):
@@ -77,51 +317,48 @@ class TestDb(unittest.TestCase):
 
     @inject_db
     def test_chatting(self, db: DbSession):
-        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
         chatting_id = chatting.id
         self.assertIsNotNone(chatting)
         self.assertEqual(chatting.is_approved, False)
         self.assertEqual(chatting.is_terminated, False)
         db.commit()
 
-        self.assertEqual(get_all_chattings(self.initiator_id, True, db), [])
+        self.assertEqual(get_chatting_by_id(db, chatting_id), chatting)
+        self.assertEqual(get_all_chattings(db, self.initiator_id, True), [])
         self.assertEqual(len(get_all_chattings(
-            self.initiator_id, False, db)), 1)
+            db, self.initiator_id, False)), 1)
         self.assertEqual(len(get_all_chattings(
-            self.responder_id, False, db)), 1)
+            db, self.responder_id, False)), 1)
+        with self.assertRaises(ChattingNotExistException):
+            get_chatting_by_id(db, -1)
 
         with self.assertRaises(ChattingNotExistException):
-            approve_chatting(self.initiator_id, chatting_id, db)
+            approve_chatting(db, self.initiator_id, chatting_id)
         with self.assertRaises(ChattingNotExistException):
-            approve_chatting(self.responder_id, -1, db)
-        chatting = approve_chatting(self.responder_id, chatting_id, db)
+            approve_chatting(db, self.responder_id, -1)
+        chatting = approve_chatting(db, self.responder_id, chatting_id)
         db.commit()
 
-        self.assertEqual(chatting.id, chatting_id)
         self.assertEqual(
-            len(get_all_chattings(self.initiator_id, True, db)), 1)
+            len(get_all_chattings(db, self.initiator_id, True)), 1)
         self.assertEqual(len(get_all_chattings(
-            self.initiator_id, False, db)), 0)
-
-        intimacy = get_all_intimacies(self.initiator_id, None, None, None, db)
-        self.assertEqual(len(intimacy), 1)
-        intimacy = get_all_intimacies(self.responder_id, None, None, None, db)
-        self.assertEqual(len(intimacy), 1)
+            db, self.initiator_id, False)), 0)
 
         with self.assertRaises(ChattingNotExistException):
-            terminate_chatting(-1, chatting_id, db)
+            terminate_chatting(db, -1, chatting_id)
         with self.assertRaises(ChattingNotExistException):
-            terminate_chatting(self.initiator_id, -1, db)
-        chatting = terminate_chatting(self.initiator_id, chatting_id, db)
+            terminate_chatting(db, self.initiator_id, -1)
+        chatting = terminate_chatting(db, self.initiator_id, chatting_id)
         self.assertEqual(chatting.is_terminated, True)
-        chatting = terminate_chatting(self.responder_id, chatting_id, db)
+        chatting = terminate_chatting(db, self.responder_id, chatting_id)
         db.commit()
 
     @inject_db
     def test_get_all_texts(self, db: DbSession):
         timestamp = datetime.now()
 
-        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
         seq_ids = list(
             db.scalars(
                 insert(Text)
@@ -138,36 +375,30 @@ class TestDb(unittest.TestCase):
         )
         db.commit()
 
+        self.assertEqual(get_all_texts(db, -1, chatting.id), [])
+        self.assertEqual(get_all_texts(db, -1), [])
+        self.assertEqual(get_all_texts(db, self.initiator_id, -1), [])
         self.assertEqual(
-            get_all_texts(-1, chatting.id, -1, None, None, db), [])
-        self.assertEqual(get_all_texts(-1, None, -1, None, None, db), [])
-        self.assertEqual(get_all_texts(
-            self.initiator_id, -1, -1, None, None, db), [])
+            len(get_all_texts(db, self.initiator_id, chatting.id)), 5)
+        self.assertEqual(len(get_all_texts(db, self.initiator_id)), 5)
         self.assertEqual(
-            len(get_all_texts(self.initiator_id, chatting.id, -1, None, None, db)), 5
-        )
-        self.assertEqual(
-            len(get_all_texts(self.initiator_id, None, -1, None, None, db)), 5
-        )
-        self.assertEqual(
-            len(get_all_texts(self.initiator_id,
-                None, seq_ids[1], None, None, db)), 3
-        )
+            len(get_all_texts(db, self.initiator_id, seq_id=seq_ids[1])), 3)
 
-        texts = get_all_texts(self.initiator_id, None, seq_ids[1], 2, None, db)
+        texts = get_all_texts(db, self.initiator_id,
+                              seq_id=seq_ids[1], limit=2)
         self.assertEqual(len(texts), 2)
         self.assertEqual(texts[0].id, seq_ids[4])
         self.assertEqual(texts[1].id, seq_ids[3])
 
         texts = get_all_texts(
-            self.initiator_id, None, seq_ids[1], None, timestamp + timedelta(milliseconds=3), db)
+            db, self.initiator_id, seq_id=seq_ids[1], timestamp=timestamp + timedelta(milliseconds=3))
         self.assertEqual(len(texts), 2)
         self.assertEqual(texts[0].id, seq_ids[3])
         self.assertEqual(texts[1].id, seq_ids[2])
 
     @inject_db
-    def test_get_all_intimacies(self, db: DbSession):
-        chatting = create_chatting(self.initiator_id, self.responder_id, db)
+    def test_get_intimacy(self, db: DbSession):
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
         timestamp = datetime.now()
         db.execute(
             insert(Intimacy)
@@ -179,86 +410,40 @@ class TestDb(unittest.TestCase):
             } for i in range(5)))
         )
 
-        intimacies = get_all_intimacies(
-            self.responder_id, None, None, None, db)
+        intimacies = get_all_intimacies(db, self.responder_id)
         self.assertEqual(len(intimacies), 0)
-
-        intimacies = get_all_intimacies(
-            self.initiator_id, None, None, None, db)
+        intimacies = get_all_intimacies(db, self.initiator_id)
         self.assertEqual(len(intimacies), 5)
         self.assertEqual(intimacies[1].intimacy, 3)
         self.assertEqual(intimacies[3].intimacy, 1)
         self.assertEqual(intimacies[4].intimacy, 0)
-
-        intimacies = get_all_intimacies(self.initiator_id, -1, None, None, db)
+        intimacies = get_all_intimacies(db, self.initiator_id, -1)
         self.assertEqual(len(intimacies), 0)
-
-        intimacies = get_all_intimacies(self.initiator_id, None, 3, None, db)
+        intimacies = get_all_intimacies(db, self.initiator_id, limit=3)
         self.assertEqual(len(intimacies), 3)
-
         intimacies = get_all_intimacies(
-            self.initiator_id, None, None, timestamp + timedelta(seconds=2.5), db)
+            db, self.initiator_id, timestamp=timestamp + timedelta(seconds=2.5))
         self.assertEqual(len(intimacies), 3)
 
-    @patch("src.chatting.service.requests.post")  # patch for clova
+        intimacy, is_default = get_intimacy(db, self.initiator_id, chatting.id)
+        self.assertEqual(intimacy.intimacy, 4)
+        self.assertFalse(is_default)
+        with self.assertRaises(IntimacyNotExistException):
+            get_intimacy(db, self.responder_id, chatting.id)
+        with self.assertRaises(IntimacyNotExistException):
+            get_intimacy(db, self.initiator_id, -1)
+
+        intimacy = get_recent_intimacy(db, self.initiator_id, chatting.id)
+        self.assertEqual(intimacy.intimacy, 4)
+        intimacy = get_recent_intimacy(db, self.responder_id, chatting.id)
+        self.assertIsNone(intimacy)
+
     @inject_db
-    def test_create_intimacy(self, mock_post, db: DbSession):
-        papago_mock_response = Mock()
-        clova_mock_response = Mock()
-        papago_mock_response.status_code = 200
-        clova_mock_response.status_code = 200
-        clova_mock_response.text = json.dumps({'document': {'sentiment': 'positive', 'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}}, 'sentences': [
-                                              {'content': 'translated text', 'offset': 0, 'length': 11, 'sentiment': 'positive', 'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568}, 'highlights': [{'offset': 0, 'length': 10}]}]})
-        papago_mock_response.json.return_value = {'message': {'result': {
-            'srcLangType': 'en', 'tarLangType': 'ko', 'translatedText': 'translated text'}}}
-        mock_post.side_effect = [papago_mock_response, clova_mock_response]
-
-        chatting = create_chatting(self.initiator_id, self.responder_id, db)
-        chatting = approve_chatting(self.responder_id, chatting.id, db)
-
-        timestamp = datetime.now()
-        db.scalars(
-            insert(Text)
-            .values(
-                [
-                    {
-                        "chatting_id": chatting.id,
-                        "sender_id": self.initiator_id,
-                        "msg": "hello",
-                        "timestamp": timestamp,
-                    },
-                    {
-                        "chatting_id": chatting.id,
-                        "sender_id": self.initiator_id,
-                        "msg": "hello",
-                        "timestamp": timestamp - timedelta(seconds=1),
-                    },
-                    {
-                        "chatting_id": chatting.id,
-                        "sender_id": self.responder_id,
-                        "msg": "you",
-                        "timestamp": timestamp - timedelta(seconds=2),
-                    },
-                    {
-                        "chatting_id": chatting.id,
-                        "sender_id": self.initiator_id,
-                        "msg": "what",
-                        "timestamp": timestamp - timedelta(seconds=3),
-                    },
-                    {
-                        "chatting_id": chatting.id,
-                        "sender_id": self.responder_id,
-                        "msg": "bye",
-                        "timestamp": timestamp - timedelta(seconds=4),
-                    },
-                ]
-            )
-            .returning(Text.id)
-        )
-        db.commit()
-
-        intimacy = create_intimacy(self.initiator_id, chatting.id, db)
-        self.assertEqual(intimacy.intimacy, 41.99933326082)
+    def test_create_intimacy(self, db: DbSession):
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
+        intimacies = create_intimacy(
+            db, [self.initiator_id, self.responder_id], chatting.id)
+        self.assertEqual(len(intimacies), 2)
 
     @inject_db
     def test_get_topic(self, db: DbSession):
@@ -273,12 +458,12 @@ class TestDb(unittest.TestCase):
             )
         )
         db.commit()
-        self.assertIn(get_topics('C', 1, db)[0].topic, [
+        self.assertIn(get_topics(db, 'C', 1)[0].topic, [
                       "I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topics('B', 1, db)[0].topic, "I'm so mad")
-        self.assertEqual(get_topics('A', 1, db)[0].topic, "I'm so good")
+        self.assertEqual(get_topics(db, 'B', 1)[0].topic, "I'm so mad")
+        self.assertEqual(get_topics(db, 'A', 1)[0].topic, "I'm so good")
         # get_topics 함수의 return 값이 random 정렬 되었는지 확인
-        test_list = get_topics('C', 2, db)
+        test_list = get_topics(db, 'C', 2)
         self.assertNotEqual(test_list[0].topic, test_list[1].topic)
         self.assertEqual(len(test_list), 2)
         if test_list[0] == "I'm so sad":
@@ -287,251 +472,9 @@ class TestDb(unittest.TestCase):
             self.assertEqual(test_list[1].topic, "I'm so sad")
 
         # topic 개수보다 많은 개수를 요청할 경우
-        self.assertEqual(len(get_topics('C', 3, db)), 2)
-        self.assertEqual(len(get_topics('C', 4, db)), 2)
-        self.assertEqual(len(get_topics('B', 5, db)), 1)
-
-    def test_flatten_texts(self):
-        texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            ),
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi I'm the text longer than 1000 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357,", timestamp=datetime.now()),
-        ]
-        expected_result = "Hello.Hi I'm the text longer than 1000 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214"
-        result = flatten_texts(texts)
-        self.assertEqual(result, expected_result)
-
-    @patch("src.chatting.service.requests.post")
-    def test_translate_text(self, mock_papago):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        data = {
-            'message': {'result':
-                        {'srcLangType': 'en', 'tarLangType': 'ko',
-                            'translatedText': '나는 행복해!'}
-                        }
-        }
-
-        mock_response.json.return_value = data
-        mock_papago.return_value = mock_response
-
-        response = translate_text("I'm so sad..")
-        self.assertEqual(response, "나는 행복해!")
-
-    @patch("src.chatting.service.requests.post")
-    def test_get_sentiment(self, mock_clova):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        data = {
-            'document': {'sentiment': 'positive',
-                         'confidence': {'negative': 0.030769918, 'positive': 99.964096, 'neutral': 0.00513428}},
-            'sentences': [{'content': 'I am Happy!', 'offset': 0, 'length': 11, 'sentiment': 'positive',
-                           'confidence': {'negative': 0.0018461951, 'positive': 0.99784577, 'neutral': 0.0003080568},
-                           'highlights': [{'offset': 0, 'length': 10}]}]
-        }
-        mock_response.text = json.dumps(data)
-        mock_clova.return_value = mock_response
-
-        response = get_sentiment("I am Happy!")
-        self.assertEqual(response, 9.9933326082)
-
-    def test_get_frequency(self):
-        timestamp = datetime.now()
-        texts = [
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
-                 timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
-                 timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
-                 timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
-                 timestamp=timestamp - timedelta(seconds=8)),
-        ]
-        result = get_frequency(texts)
-        self.assertGreaterEqual(result, 39.9)
-        self.assertLessEqual(result, 40.1)
-
-        self.assertIsNone(get_frequency([]))
-
-    def test_get_frequency_delta(self):
-        self.assertIsNone(get_frequency_delta([], []))
-
-    def test_score_frequency(self):
-        text = Text(id=1, chatting_id=1, sender_id=1, msg="",
-                    timestamp=datetime.now() - timedelta(seconds=1))
-        self.assertEqual(score_frequency([text]), 10)
-
-        text.timestamp = datetime.now() - timedelta(seconds=31)
-        self.assertEqual(score_frequency([text]), 5)
-
-        text.timestamp = datetime.now() - timedelta(seconds=61)
-        self.assertEqual(score_frequency([text]), 3)
-
-        text.timestamp = datetime.now() - timedelta(seconds=91)
-        self.assertEqual(score_frequency([text]), 0)
-
-        text.timestamp = datetime.now() - timedelta(seconds=121)
-        self.assertEqual(score_frequency([text]), -2)
-
-        text.timestamp = datetime.now() - timedelta(seconds=151)
-        self.assertEqual(score_frequency([text]), -4)
-
-        text.timestamp = datetime.now() - timedelta(seconds=181)
-        self.assertEqual(score_frequency([text]), -5)
-
-        self.assertEqual(score_frequency([]), 0)
-
-    def test_score_frequency_delta(self):
-        prev_texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
-        ]
-        curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now())
-        ]
-        self.assertEqual(score_frequency_delta(prev_texts, curr_texts), 0)
-
-        self.assertEqual(score_frequency_delta([], []), 0)
-
-    def test_score_avg_length(self):
-        texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
-        ]
-        expected_result = 0
-        result = score_avg_length(texts)
-        self.assertEqual(result, expected_result)
-
-    def test_score_avg_length_delta(self):
-        # Test case 1: Score average length delta of texts
-        prev_texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
-        ]
-        curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now())
-        ]
-        expected_result = 0
-        result = score_avg_length_delta(prev_texts, curr_texts)
-        self.assertEqual(result, expected_result)
-
-    def test_get_turn(self):
-        texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            ),
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now()),
-        ]
-        self.assertEqual(get_turn(texts, 1), 0.5)
-
-        self.assertIsNone(get_turn([], -1))
-
-    def test_get_turn_delta(self):
-        # Test case 1: Get turn delta of texts
-        prev_texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
-        ]
-        curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now())
-        ]
-        self.assertEqual(get_turn_delta(prev_texts, curr_texts, 1), 0)
-
-        self.assertIsNone(get_turn_delta([], [], -1))
-
-    def test_score_turn(self):
-        # Test case 1: Score turn rate of texts
-        texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            ),
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now()),
-        ]
-        user_id = 1
-        expected_result = 10
-        result = score_turn(texts, user_id)
-        self.assertEqual(result, expected_result)
-
-    def test_score_turn_delta(self):
-        # Test case 1: Score turn delta of texts
-        prev_texts = [
-            Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
-            )
-        ]
-        curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
-                 msg="Hi", timestamp=datetime.now())
-        ]
-        user_id = 1
-        expected_result = 0
-        result = score_turn_delta(prev_texts, curr_texts, user_id)
-        self.assertEqual(result, expected_result)
-
-    def test_set_weight(self):
-        # Test case 1: Change weight of parameters
-        my_profile = Profile(
-            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti="isfj", nation_code=82,
-            foods=["korean_food", "thai_food"],
-            movies=["horror", "action", "comedy"],
-            locations=["up", "down"],
-            hobbies=["soccer", "golf"]
-        )
-
-        your_profile1 = Profile(
-            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti=None, nation_code=82,
-            foods=["italian_food", "japan_food"], movies=["romance", "action"],
-            locations=["up", "jahayeon"],
-            hobbies=["golf"])
-
-        your_profile2 = Profile(
-            name="abdula", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti=None, nation_code=0,
-            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
-            locations=['up', "down", "jahayeon"],
-            hobbies=["soccer"])
-
-        your_profile3 = Profile(
-            name="jiho", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            nation_code=1, mbti=None,
-            foods=["japan_food"], movies=["action"],
-            locations=["jahayeon"],
-            hobbies=["golf", "soccer", "book"])
-
-        me = User(user_id=0, verification_id=1, lang_id=1,
-                  salt="1", hash="1", profile=my_profile)
-        you1 = User(user_id=1, verification_id=2, lang_id=2,
-                    salt="2", hash="2", profile=your_profile1)
-        you2 = User(user_id=2, verification_id=3, lang_id=3,
-                    salt="3", hash="3", profile=your_profile2)
-        you3 = User(user_id=3, verification_id=4, lang_id=4,
-                    salt="4", hash="4", profile=your_profile3)
-
-        # 0.3780, 0.6324, 0.4082
-        weight_1 = set_weight(me, you1)
-        weight_2 = set_weight(me, you2)
-        weight_3 = set_weight(me, you3)
-
-        expected_weight1 = np.array([0.16, 0.18, 0.1, 0.18, 0.10, 0.18, 0.1])
-        expected_weight2 = np.array([0.16, 0.16, 0.12, 0.16, 0.12, 0.16, 0.12])
-        expected_weight3 = np.array([0.16, 0.17, 0.11, 0.17, 0.11, 0.17, 0.11])
-
-        self.assertTrue(np.allclose(weight_1, expected_weight1))
-        self.assertTrue(np.allclose(weight_2, expected_weight2))
-        self.assertTrue(np.allclose(weight_3, expected_weight3))
+        self.assertEqual(len(get_topics(db, 'C', 3)), 2)
+        self.assertEqual(len(get_topics(db, 'C', 4)), 2)
+        self.assertEqual(len(get_topics(db, 'B', 5)), 1)
 
 
 if __name__ == "__main__":
