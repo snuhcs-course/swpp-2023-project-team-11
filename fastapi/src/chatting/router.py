@@ -26,7 +26,7 @@ router = APIRouter(prefix="/chatting", tags=["chatting"])
 )
 def get_all_chattings(is_approved: bool, user_id: int = Depends(check_session),
                       db: DbSession = Depends(DbConnector.get_db)) -> List[ChattingResponse]:
-    return list(from_chatting(chatting) for chatting in service.get_all_chattings(user_id, is_approved, db))
+    return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved))
 
 
 @router.post(
@@ -119,7 +119,7 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
 def get_topic_recommendation(chatting_id: int, limit: int = 1, user_id: int = Depends(check_session),
                              db: DbSession = Depends(DbConnector.get_db)) -> TopicResponse:
     intimacy = service.get_recent_intimacy(user_id, chatting_id, db)
-    tag = service.get_tag_by_intimacy(intimacy)
+    tag = service.intimacy_tag(intimacy)
     topics = service.get_topics(tag, limit, db)
 
     return list(from_topic(topic) for topic in topics)
