@@ -106,7 +106,7 @@ def get_all_texts(seq_id: int = -1, limit: int | None = None, chatting_id: int |
     .build()
 )
 def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
-                    calculator: service.IntimacyCalculator = Depends(),
+                    calculator: service.IntimacyCalculator = Depends(get_intimacy_calculator),
                     db: DbSession = Depends(DbConnector.get_db)) -> IntimacyResponse:
     recent_intimacy, is_default = service.get_intimacy(
         db, user_id, chatting_id)

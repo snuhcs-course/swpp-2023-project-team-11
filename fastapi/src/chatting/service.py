@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractclassmethod
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Type
 
 import json
 import numpy as np
@@ -298,10 +298,10 @@ class ClovaClient(SentimentClient):
 
 
 class IntimacyCalculator:
-    __translation: TranslationClient
-    __sentiment: SentimentClient
+    __translation: Type[TranslationClient]
+    __sentiment: Type[SentimentClient]
 
-    def __init__(self, translation: TranslationClient, sentiment: SentimentClient) -> None:
+    def __init__(self, translation: Type[TranslationClient], sentiment: Type[SentimentClient]) -> None:
         self.__translation = translation
         self.__sentiment = sentiment
 
