@@ -28,7 +28,8 @@ router = APIRouter(prefix="/user", tags=["user"])
     .build()
 )
 def create_verification_code(email: str = Depends(check_snu_email), db: DbSession = Depends(DbConnector.get_db)) -> None:
-    code = service.create_verification_code(email, db)
+    code = service.generate_code()
+    service.create_verification_code(db, email, code)
     db.commit()
 
     service.send_code_via_email(email, code)
@@ -46,7 +47,8 @@ def create_verification_code(email: str = Depends(check_snu_email), db: DbSessio
 )
 def create_email_verification(req: VerificationRequest, email_id: int = Depends(check_verification_code),
                               db: DbSession = Depends(DbConnector.get_db)) -> VerificationResponse:
-    token = service.create_verification(req.email, email_id, db)
+    token = service.generate_token(req.email)
+    service.create_verification(db, token, req.email, email_id)
     db.commit()
 
     return VerificationResponse(token=token)
@@ -68,9 +70,16 @@ def create_email_verification(req: VerificationRequest, email_id: int = Depends(
 )
 def create_user(req: CreateUserRequest, verification_id: int = Depends(check_verification_token),
                 db: DbSession = Depends(DbConnector.get_db)) -> SessionResponse:
-    user_id = service.create_user(req, verification_id, db)
-    session_key = generate_session_key(user_id)
-    create_session(db, user_id)
+    # Add foreign user's main language to available languages list
+    if req.profile.nation_code != KOREA_CODE and req.main_language not in req.languages:
+        req.languages.append(req.main_language)
+
+    main_lang_id = service.get_language_by_name(db, req.main_language)
+    salt, hash = service.generate_salt_hash(req.password)
+    profile_id = service.create_profile(db, req.profile)
+    service.create_user(db, req, verification_id, profile_id, main_lang_id, salt, hash)
+    session_key = generate_session_key(profile_id)
+    create_session(db, profile_id)
     db.commit()
 
     return SessionResponse(access_token=session_key, token_type="bearer")
@@ -86,8 +95,8 @@ def create_user(req: CreateUserRequest, verification_id: int = Depends(check_ver
     .build()
 )
 def get_me(user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> UserResponse:
-    user = service.get_user_by_id(user_id, db)
-    return from_user(user, db)
+    user = service.get_user_by_id(db, user_id)
+    return from_user(user)
 
 
 @router.get(
@@ -100,6 +109,6 @@ def get_me(user_id: int = Depends(check_session), db: DbSession = Depends(DbConn
     .build()
 )
 def get_all_users(user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> List[UserResponse]:
-    user = service.get_user_by_id(user_id, db)
-    targets = service.get_target_users(user, db)
+    user = service.get_user_by_id(db, user_id)
+    targets = service.get_target_users(db, user)
     return list(from_user(user) for user in service.sort_target_users(user, targets))

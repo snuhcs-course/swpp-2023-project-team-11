@@ -10,7 +10,7 @@ from smtplib import SMTP_SSL
 from sqlalchemy import insert, select, alias, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DbSession
-from typing import List
+from typing import List, Tuple
 
 from src.constants import HASH_SECRET
 from src.user.constants import *
@@ -19,8 +19,9 @@ from src.user.schemas import *
 from src.user.models import *
 
 
-def get_verification_code(email: str, db: DbSession) -> EmailCode:
+def get_verification_code(db: DbSession, email: str) -> EmailCode:
     """Raises `InvalidEmailCodeException`"""
+
     code = db.scalar(select(EmailCode).join(
         EmailCode.email).where(Email.email == email))
     if code is None:
@@ -29,10 +30,7 @@ def get_verification_code(email: str, db: DbSession) -> EmailCode:
     return code
 
 
-def create_verification_code(email: str, db: DbSession) -> int:
-    # 100000 ≤ code ≤ 999999
-    code = 100000 + max(0, min(int(random.random() * 900000), 900000))
-
+def create_verification_code(db: DbSession, email: str, code: int):
     obj = db.query(Email).where(Email.email == email).first()
     if obj is None:
         db.add(EmailCode(email=Email(email=email), code=code))
@@ -47,19 +45,7 @@ def create_verification_code(email: str, db: DbSession) -> int:
     return code
 
 
-def send_code_via_email(email: str, code: int) -> None:
-    msg = EmailMessage()
-    msg["Subject"] = "SNEK verification code"
-    msg["From"] = MAIL_ADDRESS
-    msg["To"] = email
-    msg.set_content(f"Please enter your code: {code}")
-
-    with SMTP_SSL(MAIL_SERVER, MAIL_PORT) as smtp:
-        smtp.login(MAIL_ADDRESS, MAIL_PASSWORD)
-        smtp.send_message(msg)
-
-
-def get_verification(email: str, db: DbSession) -> EmailVerification:
+def get_verification(db: DbSession, email: str) -> EmailVerification:
     """Raises `InvalidEmailTokenException`"""
 
     verification = db.scalar(select(EmailVerification).join(
@@ -70,13 +56,8 @@ def get_verification(email: str, db: DbSession) -> EmailVerification:
     return verification
 
 
-def create_verification(email: str, email_id: int, db: DbSession) -> str:
+def create_verification(db: DbSession, token: str, email: str, email_id: int):
     """Raises `EmailInUseException`"""
-
-    payload = bytes(email + str(datetime.now()), 'utf-8')
-    signature = hmac.new(HASH_SECRET, payload,
-                         digestmod=hashlib.sha256).digest()
-    token = base64.urlsafe_b64encode(signature).decode('utf-8')
 
     verification = db.query(EmailVerification).where(
         EmailVerification.email_id == email_id).first()
@@ -89,10 +70,8 @@ def create_verification(email: str, email_id: int, db: DbSession) -> str:
     else:
         raise EmailInUseException(email)
 
-    return token
 
-
-def get_user_by_id(user_id: int, db: DbSession) -> User:
+def get_user_by_id(db: DbSession, user_id: int) -> User:
     """Raises `InvalidUserException`"""
 
     user = db.query(User).where(User.user_id == user_id).first()
@@ -102,7 +81,7 @@ def get_user_by_id(user_id: int, db: DbSession) -> User:
     return user
 
 
-def get_user_by_email(email: str, db: DbSession) -> User:
+def get_user_by_email(db: DbSession, email: str) -> User:
     """Raises `InvalidUserException`"""
 
     user = db.query(User).join(User.verification).join(
@@ -113,59 +92,11 @@ def get_user_by_email(email: str, db: DbSession) -> User:
     return user
 
 
-def create_user(req: CreateUserRequest, verification_id: int, db: DbSession) -> int:
-    """Raises `InvalidFoodException`, `InvalidMovieException`, `InvalidHobbyException`,
-    `InvalidLocationException`, `InvalidLanguageException`, `EmailInUseException`"""
+def create_profile(db: DbSession, profile: ProfileData) -> int:
+    """Raises `InvalidFoodException`, `InvalidMovieException`,
+    `InvalidHobbyException`, `InvalidLocationException`"""
 
-    # Add foreign user's main language to available languages list
-    if req.profile.nation_code != KOREA_CODE and req.main_language not in req.languages:
-        req.languages.append(req.main_language)
-
-    salt, hash = create_salt_hash(req.password)
-    profile_id = create_profile(req.profile, db)
-    create_user_item(profile_id, user_food, "food_id", Food,
-                     req.profile.foods, InvalidFoodException, db)
-    create_user_item(profile_id, user_movie, "movie_id", Movie,
-                     req.profile.movies, InvalidMovieException, db)
-    create_user_item(profile_id, user_hobby, "hobby_id", Hobby,
-                     req.profile.hobbies, InvalidHobbyException, db)
-    create_user_item(profile_id, user_location, "location_id",
-                     Location, req.profile.locations, InvalidLocationException, db)
-
-    lang_id = db.scalar(select(Language.id).where(
-        Language.name == req.main_language))
-    if lang_id is None:
-        raise InvalidLanguageException()
-
-    try:
-        db.execute(insert(User).values({
-            "user_id": profile_id,
-            "verification_id": verification_id,
-            "lang_id": lang_id,
-            "salt": salt,
-            "hash": hash,
-        }))
-    except IntegrityError:
-        raise EmailInUseException(req.email)
-
-    create_user_item(profile_id, user_lang, "lang_id", Language,
-                     req.languages, InvalidLanguageException, db)
-
-    return profile_id
-
-
-def create_salt_hash(password: str) -> (str, str):
-    salt = base64.b64encode(random.randbytes(16)).decode()
-    payload = bytes(password + salt, 'utf-8')
-    signature = hmac.new(HASH_SECRET, payload,
-                         digestmod=hashlib.sha256).digest()
-    hash = base64.b64encode(signature).decode()
-
-    return (salt, hash)
-
-
-def create_profile(profile: ProfileData, db: DbSession) -> int:
-    return db.scalar(insert(Profile).values({
+    profile_id = db.scalar(insert(Profile).values({
         "name": profile.name,
         "birth": profile.birth,
         "sex": profile.sex,
@@ -176,8 +107,62 @@ def create_profile(profile: ProfileData, db: DbSession) -> int:
         "nation_code": profile.nation_code,
     }).returning(Profile.id))
 
+    create_user_item(db, profile_id, user_food, "food_id", Food,
+                     profile.foods, InvalidFoodException)
+    create_user_item(db, profile_id, user_movie, "movie_id", Movie,
+                     profile.movies, InvalidMovieException)
+    create_user_item(db, profile_id, user_hobby, "hobby_id", Hobby,
+                     profile.hobbies, InvalidHobbyException)
+    create_user_item(db, profile_id, user_location, "location_id",
+                     Location, profile.locations, InvalidLocationException)
+    
+    return profile_id
 
-def create_user_item(profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException], db: DbSession):
+
+def get_language_by_name(db: DbSession, name: str) -> int:
+    lang_id = db.scalar(select(Language.id).where(Language.name == name))
+    if lang_id is None:
+        raise InvalidLanguageException()
+    return lang_id
+
+
+def get_target_users(db, user: User) -> List[User]:
+    filter = (Profile.nation_code != KOREA_CODE) if user.profile.nation_code == KOREA_CODE else (
+        Profile.nation_code == KOREA_CODE)
+    me = alias(user_lang, 'M')
+    you = alias(user_lang, 'Y')
+    return list(db.query(User).join(User.profile).where(filter).where(
+        User.user_id.in_(
+            select(you.c.user_id).join(me, you.c.lang_id == me.c.lang_id).where(me.c.user_id == user.user_id))))
+
+
+def create_user(
+    db: DbSession,
+    req: CreateUserRequest,
+    verification_id: int,
+    profile_id: int,
+    main_lang_id: int,
+    salt: str,
+    hash: str,
+):
+    """Raises `InvalidLanguageException`, `EmailInUseException`"""
+
+    try:
+        db.execute(insert(User).values({
+            "user_id": profile_id,
+            "verification_id": verification_id,
+            "lang_id": main_lang_id,
+            "salt": salt,
+            "hash": hash,
+        }))
+    except IntegrityError:
+        raise EmailInUseException(req.email)
+
+    create_user_item(db, profile_id, user_lang, "lang_id", Language,
+                     req.languages, InvalidLanguageException)
+
+
+def create_user_item(db: DbSession, profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException]):
     """Raises `@exception`"""
 
     if len(items) == 0:
@@ -189,16 +174,6 @@ def create_user_item(profile_id: int, table: Table, column: str, model: type[Bas
         }for item in items]))
     except IntegrityError:
         raise exception()
-
-
-def get_target_users(user: User, db: DbSession) -> List[User]:
-    filter = (Profile.nation_code != KOREA_CODE) if user.profile.nation_code == KOREA_CODE else (
-        Profile.nation_code == KOREA_CODE)
-    me = alias(user_lang, 'M')
-    you = alias(user_lang, 'Y')
-    return list(db.query(User).join(User.profile).where(filter).where(
-        User.user_id.in_(
-            select(you.c.user_id).join(me, you.c.lang_id == me.c.lang_id).where(me.c.user_id == user.user_id))))
 
 
 def sort_target_users(user: User, targets: List[User]) -> List[User]:
@@ -263,3 +238,37 @@ def get_mbti_f(initiator: User, responder: User) -> int:
     if responder_mbti is not None:
         num_F += responder_mbti.count('f')
     return num_F
+
+
+def generate_code() -> int:
+    # 100000 ≤ code ≤ 999999
+    return 100000 + max(0, min(int(random.random() * 900000), 900000))
+
+
+def generate_token(email: str) -> str:
+    payload = bytes(email + str(datetime.now()), 'utf-8')
+    signature = hmac.new(HASH_SECRET, payload,
+                         digestmod=hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(signature).decode('utf-8')
+
+
+def generate_salt_hash(password: str) -> Tuple[str, str]:
+    salt = base64.b64encode(random.randbytes(16)).decode()
+    payload = bytes(password + salt, 'utf-8')
+    signature = hmac.new(HASH_SECRET, payload,
+                         digestmod=hashlib.sha256).digest()
+    hash = base64.b64encode(signature).decode()
+
+    return (salt, hash)
+
+
+def send_code_via_email(email: str, code: int) -> None:
+    msg = EmailMessage()
+    msg["Subject"] = "SNEK verification code"
+    msg["From"] = MAIL_ADDRESS
+    msg["To"] = email
+    msg.set_content(f"Please enter your code: {code}")
+
+    with SMTP_SSL(MAIL_SERVER, MAIL_PORT) as smtp:
+        smtp.login(MAIL_ADDRESS, MAIL_PASSWORD)
+        smtp.send_message(msg)

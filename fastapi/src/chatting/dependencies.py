@@ -10,7 +10,7 @@ from src.user.service import get_user_by_email
 def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
     """Raises `InvalidUserException`"""
 
-    return get_user_by_email(req.counterpart, db).user_id
+    return get_user_by_email(db, req.counterpart).user_id
 
 
 def get_intimacy_calculator() -> service.IntimacyCalculator:

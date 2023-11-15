@@ -9,7 +9,7 @@ from src.user import service
 
 
 def check_snu_email(req: EmailRequest) -> str:
-    """Raises `InvalidEmailException"""
+    """Raises `InvalidEmailException`"""
 
     if req.email.endswith('@snu.ac.kr') is False:
         raise InvalidEmailException(req.email)
@@ -20,7 +20,7 @@ def check_snu_email(req: EmailRequest) -> str:
 def check_verification_code(req: VerificationRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
     """Raises `InvalidEmailException`, `InvalidEmailCodeException`"""
 
-    code = service.get_verification_code(req.email, db)
+    code = service.get_verification_code(db, req.email)
     if code.code != req.code:
         raise InvalidEmailCodeException()
 
@@ -30,7 +30,7 @@ def check_verification_code(req: VerificationRequest, db: DbSession = Depends(Db
 def check_verification_token(req: CreateUserRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
     """Raises `InvalidEmailException`, `InvalidEmailTokenException`"""
 
-    verification = service.get_verification(req.email, db)
+    verification = service.get_verification(db, req.email)
     if verification.token != req.token:
         raise InvalidEmailTokenException()
 

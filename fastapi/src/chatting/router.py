@@ -157,11 +157,11 @@ def get_topic_recommendation(chatting_id: int, limit: int = 1, user_id: int = De
 # @router.get("/intimacy", response_model=IntimacyResponse)
 # def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
 #                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_recent_intimacy(user_id, chatting_id, db)
+#     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
 #     return from_intimacy(intimacy)
 
 # @router.get("/intimacy/all", response_model=List[IntimacyResponse])
 # def get_all_intimacy(chatting_id: int, session: Session = Depends(get_session),
 #                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_all_intimacies(user_id, chatting_id, None, None, db)
+#     intimacy = service.get_all_intimacies(db, user_id, chatting_id, None, None)
 #     return list(from_intimacy(intimacy) for intimacy in intimacy)
