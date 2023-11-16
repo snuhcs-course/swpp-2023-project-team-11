@@ -15,8 +15,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const SimpleAppBar(
-        title: "프로필 생성",
+      appBar: SimpleAppBar(
+        title: "프로필 생성".tr,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -34,16 +34,16 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Center(
+              Center(
                   child: Text(
-                    "작성된 프로필은 다른 유저들이 볼 수 있어요",
+                    "작성된 프로필은 다른 유저들이 볼 수 있어요".tr,
                     style: TextStyle(
                         fontSize: 14,
                         color: MyColor.purple,
                         fontWeight: FontWeight.w500),
                   )),
               const SizedBox(height: 12),
-              const Text("활동할 닉네임을 입력해주세요",
+              Text("활동할 닉네임을 입력해주세요".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
@@ -51,18 +51,18 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
               const SizedBox(height: 8),
               MainTextFormField(
                 textEditingController: controller.nicknameCon,
-                hintText: "닉네임 입력",
+                hintText: "닉네임 입력".tr,
                 textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
               const SizedBox(height: 8),
-              Text("닉네임은 한글/영문/숫자로, 최대 8자까지 가능해요.",
+              Text("닉네임은 한글/영문/숫자로, 최대 8자까지 가능해요".tr,
                   style: TextStyle(
                       color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
                       fontSize: 13)),
               const SizedBox(height: 20),
-              const Text("자신을 소개하는 문장 하나를 입력해주세요",
+              Text("자신을 소개하는 문장 하나를 입력해주세요".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
@@ -70,18 +70,18 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
               const SizedBox(height: 8),
               MainTextFormField(
                 textEditingController: controller.aboutMeCon,
-                hintText: "자기소개 입력",
+                hintText: "자기소개 입력".tr,
                 textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
               const SizedBox(height: 8),
-              Text("프로필은 나중에도 수정이 가능하니 부담 갖지 말고 적어주세요!",
+              Text("프로필은 나중에도 수정이 가능하니 부담 갖지 말고 적어주세요!".tr,
                   style: TextStyle(
                       color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
                       fontSize: 13)),
               const SizedBox(height: 12),
-              if (controller.isForeign) const Text("주로 사용하는 언어",
+              if (controller.isForeign) Text("주로 사용하는 언어".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
@@ -90,11 +90,11 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 return _buildLanguageList();
               }),
               if (controller.isForeign) const SizedBox(height: 12),
-              (controller.isForeign)? const Text("주언어 외 사용 가능 언어",
+              (controller.isForeign)? Text("주언어 외 사용 가능 언어".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
-                      fontSize: 14)) : const Text("교환을 희망하는 언어",
+                      fontSize: 14)) : Text("교환을 희망하는 언어".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
@@ -112,49 +112,6 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
       }),
     );
   }
-
-  // Widget _buildProfilePhoto() {
-  //   return Center(
-  //     child: Column(
-  //       children: [
-  //         Container(
-  //           width: 180,
-  //           height: 180,
-  //           decoration: BoxDecoration(
-  //               borderRadius: BorderRadius.circular(12),
-  //               border:
-  //               Border.all(color: Colors.black.withOpacity(0.2), width: 1),
-  //               color: Colors.grey),
-  //         ),
-  //         Transform.translate(
-  //           offset: Offset(0, -20),
-  //           child: Container(
-  //             width: 140,
-  //             height: 48,
-  //             decoration: BoxDecoration(
-  //                 borderRadius: BorderRadius.circular(10),
-  //                 border: Border.all(color: Color(0xffff9162), width: 1.5),
-  //                 color: Colors.white,
-  //                 boxShadow: [
-  //                   BoxShadow(
-  //                       color: Colors.black.withOpacity(0.12),
-  //                       blurRadius: 4,
-  //                       offset: Offset(0, 4))
-  //                 ]),
-  //             child: Center(
-  //                 child: Text(
-  //                   "사진 업로드",
-  //                   style: TextStyle(
-  //                       color: Color(0xffff733d),
-  //                       fontWeight: FontWeight.w700,
-  //                       fontSize: 18),
-  //                 )),
-  //           ),
-  //         )
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildLanguageList() {
     return SingleChildScrollView(

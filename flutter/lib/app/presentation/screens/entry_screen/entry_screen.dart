@@ -39,9 +39,9 @@ class EntryScreen extends GetView<EntryScreenController> {
             width: 140,
             height: 112,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Text(
-            "간식보다 재밌는 언어교환".tr,
+            "간식보다 재밌는 언어교환".tr, textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(
@@ -74,13 +74,13 @@ class EntryScreen extends GetView<EntryScreenController> {
         children: [
           MainButton(
             mainButtonType: MainButtonType.light,
-            text: '로그인',
+            text: "로그인".tr,
             onPressed: controller.onSignInButtonTap,
           ),
           const SizedBox(height: 16),
           MainButton(
             mainButtonType: MainButtonType.key,
-            text: '회원가입',
+            text: '회원가입'.tr,
             onPressed: controller.onSignUpButtonTap,
           ),
         ],

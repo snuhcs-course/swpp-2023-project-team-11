@@ -56,7 +56,7 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
     } on DioException catch (e) {
       // 이걸로 분기를 해서 대응해라
       final statusCode = e.response?.statusCode;
-      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      print("친밀도 통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
     } catch (e, s) {
       print("알 수 없는 에러 발생");

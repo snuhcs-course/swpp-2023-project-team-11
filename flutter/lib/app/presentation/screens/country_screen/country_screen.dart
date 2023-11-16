@@ -30,15 +30,15 @@ class CountryScreen extends GetView<CountryScreenController> {
                   Obx(() =>
                       _buildOptionContainer(
                           context: context,
-                          firstString: '저는\n한국 학생입니다.',
-                          secondString: "I'm a Korean student",
+                          firstString: '저는\n한국 학생입니다.'.tr,
+                          secondString: "I'm a Korean student".tr,
                           buttonId: 1)),
                   const SizedBox(height: 16),
                   Obx(() =>
                       _buildOptionContainer(
                           context: context,
-                          firstString: "I'm an\nexchange student",
-                          secondString: "저는 교환학생입니다.",
+                          firstString: "I'm a\nforeign exchange student".tr,
+                          secondString: "저는 외국인 교환학생입니다.".tr,
                           buttonId: 2)),
                   const SizedBox(height: 16),
                   Obx(() {
@@ -223,7 +223,7 @@ class CountryScreen extends GetView<CountryScreenController> {
       ),
       child: MainButton(
         mainButtonType: MainButtonType.key,
-        text: '다음',
+        text: '다음'.tr,
         onPressed:
         controller.countryCodeNotEmpty ? controller.onNextButtonTap : null,
       ),
@@ -236,8 +236,8 @@ class CountryScreen extends GetView<CountryScreenController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "교환 학생이신가요?\n아니면 한국 학생이신가요?",
+          Text(
+            "한국 학생이신가요,\n아니면 외국인 교환 학생이신가요?".tr,
             style: TextStyle(
                 fontSize: 20,
                 color: Color(0xff2d3a45),
@@ -247,7 +247,7 @@ class CountryScreen extends GetView<CountryScreenController> {
             height: 12,
           ),
           Text(
-            "Are you an exchange student?\nOr are you a Korean student?",
+            "Are you a Korean student,\n or a foreign exchange student?".tr,
             style: TextStyle(
                 fontSize: 13,
                 color: const Color(0xff2d3a45).withOpacity(0.64),

@@ -23,20 +23,20 @@ class AdditionalProfileInfoScreen
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('회원정보 입력',
+              Text('회원정보 입력'.tr,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               const SizedBox(height: 12),
-              const Text(
-                  "*입력하신 회원정보는 다른 사용자들에게 공개되지 않고 회원관리 및 언어교환 상대 추천을 위해 내부적으로만 이용됩니다.",
+              Text(
+                  "*입력하신 회원정보는 다른 사용자들에게 공개되지 않고 회원관리 및 언어교환 상대 추천을 위해 내부적으로만 이용됩니다.".tr,
                   style: TextStyle(color: MyColor.textBaseColor, fontSize: 12)),
 
               const SizedBox(height: 20),
-              const Text("생년월일", style: TextStyle(color: Color(0xff2d3a45),
+              Text("생년월일".tr, style: TextStyle(color: Color(0xff2d3a45),
                   fontWeight: FontWeight.w600,
                   fontSize: 16)),
               const SizedBox(height: 12),
               MainTextFormField(textEditingController: controller.birthdayCon,
-                  hintText: "  YYYYMMDD         예시) 19990131"),
+                  hintText: "  YYYYMMDD         예시) 19990131".tr),
 
               const SizedBox(height: 30),
               SizedBox(
@@ -47,7 +47,7 @@ class AdditionalProfileInfoScreen
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("성별", style: TextStyle(color: Color(0xff2d3a45),
+                        Text("성별".tr, style: TextStyle(color: Color(0xff2d3a45),
                             fontWeight: FontWeight.w600,
                             fontSize: 16)),
                         Obx(() {
@@ -67,7 +67,7 @@ class AdditionalProfileInfoScreen
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("입학 연도", style: TextStyle(color: Color(0xff2d3a45),
+                        Text("입학 연도".tr, style: TextStyle(color: Color(0xff2d3a45),
                             fontWeight: FontWeight.w600,
                             fontSize: 16)),
                         Obx(() {
@@ -88,13 +88,13 @@ class AdditionalProfileInfoScreen
               ),
 
               const SizedBox(height: 10),
-              const Text("학과", style: TextStyle(color: Color(0xff2d3a45),
+              Text("학과".tr, style: TextStyle(color: Color(0xff2d3a45),
                   fontWeight: FontWeight.w600,
                   fontSize: 16)),
               _buildDepartmentSelection(),
               const SizedBox(height: 20),
 
-              const Text("Mbti", style: TextStyle(color: MyColor.purple,
+              Text("Mbti".tr, style: TextStyle(color: MyColor.purple,
                   fontWeight: FontWeight.w600,
                   fontSize: 16)),
               Obx(() {
@@ -144,14 +144,14 @@ class AdditionalProfileInfoScreen
                   .toList(),
               onChanged: (value) {
                 controller.selectedCollege.value = value!;
-                controller.selectedDepartment.value = '학과 선택';
+                controller.selectedDepartment.value = '학과 선택'.tr;
               },
             )),
         const SizedBox(height: 12),
         Obx(() =>
             DropdownButton<String>(
               value: controller.selectedDepartment.value,
-              items: controller.selectedCollege.value == '단과대학 선택'
+              items: controller.selectedCollege.value == '단과대학 선택'.tr
                   ? []
                   : controller.departmentMap[controller.selectedCollege.value]!
                   .map((department) =>

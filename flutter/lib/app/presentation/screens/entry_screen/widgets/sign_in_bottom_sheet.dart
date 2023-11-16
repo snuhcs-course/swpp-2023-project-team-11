@@ -43,20 +43,20 @@ class SignInBottomSheet extends StatelessWidget {
           children: [
             MainTextFormField(
               textEditingController: emailCon,
-              hintText: "이메일 입력",
-              titleText: "학교 이메일 (university email)",
+              hintText: "이메일 입력".tr,
+              titleText: "학교 이메일 (university email)".tr,
             ),
             const SizedBox(height: 16),
             MainTextFormField(
               textEditingController: passwordCon,
-              hintText: "비밀번호 입력",
-              titleText: "비밀번호 (password)",
+              hintText: "비밀번호 입력".tr,
+              titleText: "비밀번호 (password)".tr,
               obscureText: true,
             ),
             const SizedBox(height: 7),
             Obx(() {
               if(needWarning.value) {
-                return const Text("로그인에 실패했어요. 이메일, 비밀번호를 다시 확인해주세요!", style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w500, fontSize: 12),);
+                return Text("로그인에 실패했어요. 이메일, 비밀번호를 다시 확인해주세요!".tr, style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w500, fontSize: 12),);
               } else {
                 return const SizedBox(height: 7);
               }
@@ -64,18 +64,18 @@ class SignInBottomSheet extends StatelessWidget {
             const SizedBox(height: 14),
             MainButton(
               mainButtonType: MainButtonType.key,
-              text: '로그인',
+              text: '로그인'.tr,
               onPressed: onSignInRequested,
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("아직 회원이 아닌신가요?"),
+                Text("아직 회원이 아닌신가요?".tr),
                 TextButton(
                   onPressed: onSignUpRequested,
-                  child: const Text(
-                    "회원가입",
+                  child: Text(
+                    "회원가입".tr,
                     style: TextStyle(fontSize: 14, color: Color(0xffff733d)),
                   ),
                 )
