@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 
 class InvalidEmailException(HTTPException):
-    def __init__(self, email: str):
+    def __init__(self, email: str = "given email"):
         super().__init__(400, detail=f'{email} is not a valid email')
 
 
@@ -12,7 +12,7 @@ class InvalidEmailCodeException(HTTPException):
 
 
 class EmailInUseException(HTTPException):
-    def __init__(self, email: str):
+    def __init__(self, email: str = "given email"):
         super().__init__(400, detail=f'{email} is already in use')
 
 
@@ -44,3 +44,8 @@ class InvalidLocationException(HTTPException):
 class InvalidLanguageException(HTTPException):
     def __init__(self):
         super().__init__(400, detail='invalid language(s)')
+
+
+class InvalidUserException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail="user does not exist")

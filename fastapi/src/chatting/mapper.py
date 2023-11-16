@@ -7,7 +7,7 @@ def from_chatting(chatting: Chatting) -> ChattingResponse:
     return ChattingResponse(
         chatting_id=chatting.id,
         initiator=from_user(chatting.initiator),
-        responder=from_user(chatting.responser),
+        responder=from_user(chatting.responder),
         is_approved=chatting.is_approved,
         is_terminated=chatting.is_terminated,
         created_at=chatting.created_at,
@@ -24,6 +24,7 @@ def from_text(text: Text) -> TextResponse:
         timestamp=text.timestamp,
     )
 
+
 def from_intimacy(intimacy: Intimacy) -> IntimacyResponse:
     return IntimacyResponse(
         chatting_id=intimacy.chatting_id,
@@ -31,9 +32,9 @@ def from_intimacy(intimacy: Intimacy) -> IntimacyResponse:
         timestamp=intimacy.timestamp,
     )
 
+
 def from_topic(topic: Topic) -> TopicResponse:
     return TopicResponse(
-        topic_id=topic.id,
         topic=topic.topic,
         tag=topic.tag,
     )

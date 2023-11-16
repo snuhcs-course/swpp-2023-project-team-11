@@ -1,15 +1,23 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session as DbSession
 
-from src.auth.exceptions import InvalidUserException
 from src.chatting.schemas import CreateChattingRequest
+from src.chatting import service
 from src.database import DbConnector
-from src.user.models import User, EmailVerification, Email
+from src.user.service import get_user_by_email
 
 
-def get_user_id(req: CreateChattingRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
-    user = db.query(User).join(User.verification).join(EmailVerification.email).filter(Email.email == req.counterpart).first()
-    if user is None:
-        raise InvalidUserException()
-    
-    return user.user_id
+def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConnector.get_db)) -> int:
+    """Raises `InvalidUserException`"""
+
+    return get_user_by_email(db, req.counterpart).user_id
+
+
+# Global intimacy calculator
+__translation = service.IgnoresEmptyInputTranslationClient(service.PapagoClient)
+__sentiment = service.IgnoresEmptyInputSentimentClient(service.ClovaClient)
+__calculator = service.IntimacyCalculator(__translation, __sentiment)
+
+
+def get_intimacy_calculator() -> service.IntimacyCalculator:
+    return __calculator

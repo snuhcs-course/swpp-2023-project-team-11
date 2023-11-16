@@ -5,13 +5,13 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import insert
 
 from src.auth.dependencies import *
-from src.auth.models import Session
+from src.auth.exceptions import InvalidSessionException
 from src.chatting.models import *
 from src.database import DbConnector
 from src.websocket.dependencies import *
 
 
-async def authenticate_socket(socket: WebSocket) -> Session:
+async def authenticate_socket(socket: WebSocket) -> Tuple[int, str]:
     msg = await socket.receive_json()  # Raise WebSocketDisconnect on close
 
     try:
@@ -25,9 +25,9 @@ async def authenticate_socket(socket: WebSocket) -> Session:
 
     try:
         for db in await run_in_threadpool(DbConnector.get_db):
-            session = await run_in_threadpool(get_session, session_key, db)
+            user_id = await run_in_threadpool(check_session, session_key, db)
             await socket.send_json({"type": "system", "body": {"msg": "authentication succeeded"}})
-            return session
+            return (user_id, session_key)
     except InvalidSessionException:
         await socket.close(reason="invalid authentication")
         raise WebSocketDisconnect()
@@ -40,7 +40,7 @@ async def handle_message(user_id: int, msg, socket: WebSocket, manager: WebSocke
     chatting_id, msg = msg
 
     for db in await run_in_threadpool(DbConnector.get_db):
-        chatting = await run_in_threadpool(get_chatting, chatting_id, db)
+        chatting = await run_in_threadpool(get_chatting, db, chatting_id)
         if chatting is None or chatting.initiator_id != user_id and chatting.responder_id != user_id:
             await socket.send_json({"type": "system", "body": {"msg": "chatting does not exist"}})
             return
@@ -51,7 +51,7 @@ async def handle_message(user_id: int, msg, socket: WebSocket, manager: WebSocke
             await socket.send_json({"type": "system", "body": {"msg": "please approve chatting first"}})
             return
 
-        text = await run_in_threadpool(create_text, user_id, chatting_id, msg, db)
+        text = await run_in_threadpool(create_text, db, user_id, chatting_id, msg)
         for recv_socket in await manager.get_sockets([chatting.initiator_id, chatting.responder_id]):
             try:
                 await recv_socket.send_json(text)
@@ -70,11 +70,11 @@ async def parse_message(msg, socket: WebSocket) -> Tuple[int, str] | None:
         return None
 
 
-def get_chatting(chatting_id: int, db: DbSession) -> Chatting | None:
+def get_chatting(db: DbSession, chatting_id: int) -> Chatting | None:
     return db.query(Chatting).where(Chatting.id == chatting_id).first()
 
 
-def create_text(sender_id: int, chatting_id: int, msg: str, db: DbSession) -> Any:
+def create_text(db: DbSession, sender_id: int, chatting_id: int, msg: str) -> Any:
     text = db.scalar(insert(Text).values({
         "chatting_id": chatting_id,
         "sender_id": sender_id,

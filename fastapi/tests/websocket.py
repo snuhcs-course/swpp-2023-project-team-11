@@ -108,8 +108,8 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             }
         })
 
-        session = await authenticate_socket(self.socket)
-        self.assertEqual(session.session_key, self.session_key)
+        session_key = (await authenticate_socket(self.socket))[1]
+        self.assertEqual(session_key, self.session_key)
     
     async def test_authenticate_socket_no_type_msg(self):
         self.socket.receive_json = AsyncMock(return_value={
