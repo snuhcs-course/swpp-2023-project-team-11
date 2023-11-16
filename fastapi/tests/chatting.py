@@ -26,13 +26,13 @@ class TestDependencies(unittest.TestCase):
         self.assertEqual(check_counterpart(req, db), dummy_user.user_id)
 
 
-@unittest.skip("This test actually calls external API")
+
 class TestPapagoClient(unittest.TestCase):
     client = PapagoClient
 
-    @unittest.skip("This test actually calls external API")
     def test_translate_text(self):
         translated = self.client.translate("I am Happy!")
+        #평어체/경어체 논의 후 선택
         self.assertEqual(translated, "나는 행복해!")
         with self.assertRaises(ExternalApiError):
             self.client.translate("")
@@ -91,14 +91,14 @@ class TestIgnoresEmptyInputTranslationClient(unittest.TestCase):
             self.client.translate('I am Happy!')
 
 
-@unittest.skip("This teset actually calls external API")
 class TestClovaClient(unittest.TestCase):
     client = ClovaClient
 
     def test_get_sentiment(self):
-        sentiment = self.client.get_sentiment("I am Happy!")
-        self.assertGreaterEqual(sentiment, 0)
-        self.assertLessEqual(sentiment, 100)
+        sentiment = self.client.get_sentiment("I am sad.")
+        #the scope of sentiment [-5,10] 
+        self.assertGreaterEqual(sentiment, -5)
+        self.assertLessEqual(sentiment, 10)
         with self.assertRaises(ClovaApiException):
             self.client.get_sentiment("")
 
