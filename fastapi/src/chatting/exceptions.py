@@ -25,4 +25,4 @@ class PapagoApiException(ExternalApiError):
 
 class ChattingAlreadyExistException(HTTPException):
     def __init__(self):
-        super().__init__(400, detail='chatting already exist')
+        super().__init__(500, detail='chatting already exist')
