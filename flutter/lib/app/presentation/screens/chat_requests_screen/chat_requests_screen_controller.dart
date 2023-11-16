@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
-import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
-import 'package:mobile_app/app/domain/use_cases/fetch_chatrooms_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
 import 'package:mobile_app/app/presentation/screens/chat_requests_screen/widgets/user_info_detail_bottom_sheet.dart';
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen_controller.dart';

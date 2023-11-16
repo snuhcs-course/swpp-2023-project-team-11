@@ -1,4 +1,3 @@
-import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/repository_interfaces/chatting_room_repository.dart';
 import 'package:mobile_app/app/domain/result.dart';
 

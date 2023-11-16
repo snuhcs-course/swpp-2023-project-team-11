@@ -7,6 +7,7 @@ import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+
 // ignore: unused_import
 import 'chatting_rooms_screen_controller.dart';
 
@@ -54,11 +55,11 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           padding: EdgeInsets.all(16),
           child: Text(
             "새로운 채팅 요청",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xff9f75d1)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: MyColor.purple),
           ),
         ),
       ),
-      if (controller.newChatRequestExists.value != null && controller.newChatRequestExists.value!)
+      if (controller.newChatRequestExists.value)
         const Positioned(
           // draw a red marble
           top: 12,
@@ -76,7 +77,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         children: [
           const Text(
             "아직 아무도 친구가 되지 않았어요!",
-            style: TextStyle(color: Color(0xff9f75d1), fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 10,
@@ -102,6 +103,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
 
   Widget _buildChatroomList(List<ChattingRoom> chattingRooms) {
     return ListView.separated(
+        padding: const EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return _buildChatroomContainer(chattingRooms[index], context);
@@ -113,8 +115,9 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
   }
 
   Widget _buildChatroomContainer(ChattingRoom chatroom, BuildContext context) {
-    if (chatroom.isTerminated) return const SizedBox.shrink();
-    else {
+    if (chatroom.isTerminated) {
+      return const SizedBox.shrink();
+    } else {
       return GestureDetector(
       onTap: () {
         controller.onChattingRoomTap(chatroom);
@@ -126,8 +129,8 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 24,
-              backgroundImage: ProfilePic().call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
+              radius: 27,
+              backgroundImage: ProfilePic.call((chatroom.responder.name == controller.userController.userName)? chatroom.initiator.email:chatroom.responder.email)
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -141,27 +144,34 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                         const SizedBox(width: 8),
-                        Text(
-                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                        (chatroom.isApproved && !chatroom.isTerminated)? Text(
+                            controller.checkSp(chatroom.id)? "${controller.timeToDisplay(chatroom)} id-${chatroom.id}" : "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 id-${chatroom.id}",
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff9f75d1)))
+                                fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple)):
+                        Text(
+                            "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 id-${chatroom.id}",
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w400, color: MyColor.purple))
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      chatroom.isTerminated?"종료된 채팅방입니다": chatroom.isApproved?"채팅룸의 가장 최근 대화":"아직 상대가 수락하지 않았습니다",
+                      chatroom.isTerminated?"종료된 채팅방입니다": (chatroom.isApproved? (controller.checkSp(chatroom.id)? (controller.latestChatMessage(chatroom.id).characters.take(25).toString() + ((controller.latestChatMessage(chatroom.id).characters.length > 30)? "...":"")): "채팅을 시작해봐요!") : "아직 상대가 수락하지 않았습니다"),
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xff2d3a45).withOpacity(0.8)),
-                    )
+                    ),
+                    // ElevatedButton(onPressed: (){
+                    //   print("${controller.spC.getString(chatroom.id.toString())} is what i found from sp - decoding");
+                    // }, child: Icon(Icons.favorite))
                   ],
                 ),
               ),
             ),
             // const SizedBox(width: 12),
             PopupMenuButton(
-              icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
+              icon: Icon(Icons.more_vert, color: const Color(0xff2d3a45).withOpacity(0.4),),
               itemBuilder: (context) {
                 return [
                   const PopupMenuItem<int>(value: 1, child: Text("채팅방 나가기", style: TextStyle(color: MyColor.orange_1),)),

@@ -55,8 +55,11 @@ class SignInBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: 7),
             Obx(() {
-              if(needWarning.value) return Text("로그인에 실패했어요. 이메일, 비밀번호를 다시 확인해주세요!", style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w500, fontSize: 12),);
-              else return SizedBox(height: 7);
+              if(needWarning.value) {
+                return const Text("로그인에 실패했어요. 이메일, 비밀번호를 다시 확인해주세요!", style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w500, fontSize: 12),);
+              } else {
+                return const SizedBox(height: 7);
+              }
             }),
             const SizedBox(height: 14),
             MainButton(

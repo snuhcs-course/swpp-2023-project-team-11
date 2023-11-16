@@ -38,7 +38,7 @@ class EmailScreenController extends GetxController {
       warningType.value = 1;
     }else{
       certable.value = false;
-      Timer(Duration(seconds: 3), () {certable.value = true;});
+      Timer(const Duration(seconds: 3), () {certable.value = true;});
       _emailCodeUseCase(
           email: email,
           onSuccess: () {
@@ -56,7 +56,8 @@ class EmailScreenController extends GetxController {
   void onCodeButtonTap() async {
     int codeInput = int.parse(codeCon.text);
     verifiable.value = false;
-    Timer(Duration(seconds: 1), () {verifiable.value = true;});
+    Timer(const Duration(seconds: 1), () {verifiable.value = true;});
+    FocusManager.instance.primaryFocus?.unfocus();
 
     await _emailVerifyUseCase(
         codeInput: codeInput,

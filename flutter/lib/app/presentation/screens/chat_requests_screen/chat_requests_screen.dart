@@ -43,7 +43,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
         children: [
           const Text(
             "새로운 채팅 요청이 지금은 없어요!",
-            style: TextStyle(color: Color(0xff9f75d1), fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 36,
@@ -78,8 +78,8 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-                radius: 30,
-                backgroundImage: ProfilePic().call(chatroom.initiator.email)
+                radius: 27,
+                backgroundImage: ProfilePic.call(chatroom.initiator.email)
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -89,7 +89,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                   Row(
                     children: [
                       Text(chatroom.initiator.name,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                       const SizedBox(width: 8),
                       Text(
@@ -100,7 +100,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "상대(아직 친구가 아닌 사람)가 보낸 메세지",
+                    "${chatroom.initiator.name}님의 채팅 요청이 왔어요!",
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -111,7 +111,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
             ),
             const SizedBox(width: 12),
               PopupMenuButton(
-                icon: Icon(Icons.more_vert, color: Color(0xff2d3a45).withOpacity(0.4),),
+                icon: Icon(Icons.more_vert, color: const Color(0xff2d3a45).withOpacity(0.4),),
                 itemBuilder: (context) {
                   return [
                     const PopupMenuItem<int>(value: 0, child: Text("삭제")),

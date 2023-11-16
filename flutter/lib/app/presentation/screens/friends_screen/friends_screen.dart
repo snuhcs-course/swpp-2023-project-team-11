@@ -9,7 +9,6 @@ import '../../../domain/models/user.dart';
 import '../../widgets/app_bars.dart';
 import 'friends_screen_controller.dart';
 
-import 'package:flutter/cupertino.dart';
 
 class FriendsScreen extends GetView<FriendsScreenController> {
   const FriendsScreen({Key? key}) : super(key: key);
@@ -45,6 +44,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
 
   Widget _buildUserList(List<User> users) {
     return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, index) {
@@ -69,16 +69,16 @@ class FriendsScreen extends GetView<FriendsScreenController> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: SizedBox.fromSize(
-                    size: const Size.fromRadius(72),
-                    child: Image(image: ProfilePic().call(user.email))
+                    size: const Size.fromRadius(60),
+                    child: Image(image: ProfilePic.call(user.email))
                   // ProfilePic().call(user.email)
                   // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
                 ),
               ),
               Obx(() {
                 return Positioned(
-                  left: 84,
-                  top: 96,
+                  left: 60,
+                  top: 72,
                   child: ElevatedButton(
                     onPressed: () {
                       if (controller.heartedUser.value.contains(user)) {
@@ -98,13 +98,15 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                       controller.heartedUser.value.contains(user)
                           ? Icons.favorite
                           : Icons.favorite_outline,
-                      color: Colors.black.withOpacity(0.4),
+                      color: controller.heartedUser.value.contains(user)
+                          ? Colors.redAccent.withOpacity(0.8)
+                      : Colors.black.withOpacity(0.4),
                     ),
                   ),
                 );
               }),
             ]),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,13 +120,13 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                             fontWeight: FontWeight.w700,
                             color: Color(0xff2d3a45))),
                     const SizedBox(height: 4),
-                    Text(user.profile.aboutMe,
+                    Text((user.profile.aboutMe.length>20)? "${user.profile.aboutMe.substring(0, 20)}..." : user.profile.aboutMe,
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: const Color(0xff2d3a45).withOpacity(0.8))),
                     const SizedBox(height: 2),
-                    Text("희망언어: ${user.getLanguages.join(", ")}",
+                    Text("희망언어: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -135,13 +137,13 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                     children: [
                       _buildUserInfoBubble(user.profile.major),
                       const SizedBox(
-                        width: 8,
+                        width: 6,
                       ),
                       _buildUserInfoBubble("${user.profile.admissionYear}"),
                       const SizedBox(
-                        width: 8,
+                        width: 6,
                       ),
-                      _buildUserInfoBubble("${user.profile.mbti}")
+                      if (user.profile.mbti != Mbti.UNKNOWN) _buildUserInfoBubble("${user.profile.mbti}")
                     ],
                   )
                 ],
@@ -161,7 +163,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
         BoxDecoration(color: const Color(0xffF8F1FB),
             borderRadius: BorderRadius.circular(10)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
           child: Text(info,
               style: TextStyle(
                 fontSize: 13,

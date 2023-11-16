@@ -15,23 +15,23 @@ class UserInfoDetailBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       width: double.maxFinite,
       height: MediaQuery.of(context).size.height * 0.75,
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(user.name, style: TextStyle(fontSize: 18, color: MyColor.purple, fontWeight: FontWeight.bold),),
-            SizedBox(height: 8),
-            Text(user.email, style: TextStyle(fontSize: 13, color: MyColor.purple, ),),
-            SizedBox(height: 20),
+            Text(user.name, style: const TextStyle(fontSize: 18, color: MyColor.purple, fontWeight: FontWeight.bold),),
+            const SizedBox(height: 8),
+            Text(user.email, style: const TextStyle(fontSize: 13, color: MyColor.purple, ),),
+            const SizedBox(height: 20),
             ProfileDetailColumn(user: user),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             MainButton(
               mainButtonType: MainButtonType.key,
               text: '채팅 요청 수락하기',

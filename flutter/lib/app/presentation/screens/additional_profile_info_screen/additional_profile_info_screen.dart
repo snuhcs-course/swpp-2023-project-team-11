@@ -27,8 +27,8 @@ class AdditionalProfileInfoScreen
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               const SizedBox(height: 12),
               const Text(
-                  "*입력하신 회원정보는 다른 사용자들에게 공개되지 않고\n회원관리 및 언어교환 상대 추천을 위해 내부적으로만 이용됩니다.",
-                  style: TextStyle(color: MyColor.textBaseColor)),
+                  "*입력하신 회원정보는 다른 사용자들에게 공개되지 않고 회원관리 및 언어교환 상대 추천을 위해 내부적으로만 이용됩니다.",
+                  style: TextStyle(color: MyColor.textBaseColor, fontSize: 12)),
 
               const SizedBox(height: 20),
               const Text("생년월일", style: TextStyle(color: Color(0xff2d3a45),
@@ -42,6 +42,7 @@ class AdditionalProfileInfoScreen
               SizedBox(
                 height: 80,
                 child: GridView.count(crossAxisCount: 2,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

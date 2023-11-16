@@ -23,5 +23,8 @@ abstract class UserRepository {
   /// User의 목록을 리턴한다. 몇개 리스폰스할지는 알아서 정해주세요
   /// 추후에, refetch시에는 어떻게 하고 이런 Pagination 관련해서 논의가 필요할 수도 있겠네요
   Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic();
+
+  Future<Result<int, DefaultIssue>> editUserProfile(
+      {required Map<String, dynamic> createData, required Map<String, dynamic> deleteData});
 }
 

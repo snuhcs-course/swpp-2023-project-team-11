@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile_app/app/domain/models/friendship.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 
 part 'chatting_room.g.dart';

@@ -120,7 +120,7 @@ class ProfileDetailColumn extends StatelessWidget{
         ),
         const SizedBox(height: 8),
         _buildLanguageList(),
-        SizedBox(height: 24),
+        const SizedBox(height: 24),
         Text(
           "좋아하는 것들",
           style: TextStyle(
@@ -128,7 +128,7 @@ class ProfileDetailColumn extends StatelessWidget{
               fontWeight: FontWeight.w600,
               color: MyColor.textBaseColor.withOpacity(0.8)),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -143,40 +143,40 @@ class ProfileDetailColumn extends StatelessWidget{
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: MyColor.textBaseColor.withOpacity(0.8))),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 _buildHobbyContainer(),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text("# 음식",
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: MyColor.textBaseColor.withOpacity(0.8))),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 _buildFoodContainer(),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text("# 영화 장르",
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: MyColor.textBaseColor.withOpacity(0.8))),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 _buildMovieContainer(),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text("# 주로 출몰하는 장소",
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: MyColor.textBaseColor.withOpacity(0.8))),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 _buildLocationContainer()
               ],
             ),
@@ -188,7 +188,7 @@ class ProfileDetailColumn extends StatelessWidget{
 
   Container _buildAboutMeContainer() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: const BoxDecoration(
           border: Border(
               left: BorderSide(width: 3, color: MyColor.purple))),
@@ -196,7 +196,7 @@ class ProfileDetailColumn extends StatelessWidget{
         children: [
           Text(
             user.profile.aboutMe,
-            style: TextStyle(fontSize: 13),
+            style: const TextStyle(fontSize: 13),
           ),
         ],
       ),
@@ -206,6 +206,7 @@ class ProfileDetailColumn extends StatelessWidget{
   Container _buildMainLanguageContainer() {
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "사용하는 주언어",
@@ -245,7 +246,7 @@ class ProfileDetailColumn extends StatelessWidget{
               Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Color(0xfff8f1fb)),
+                    color: const Color(0xfff8f1fb)),
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
@@ -270,7 +271,7 @@ class ProfileDetailColumn extends StatelessWidget{
               Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Color(0xfff8f1fb)),
+                    color: const Color(0xfff8f1fb)),
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
@@ -294,7 +295,7 @@ class ProfileDetailColumn extends StatelessWidget{
               Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Color(0xfff8f1fb)),
+                    color: const Color(0xfff8f1fb)),
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
@@ -318,7 +319,7 @@ class ProfileDetailColumn extends StatelessWidget{
               Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Color(0xfff8f1fb)),
+                    color: const Color(0xfff8f1fb)),
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
@@ -358,7 +359,7 @@ class ProfileDetailColumn extends StatelessWidget{
     );
   }
 
-  ProfileDetailColumn({
+  ProfileDetailColumn({super.key, 
     required this.user,
   });
 }

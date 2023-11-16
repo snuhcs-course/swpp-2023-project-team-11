@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
-import 'package:mobile_app/routes/named_routes.dart';
 
 // ignore: unused_import
 import 'entry_screen_controller.dart';

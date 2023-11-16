@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
-import 'package:mobile_app/app/presentation/widgets/automated_opacity_widget.dart';
 import 'package:mobile_app/app/presentation/widgets/bottom_chatting_form.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
@@ -20,7 +19,13 @@ class RoomScreen extends GetView<RoomScreenController> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        appBar: ChattingRoomAppBar(title: controller.chattingRoomTitle),
+        appBar: ChattingRoomAppBar(title: controller.chattingRoomTitle,
+        additionalAction: IconButton(
+          icon: Image.asset("assets/images/sneki_holding_here.png"),
+          onPressed: controller.onSnekiTap,
+
+        ),
+        ),
         backgroundColor: MyColor.purple,
         body: Container(
           decoration: const BoxDecoration(
@@ -50,6 +55,7 @@ class RoomScreen extends GetView<RoomScreenController> {
                     print("try delete");
                     controller.onChatDeleteButtonTap(chatVm.sequenceId);
                   },
+                  senderEmail: controller.opponentEmail,
                   sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
                 ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
               },

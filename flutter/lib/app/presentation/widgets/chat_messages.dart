@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 
 class ChatMessage extends StatelessWidget {
   final String text;
@@ -9,7 +10,7 @@ class ChatMessage extends StatelessWidget {
   final bool tempProxy;
   final bool needsDelete;
   void Function()? onDelete;
-
+  final String? senderEmail;
   ChatMessage({
     super.key,
     required this.text,
@@ -18,6 +19,7 @@ class ChatMessage extends StatelessWidget {
     this.onDelete,
     this.tempProxy = false,
     this.needsDelete = false,
+    this.senderEmail
   });
 
   bool get _alignLeft => senderType != SenderType.me;
@@ -35,6 +37,10 @@ class ChatMessage extends StatelessWidget {
             backgroundImage: AssetImage('assets/images/sneki_profile.png'),
             radius: 18.5,
           ),
+        CircleAvatar(
+          backgroundImage: (senderType == SenderType.sneki)? const AssetImage('assets/images/sneki_profile.png') : ProfilePic.call(senderEmail!),
+          radius: 18.5,
+        ),
         if (_alignLeft && sameSenderWithBeforeMessage)
           const CircleAvatar(
             backgroundColor: Colors.transparent,
@@ -42,7 +48,7 @@ class ChatMessage extends StatelessWidget {
           ),
         const SizedBox(width: 8),
         if (tempProxy && !needsDelete)
-          Icon(
+          const Icon(
             Icons.arrow_circle_left_sharp,
             size: 16,
             color: MyColor.purple,
@@ -54,7 +60,7 @@ class ChatMessage extends StatelessWidget {
                 onDelete!();
               }
             },
-            child: Icon(
+            child: const Icon(
               Icons.delete_forever_sharp,
               size: 16,
               color: MyColor.orange_1,

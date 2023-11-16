@@ -75,7 +75,7 @@ class CountryScreen extends GetView<CountryScreenController> {
         if (controller.countryNotHere.value) MainTextFormField(
             textEditingController: controller.temporaryTextEditingController,
             hintText: "Your country code")
-        else SizedBox(height: 40)
+        else const SizedBox(height: 40)
       ],
     );
   }

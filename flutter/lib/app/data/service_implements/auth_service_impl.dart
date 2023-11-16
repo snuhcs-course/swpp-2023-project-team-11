@@ -150,6 +150,7 @@ class AuthServiceImpl implements AuthService {
     }
   }
 
+  @override
   Future<String?> get getSessionKey async {
     final sessionKey = await _authStorage.read(key: 'accessToken');
     return sessionKey;

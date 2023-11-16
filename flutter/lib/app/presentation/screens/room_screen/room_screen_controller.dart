@@ -5,7 +5,7 @@ import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
-import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/routes/named_routes.dart';
 
 class RoomScreenController extends GetxController {
   final SendChatUseCase _sendChatUseCase;
@@ -40,6 +40,13 @@ class RoomScreenController extends GetxController {
   }
 
   int tempSeqId = -1;
+  String get opponentEmail {
+    if (userEmail == chattingRoom.initiator.email) {
+      return chattingRoom.responder.email;
+    } else {
+      return chattingRoom.initiator.email;
+    }
+  }
 
   void onSendButtonTap() {
     _sendChatUseCase.call(
@@ -66,6 +73,9 @@ class RoomScreenController extends GetxController {
     Get.find<ValidChattingRoomController>(
       tag: chattingRoom.id.toString(),
     ).deleteChat(seqId);
+  }
+  void onSnekiTap() {
+    Get.toNamed(Routes.Maker(nextRoute: Routes.ROADMAP), arguments: chattingRoom);
   }
 
   @override

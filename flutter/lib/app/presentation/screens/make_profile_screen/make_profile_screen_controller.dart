@@ -63,7 +63,7 @@ class MakeProfileScreenController extends GetxController{
     "핀란드어": Language.finnish,
   };
 
-  bool get notEmpty => _nickname.value.isNotEmpty && _aboutMe.value.isNotEmpty
+  bool get notEmpty => _nickname.value.isNotEmpty && (_nickname.value.length <= 8) && _aboutMe.value.isNotEmpty
                       && (selectedMainLanguage.value != "") && (selectedLanguages.value.isNotEmpty);
 
   void onNextButtonTap() {

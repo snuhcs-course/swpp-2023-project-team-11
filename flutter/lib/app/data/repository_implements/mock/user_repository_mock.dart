@@ -76,4 +76,10 @@ class UserRepositoryMock implements UserRepository {
     throw UnimplementedError();
   }
 
+  @override
+  Future<Result<int, DefaultIssue>> editUserProfile({required Map<String, dynamic> createData, required Map<String, dynamic> deleteData}) {
+    // TODO: implement editUserProfile
+    throw UnimplementedError();
+  }
+
 }

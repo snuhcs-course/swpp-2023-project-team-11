@@ -16,6 +16,7 @@ abstract class Routes {
   static const String PROFILE_SURVEY = "/profile_survey";
 
   static const String ROOM = "/room";
+  static const String ROADMAP = "/roadmap";
 
   static String Maker({
     required String nextRoute,

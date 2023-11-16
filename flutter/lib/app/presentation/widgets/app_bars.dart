@@ -16,7 +16,9 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Text(
               title!,
               style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff2d3a45)),
             )
           : null,
       leading: BackButton(
@@ -30,8 +32,10 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(64);
 }
 
-class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget {
+class ChattingRoomAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final String title;
+  final Widget? additionalAction;
 
   @override
   Widget build(BuildContext context) {
@@ -47,16 +51,17 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
           fontWeight: FontWeight.bold,
         ),
       ),
+      actions: [
+        if (additionalAction != null) additionalAction!,
+      ],
     );
   }
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
 
-  const ChattingRoomAppBar({
-    required this.title,
-    super.key,
-  });
+  const ChattingRoomAppBar(
+      {required this.title, super.key, this.additionalAction});
 }
 
 class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -95,19 +100,21 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(64);
 }
 
-class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
+class FriendDetailAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final ImageProvider profileImage;
   final String userName;
   final String userEmail;
   final bool isMyProfile;
+  final void Function()? actionFunction;
 
-  const FriendDetailAppBar({
-    super.key,
-    required this.profileImage,
-    required this.userName,
-    required this.userEmail,
-    this.isMyProfile = false
-  });
+  const FriendDetailAppBar(
+      {super.key,
+      required this.profileImage,
+      required this.userName,
+      required this.userEmail,
+      this.isMyProfile = false,
+      this.actionFunction});
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +124,32 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
         color: Colors.white,
       ),
       clipBehavior: Clip.none,
-      title: isMyProfile? const Text("내 프로필", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)): null,
+      title: isMyProfile
+          ? const Text("내 프로필",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white))
+          : null,
       centerTitle: false,
+      actions: isMyProfile
+          ? [
+              PopupMenuButton(
+                  icon: const Icon(Icons.settings),
+                  itemBuilder: (context) {
+                return [
+                  const PopupMenuItem<int>(
+                      value: 0,
+                      child: Text("프로필 편집", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                ];
+              }, onSelected: (value) {
+                if (value == 0) {
+                  print("My account menu is selected.");
+                  actionFunction!();
+                }
+              })
+            ]
+          : null,
       bottom: PreferredSize(
         preferredSize: preferredSize,
         child: Stack(
@@ -145,13 +176,25 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                   SizedBox(
                     height: 80,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(userName, style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),),
-                          Text(userEmail, style: TextStyle(fontSize: 13, color: MyColor.purple, ),)
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            userEmail,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: MyColor.purple,
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -167,5 +210,5 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
 
   @override
   // TODO: implement preferredSize
-  Size get preferredSize => Size.fromHeight(162);
+  Size get preferredSize => const Size.fromHeight(162);
 }

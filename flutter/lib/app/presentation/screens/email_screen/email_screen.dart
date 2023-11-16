@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/text_form_fields.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
 import 'email_screen_controller.dart';
@@ -60,7 +61,7 @@ class EmailScreen extends GetView<EmailScreenController> {
                 if (controller.warningType == 1) {
                   return const Text("서울대학교 계정을 사용해주세요 :)",
                       style: TextStyle(
-                          color: Color(0xff9f75d1),
+                          color: MyColor.purple,
                           fontSize: 14,
                           fontWeight: FontWeight.w400));
                 } else {
@@ -134,7 +135,7 @@ class EmailScreen extends GetView<EmailScreenController> {
           if (controller.certSuccess.value)
             const Text("성공적으로 인증되었어요!",
                 style: TextStyle(
-                    color: Color(0xff9f75d1),
+                    color: MyColor.purple,
                     fontWeight: FontWeight.w600,
                     fontSize: 14))
         ],
