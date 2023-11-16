@@ -1,4 +1,4 @@
-from typing import Any, Dict, Self
+from typing import Any, Dict
 
 from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -25,7 +25,7 @@ class ErrorResponseDocsBuilder:
             "model": cls.__Response,
         }
 
-    def add(self, error: HTTPException) -> Self:
+    def add(self, error: HTTPException):
         status = error.status_code
         if self.__responses.get(status) is None:
             self.__responses[status] = self.__response(error.detail)
