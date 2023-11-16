@@ -314,7 +314,22 @@ class TestDb(unittest.TestCase):
         db.execute(delete(Text))
         db.execute(delete(Chatting))
         db.commit()
+      
+    
+    @inject_db
+    def test_create_chatting(self, db: DbSession):
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
+        self.assertIsNotNone(chatting)
+        self.assertEqual(chatting.initiator_id, self.initiator_id)
+        self.assertEqual(chatting.responder_id, self.responder_id)
+        self.assertEqual(chatting.is_approved, False)
+        self.assertEqual(chatting.is_terminated, False)
+        db.commit()
 
+        #check create_chatting throw exception when chatting already exists
+        with self.assertRaises(ChattingAlreadyExistException):
+            create_chatting(db, self.initiator_id, self.responder_id)
+      
     @inject_db
     def test_chatting(self, db: DbSession):
         chatting = create_chatting(db, self.initiator_id, self.responder_id)
