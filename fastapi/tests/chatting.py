@@ -451,20 +451,26 @@ class TestDb(unittest.TestCase):
         db.execute(
             insert(Topic).values(
                 [
-                    {"topic": "I'm so good", "tag": "A"},
-                    {"topic": "I'm so mad", "tag": "B"},
-                    {"topic": "I'm so sad", "tag": "C"},
-                    {"topic": "I'm so happy", "tag": "C"}
+                    {"topic": "I'm so good", "tag": "A", "is_korean": False},
+                    {"topic": "I'm so mad", "tag": "B", "is_korean": False},
+                    {"topic": "I'm so sad", "tag": "C", "is_korean": False},
+                    {"topic": "I'm so happy", "tag": "C", "is_korean": False},
+                    {"topic": "I'm so exciting", "tag": "C", "is_korean": True}
                 ]
             )
         )
         db.commit()
-        self.assertIn(get_topics(db, 'C', 1)[0].topic, [
+        self.assertIn(get_topics(db, 'C', 1, False)[0].topic, [
                       "I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topics(db, 'B', 1)[0].topic, "I'm so mad")
-        self.assertEqual(get_topics(db, 'A', 1)[0].topic, "I'm so good")
+        self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "I'm so exciting")
+        self.assertEqual(len(get_topics(db, 'A', 1, True)), 0)
+        self.assertEqual(len(get_topics(db, 'B', 1, True)), 0)
+
+
+        self.assertEqual(get_topics(db, 'B', 1, False)[0].topic, "I'm so mad")
+        self.assertEqual(get_topics(db, 'A', 1, False)[0].topic, "I'm so good")
         # get_topics 함수의 return 값이 random 정렬 되었는지 확인
-        test_list = get_topics(db, 'C', 2)
+        test_list = get_topics(db, 'C', 2, False)
         self.assertNotEqual(test_list[0].topic, test_list[1].topic)
         self.assertEqual(len(test_list), 2)
         if test_list[0] == "I'm so sad":
@@ -473,9 +479,9 @@ class TestDb(unittest.TestCase):
             self.assertEqual(test_list[1].topic, "I'm so sad")
 
         # topic 개수보다 많은 개수를 요청할 경우
-        self.assertEqual(len(get_topics(db, 'C', 3)), 2)
-        self.assertEqual(len(get_topics(db, 'C', 4)), 2)
-        self.assertEqual(len(get_topics(db, 'B', 5)), 1)
+        self.assertEqual(len(get_topics(db, 'C', 3, False)), 2)
+        self.assertEqual(len(get_topics(db, 'C', 4, False)), 2)
+        self.assertEqual(len(get_topics(db, 'B', 5, False)), 1)
 
 
 if __name__ == "__main__":
