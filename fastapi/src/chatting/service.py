@@ -36,6 +36,12 @@ def get_all_chattings(db: DbSession, user_id: int, is_approved: bool, limit: int
 
 
 def create_chatting(db: DbSession, user_id: int, responder_id: int) -> Chatting:
+    #if there is non-terminated chatting, throw exception
+    chatting = db.query(Chatting).where(or_(Chatting.initiator_id == user_id, Chatting.responder_id == user_id)).where(
+        Chatting.is_terminated == False).first()
+    if chatting is not None:
+        raise ChattingAlreadyExistException()
+    
     return db.scalar(
         insert(Chatting)
         .values(
