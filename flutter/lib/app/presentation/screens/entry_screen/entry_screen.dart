@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
+import 'package:mobile_app/core/utils/translation.dart';
 
 // ignore: unused_import
 import 'entry_screen_controller.dart';
@@ -12,6 +13,11 @@ class EntryScreen extends GetView<EntryScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff2e2f3),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          MyLanguageUtil.toggle();
+        },
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -34,8 +40,8 @@ class EntryScreen extends GetView<EntryScreenController> {
             height: 112,
           ),
           const SizedBox(height: 8),
-          const Text(
-            "간식보다 재밌는 언어교환",
+          Text(
+            "간식보다 재밌는 언어교환".tr,
             style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(
