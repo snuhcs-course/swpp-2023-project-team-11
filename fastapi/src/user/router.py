@@ -79,7 +79,7 @@ def create_user(req: CreateUserRequest, verification_id: int = Depends(check_ver
     profile_id = service.create_profile(db, req.profile)
     service.create_user(db, req, verification_id, profile_id, main_lang_id, salt, hash)
     session_key = generate_session_key(profile_id)
-    create_session(db, profile_id)
+    create_session(db, session_key, profile_id)
     db.commit()
 
     return SessionResponse(access_token=session_key, token_type="bearer")
