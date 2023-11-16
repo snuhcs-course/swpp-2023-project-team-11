@@ -81,6 +81,14 @@ def get_user_by_id(db: DbSession, user_id: int) -> User:
     return user
 
 
+def is_korean_by_user_id(db: DbSession, user_id: int) -> bool:
+    user = get_user_by_id(db, user_id)
+    if user.profile.nation_code == 82:
+        return True
+    else:
+        return False
+
+
 def get_user_by_email(db: DbSession, email: str) -> User:
     """Raises `InvalidUserException`"""
 
@@ -272,3 +280,5 @@ def send_code_via_email(email: str, code: int) -> None:
     with SMTP_SSL(MAIL_SERVER, MAIL_PORT) as smtp:
         smtp.login(MAIL_ADDRESS, MAIL_PASSWORD)
         smtp.send_message(msg)
+
+
