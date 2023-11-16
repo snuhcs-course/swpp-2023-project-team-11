@@ -62,7 +62,7 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                       fontWeight: FontWeight.w400,
                       fontSize: 13)),
               const SizedBox(height: 20),
-              const Text("자신을 소개하는 문장을 입력해주세요",
+              const Text("자신을 소개하는 문장 하나를 입력해주세요",
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
