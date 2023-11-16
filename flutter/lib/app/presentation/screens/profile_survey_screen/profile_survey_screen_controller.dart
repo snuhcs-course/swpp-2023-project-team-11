@@ -13,6 +13,7 @@ import 'package:mobile_app/app/presentation/screens/make_profile_screen/make_pro
 import 'package:mobile_app/app/presentation/screens/password_screen/password_screen_controller.dart';
 import 'package:mobile_app/app/presentation/screens/profile_survey_screen/widgets/complete_dialog.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/core/utils/loading_util.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 class ProfileSurveyScreenController extends GetxController {
@@ -123,8 +124,8 @@ class ProfileSurveyScreenController extends GetxController {
     );
   }
 
-  void toMainScreen(){
-    Get.offAllNamed(Routes.MAIN);
+  void toMainScreen(User user) {
+    Get.offAllNamed(Routes.MAIN, arguments: user);
   }
 
   void _submit() async {
@@ -134,25 +135,50 @@ class ProfileSurveyScreenController extends GetxController {
     final String password = Get.find<PasswordScreenController>().password;
     final emailInfo = Get.find<EmailScreenController>();
     Profile profile = Profile(
-        birth: additionalInfo.birth,
-        sex: additionalInfo.sex,
-        major: additionalInfo.department,
-        admissionYear: additionalInfo.admissionYear,
-        aboutMe: profileInfo.aboutMe,
-        mbti: additionalInfo.mbti,
-        hobbies: answerMap[Hobby]!.cast<Hobby>(),
-        foodCategories: answerMap[FoodCategory]!.cast<FoodCategory>(),
-        movieGenres: answerMap[MovieGenre]!.cast<MovieGenre>(),
-        locations: answerMap[Location]!.cast<Location>());
-    
-    User user = countryInfo.isKorean? KoreanUser(name: profileInfo.nickname, userType: UserType.korean, email: emailInfo.email, wantedLanguages: profileInfo.selectedLanguages.value, profile: profile) :
-    ForeignUser(name: profileInfo.nickname, userType: UserType.foreign, email: emailInfo.email, nationCode: countryInfo.countryCode, mainLanguage: profileInfo.mainLanguage, subLanguages: profileInfo.selectedLanguages.value, profile: profile);
+      birth: additionalInfo.birth,
+      sex: additionalInfo.sex,
+      major: additionalInfo.department,
+      admissionYear: additionalInfo.admissionYear,
+      aboutMe: profileInfo.aboutMe,
+      mbti: additionalInfo.mbti,
+      hobbies: answerMap[Hobby]!.cast<Hobby>(),
+      foodCategories: answerMap[FoodCategory]!.cast<FoodCategory>(),
+      movieGenres: answerMap[MovieGenre]!.cast<MovieGenre>(),
+      locations: answerMap[Location]!.cast<Location>(),
+      nationCode: countryInfo.countryCode,
+    );
 
-    Get.put(user, permanent: true);
-    [user.name, user.email, user.profile.toJson(), user.userType].forEach(print);
+    User user = countryInfo.isKorean
+        ? KoreanUser(
+            name: profileInfo.nickname,
+            mainLanguage: Language.korean,
+            type: UserType.korean,
+            email: emailInfo.email,
+            wantedLanguages: profileInfo.selectedLanguages.value,
+            profile: profile)
+        : ForeignUser(
+            name: profileInfo.nickname,
+            type: UserType.foreign,
+            email: emailInfo.email,
+            mainLanguage: profileInfo.mainLanguage,
+            subLanguages: profileInfo.selectedLanguages.value,
+            profile: profile);
 
-    await _signUpUseCase(email: emailInfo.email, emailToken: emailInfo.emailToken, password: password, user: user,
-        onFail: (){print("Fail on creating user");}, onSuccess: (){toMainScreen();});
+    [user.name, user.email, user.profile.toJson(), user.type].forEach(print);
+
+    LoadingUtil.withLoadingOverlay(asyncFunction: () async {
+      await _signUpUseCase(
+          email: emailInfo.email,
+          emailToken: emailInfo.emailToken,
+          password: password,
+          user: user,
+          onFail: () {
+            print("Fail on creating user");
+          },
+          onSuccess: (user) {
+            toMainScreen(user);
+          });
+    });
 
     // 로직 성공한 뒤, Get.offNamed(Routes.MAIN);
   }

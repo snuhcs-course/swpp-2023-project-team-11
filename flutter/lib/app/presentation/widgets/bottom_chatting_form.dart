@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:mobile_app/app/presentation/widgets/text_form_fields.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 
@@ -8,12 +7,14 @@ class BottomChattingForm extends StatelessWidget {
   final String? hintText;
   final VoidCallback? onPressed;
   final BuildContext context;
+  final FocusNode? focusNode;
   const BottomChattingForm({
     super.key,
     required this.textEditingController,
     required this.onPressed,
     this.hintText,
     required this.context,
+    this.focusNode,
   });
 
   @override
@@ -31,6 +32,7 @@ class BottomChattingForm extends StatelessWidget {
             child: MainTextFormField(
               textEditingController: textEditingController,
               hintText: hintText,
+              focusNode: focusNode,
             ),
           ),
           const SizedBox(width: 16),

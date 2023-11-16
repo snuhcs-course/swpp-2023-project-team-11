@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -31,8 +32,10 @@ class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(64);
 }
 
-class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget {
+class ChattingRoomAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final String title;
+  final Widget? additionalAction;
 
   @override
   Widget build(BuildContext context) {
@@ -48,16 +51,17 @@ class ChattingRoomAppBar extends StatelessWidget implements PreferredSizeWidget 
           fontWeight: FontWeight.bold,
         ),
       ),
+      actions: [
+        if (additionalAction != null) additionalAction!,
+      ],
     );
   }
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
 
-  const ChattingRoomAppBar({
-    required this.title,
-    super.key,
-  });
+  const ChattingRoomAppBar(
+      {required this.title, super.key, this.additionalAction});
 }
 
 class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -75,23 +79,136 @@ class NotiAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: (title != null) ? title : null,
       centerTitle: false,
       actions: [
-        if(additionalAction != null) additionalAction!,
-        ElevatedButton(
-          onPressed: () => {print("!")},
-          style: ElevatedButton.styleFrom(
-              shape: CircleBorder(),
-              backgroundColor: Color(0xfff8f1fb),
-              foregroundColor: Colors.white),
-          child: const Icon(
-            Icons.notifications_none_rounded,
-            color: Color(0xff9f75d1),
-            size: 30,
-          ),
-        ),
+        if (additionalAction != null) additionalAction!,
+        // ElevatedButton(
+        //   onPressed: () => {print("!")},
+        //   style: ElevatedButton.styleFrom(
+        //       shape: const CircleBorder(),
+        //       backgroundColor: const Color(0xfff8f1fb),
+        //       foregroundColor: Colors.white),
+        //   child: const Icon(
+        //     Icons.notifications_none_rounded,
+        //     color: Color(0xff9f75d1),
+        //     size: 30,
+        //   ),
+        // ),
       ],
     );
   }
 
   @override
-  Size get preferredSize =>const  Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(64);
+}
+
+class FriendDetailAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
+  final ImageProvider profileImage;
+  final String userName;
+  final String userEmail;
+  final bool isMyProfile;
+  final void Function()? actionFunction;
+
+  const FriendDetailAppBar(
+      {super.key,
+      required this.profileImage,
+      required this.userName,
+      required this.userEmail,
+      this.isMyProfile = false,
+      this.actionFunction});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: MyColor.purple,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+      ),
+      clipBehavior: Clip.none,
+      title: isMyProfile
+          ? const Text("내 프로필",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white))
+          : null,
+      centerTitle: false,
+      actions: isMyProfile
+          ? [
+              PopupMenuButton(
+                  icon: const Icon(Icons.settings),
+                  itemBuilder: (context) {
+                return [
+                  const PopupMenuItem<int>(
+                      value: 0,
+                      child: Text("프로필 편집", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                ];
+              }, onSelected: (value) {
+                if (value == 0) {
+                  print("My account menu is selected.");
+                  actionFunction!();
+                }
+              })
+            ]
+          : null,
+      bottom: PreferredSize(
+        preferredSize: preferredSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              height: 60,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                color: Colors.white,
+              ),
+            ),
+            Positioned(
+              top: -40,
+              left: 20,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: profileImage,
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: 80,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            userEmail,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: MyColor.purple,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  // TODO: implement preferredSize
+  Size get preferredSize => const Size.fromHeight(162);
 }

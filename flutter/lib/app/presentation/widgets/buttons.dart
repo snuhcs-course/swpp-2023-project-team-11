@@ -53,7 +53,7 @@ enum MainButtonType {
 }
 
 class SmallButton extends StatelessWidget {
-  final void Function() onPressed;
+  final void Function()? onPressed;
   final String text;
 
   const SmallButton({
@@ -64,22 +64,22 @@ class SmallButton extends StatelessWidget {
 
   final Color buttonColor = const Color(0xffff9162);
   final Color textColor = Colors.white;
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: buttonColor,
-        disabledBackgroundColor: const Color(0xffd3d3d3),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 11.5,
-          vertical: 13,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        minimumSize: Size(90, 0)
-      ),
+          backgroundColor: buttonColor,
+          disabledBackgroundColor: const Color(0xffd3d3d3),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 11.5,
+            vertical: 13,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          minimumSize: const Size(90, 0)),
       child: Text(
         text,
         style: TextStyle(
@@ -92,24 +92,87 @@ class SmallButton extends StatelessWidget {
   }
 }
 
-class BottomNextButton extends StatelessWidget{
+class ExtraSmallButton extends StatelessWidget {
+  final void Function()? onPressed;
+  final String text;
+
+  const ExtraSmallButton({super.key, 
+    required this.onPressed,
+    required this.text,
+  });
+
+  final Color buttonColor = const Color(0xffff9162);
+  final Color textColor = Colors.white;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+          backgroundColor: buttonColor,
+          disabledBackgroundColor: const Color(0xffd3d3d3),
+          padding: const EdgeInsets.all(6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          minimumSize: const Size(90, 0)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class BottomNextButton extends StatelessWidget {
   final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding:
-      const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
         bottom: MediaQuery.of(context).padding.bottom / 2 + 24,
       ),
       child: MainButton(
-          mainButtonType: MainButtonType.key,
-          text: '다음',
-          onPressed: onPressed
+          mainButtonType: MainButtonType.key, text: '다음', onPressed: onPressed),
+    );
+  }
+
+  const BottomNextButton({super.key, this.onPressed});
+}
+
+class BottomSnekiButton extends StatelessWidget {
+  final void Function()? onPressed;
+  final String toBeDisplayed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 24).copyWith(
+        bottom: MediaQuery.of(context).padding.bottom / 2 + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            "assets/images/sneki_holding_here.png",
+            scale: 2.2,
+          ),
+          MainButton(
+              mainButtonType: MainButtonType.key,
+              text: toBeDisplayed,
+              onPressed: onPressed),
+        ],
       ),
     );
   }
 
-  BottomNextButton({this.onPressed});
-
+  const BottomSnekiButton(
+      {super.key, this.onPressed, required this.toBeDisplayed});
 }

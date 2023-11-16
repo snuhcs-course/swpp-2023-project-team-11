@@ -15,7 +15,7 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: SimpleAppBar(
+      appBar: const SimpleAppBar(
         title: "프로필 생성",
       ),
       body: SingleChildScrollView(
@@ -28,13 +28,13 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: SizedBox.fromSize(
+                    size: const Size.fromRadius(90),
                     child: Image.asset('assets/images/snek_profile_img_1.webp'),
-                    size: Size.fromRadius(90),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              Center(
+              const SizedBox(height: 20),
+              const Center(
                   child: Text(
                     "작성된 프로필은 다른 유저들이 볼 수 있어요",
                     style: TextStyle(
@@ -42,45 +42,45 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                         color: MyColor.purple,
                         fontWeight: FontWeight.w500),
                   )),
-              SizedBox(height: 12),
-              Text("활동할 닉네임을 입력해주세요",
+              const SizedBox(height: 12),
+              const Text("활동할 닉네임을 입력해주세요",
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
                       fontSize: 14)),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               MainTextFormField(
                 textEditingController: controller.nicknameCon,
                 hintText: "닉네임 입력",
-                textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
-              SizedBox(height: 8),
-              Text("닉네임은 최대 12자까지 가능해요.",
+              const SizedBox(height: 8),
+              Text("닉네임은 한글/영문/숫자로, 최대 8자까지 가능해요.",
                   style: TextStyle(
-                      color: Color(0xff2d3a45).withOpacity(0.64),
+                      color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
-                      fontSize: 14)),
-              SizedBox(height: 20),
-              Text("자신을 소개하는 문장을 입력해주세요",
+                      fontSize: 13)),
+              const SizedBox(height: 20),
+              const Text("자신을 소개하는 문장 하나를 입력해주세요",
                   style: TextStyle(
                       color: Color(0xff2d3a45),
                       fontWeight: FontWeight.w500,
                       fontSize: 14)),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               MainTextFormField(
                 textEditingController: controller.aboutMeCon,
                 hintText: "자기소개 입력",
-                textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text("프로필은 나중에도 수정이 가능하니 부담 갖지 말고 적어주세요!",
                   style: TextStyle(
-                      color: Color(0xff2d3a45).withOpacity(0.64),
+                      color: const Color(0xff2d3a45).withOpacity(0.64),
                       fontWeight: FontWeight.w400,
-                      fontSize: 14)),
-              SizedBox(height: 12),
+                      fontSize: 13)),
+              const SizedBox(height: 12),
               if (controller.isForeign) const Text("주로 사용하는 언어",
                   style: TextStyle(
                       color: Color(0xff2d3a45),
@@ -89,7 +89,7 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
               if (controller.isForeign) Obx(() {
                 return _buildLanguageList();
               }),
-              if (controller.isForeign) SizedBox(height: 12),
+              if (controller.isForeign) const SizedBox(height: 12),
               (controller.isForeign)? const Text("주언어 외 사용 가능 언어",
                   style: TextStyle(
                       color: Color(0xff2d3a45),
@@ -173,6 +173,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                     } else {
                       controller.selectedMainLanguage.value =
                           language.keys.first;
+                      controller.selectedLanguages.value.remove(controller.mainLanguage);
+                      controller.selectedLanguages.refresh();
                     }
                   },
                   child: Container(
@@ -182,8 +184,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                             controller.selectedMainLanguage.value ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
-                    padding: EdgeInsets.all(6),
-                    margin: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
                     child: Text(
                       language.keys.first,
                       style: TextStyle(
@@ -223,8 +225,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                             controller.selectedMainLanguage.value ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
-                    padding: EdgeInsets.all(6),
-                    margin: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
                     child: Text(
                       language.keys.first,
                       style: TextStyle(
@@ -264,8 +266,13 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                       controller.selectedLanguages.value.remove(language.values.first);
                       controller.selectedLanguages.refresh();
                     } else {
-                      controller.selectedLanguages.value.add(language.values.first);
-                      controller.selectedLanguages.refresh();
+                      if(controller.selectedMainLanguage.value != "" && language.keys.first == controller.selectedMainLanguage.value){
+
+                      }else{
+                        controller.selectedLanguages.value.add(language.values.first);
+                        controller.selectedLanguages.refresh();
+                      }
+
                     }
                   },
                   child: Container(
@@ -274,8 +281,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                         border: Border.all(color: controller.selectedLanguages.value.contains(language.values.first) ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
-                    padding: EdgeInsets.all(6),
-                    margin: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
                     child: Text(
                       language.keys.first,
                       style: TextStyle(
@@ -312,8 +319,8 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                         border: Border.all(color: controller.selectedLanguages.value.contains(language.values.first) ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
-                    padding: EdgeInsets.all(6),
-                    margin: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
                     child: Text(
                       language.keys.first,
                       style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 
 // ignore: unused_import
 import '../../../domain/models/chatting_room.dart';
@@ -14,127 +15,119 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: NotiAppBar(
-          title: Text(
-            "채팅 요청",
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff2d3a45)),
-          ),
+      backgroundColor: Colors.white,
+      appBar: const NotiAppBar(
+        title: Text(
+          "채팅 요청",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
-        body: Obx(() => _buildChatroomList()));
+      ),
+      body: controller.chattingRoomListController.obx(
+        (state) {
+          if (state!.roomForRequested.isEmpty) {
+            return _buildEmptyChattingRoomResponse();
+          } else {
+            return _buildChatroomList(state.roomForRequested);
+          }
+        },
+          onLoading: const Center(child: CircularProgressIndicator(color: MyColor.orange_1,),)
+      ),
+    );
   }
 
-  Widget _buildChatroomList() {
-    if (controller.chatrooms.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              "새로운 채팅 요청이 지금은 없어요!",
-              style: TextStyle(
-                  color: Color(0xff9f75d1),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18),
-            ),
-            SizedBox(
-              height: 36,
-            ),
-            SmallButton(onPressed: () => {}, text: "친구 둘러보기")
-          ],
-        ),
-      );
-    }
+  Widget _buildEmptyChattingRoomResponse() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            "새로운 채팅 요청이 지금은 없어요!",
+            style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
+          ),
+          const SizedBox(
+            height: 36,
+          ),
+          SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기")
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatroomList(List<ChattingRoom> chattingRooms) {
     return ListView.separated(
         shrinkWrap: true,
         itemBuilder: (context, index) {
-          return _buildChatroomContainer(controller.chatrooms[index], context);
+          return _buildChatroomContainer(chattingRooms[index], context);
         },
         separatorBuilder: (context, index) {
-          return SizedBox(height: 0);
+          return const SizedBox(height: 0);
         },
-        itemCount: controller.chatrooms.length);
+        itemCount: chattingRooms.length);
   }
 
   Widget _buildChatroomContainer(ChattingRoom chatroom, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.withOpacity(0.4),
-                border: Border.all(width: 1.5, color: Color(0xff9f75d1))),
-            width: 54,
-            height: 54,
-          ),
-          SizedBox(width: 16),
-          Container(
-            width: 260,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text("상대 이름",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff2d3a45))),
-                    SizedBox(width: 8),
-                    Text(
-                        "${chatroom.createdAt
-                            .toLocal()
-                            .year}년 ${chatroom.createdAt
-                            .toLocal()
-                            .month}월 ${chatroom.createdAt
-                            .toLocal()
-                            .day}일",
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xffff9162)))
-                  ],
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "상대(아직 친구가 아닌 사람)가 보낸 메세지",
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff2d3a45).withOpacity(0.8)),
-                )
-              ],
+      child: GestureDetector(
+        onTap: () {
+          controller.onProfileTap(chatroom.initiator, chatroom);
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+                radius: 27,
+                backgroundImage: ProfilePic.call(chatroom.initiator.email)
             ),
-          ),
-          SizedBox(width: 12),
-          Transform.rotate(
-            angle: -math.pi / 2,
-            child: PopupMenuButton(
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem<int>(value: 0, child: Text("퇴장")),
-                  PopupMenuItem<int>(value: 1, child: Text("읽음 처리")),
-                  PopupMenuItem<int>(value: 2, child: Text("차단"))
-                ];
-              },
-              onSelected: (value) {
-                if (value == 0)
-                  print("퇴장");
-                else if (value == 1)
-                  print("읽음으로 처리");
-                else if (value == 2) print("차단");
-              },
-              color: Color(0xff2d3a45).withOpacity(0.4),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(chatroom.initiator.name,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
+                      const SizedBox(width: 8),
+                      Text(
+                          "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xffff9162)))
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${chatroom.initiator.name}님의 채팅 요청이 왔어요!",
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xff2d3a45).withOpacity(0.8)),
+                  )
+                ],
+              ),
             ),
-          )
-        ],
+            const SizedBox(width: 12),
+              PopupMenuButton(
+                icon: Icon(Icons.more_vert, color: const Color(0xff2d3a45).withOpacity(0.4),),
+                itemBuilder: (context) {
+                  return [
+                    const PopupMenuItem<int>(value: 0, child: Text("삭제")),
+                    const PopupMenuItem<int>(value: 1, child: Text("수락")),
+                  ];
+                },
+                onSelected: (value) {
+                  if (value == 0) {
+                    print("삭제");
+                  } else if (value == 1) {
+                    controller.onAcceptButtonTap(chatroom);
+                  }
+                },
+              ),
+          ],
+        ),
       ),
     );
   }

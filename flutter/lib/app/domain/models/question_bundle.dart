@@ -1,4 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
 
 class QuestionBundle<E extends Enum> {
   final List<String> questions;

@@ -9,9 +9,14 @@ abstract class Routes {
   static const String ADDITIONAL_INFO = "/additional_info";
   static const String MAKE_PROFILE = "/make_profile";
   static const String MAIN = "/main";
+
+  static const String FRIEND_DETAIL = "/friend_detail";
   static const String CHAT_REQUESTS = "/chat_requests";
 
   static const String PROFILE_SURVEY = "/profile_survey";
+
+  static const String ROOM = "/room";
+  static const String ROADMAP = "/roadmap";
 
   static String Maker({
     required String nextRoute,

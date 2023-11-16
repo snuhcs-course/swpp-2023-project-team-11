@@ -35,6 +35,8 @@ class CountryScreenController extends GetxController {
     {"Ukraine 🇺🇦": "380"},
     {"Tanzania 🇹🇿": "255"},
 
+    {"Argentina 🇦🇷": "54"}
+
   ];
   final List<Map<String, String>> countries2 = [
     {"China 🇨🇳": "86"},
@@ -52,10 +54,10 @@ class CountryScreenController extends GetxController {
     {"Italy 🇮🇹": "39"},
     {"South Africa 🇿🇦": "27"},
     {"Myanmar 🇲🇲": "95"},
+    {"Spain 🇪🇸": "34"},
     {"Sweden 🇸🇪": "46"},
     {"Colombia 🇨🇴": "57"},
-    {"Spain 🇪🇸": "34"},
-    {"Argentina 🇦🇷": "54"}
+
 
   ];
 
@@ -63,8 +65,11 @@ class CountryScreenController extends GetxController {
   void onOptionButtonTap(int tappedButton) {
     this.tappedButton.value = tappedButton;
     countryNotHere.value = false;
-    if (tappedButton == 1) tempCountryCode.value = "82";
-    else tempCountryCode.value = "0";
+    if (tappedButton == 1) {
+      tempCountryCode.value = "82";
+    } else {
+      tempCountryCode.value = "0";
+    }
   }
 
   void onNextButtonTap() {
@@ -73,7 +78,7 @@ class CountryScreenController extends GetxController {
 
   void onCountryNotHereButttontap() {
     tempCountryCode.value = "0";
-    this.countryNotHere.value = true;
+    countryNotHere.value = true;
   }
 
   @override

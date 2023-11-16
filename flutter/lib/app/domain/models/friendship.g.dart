@@ -8,7 +8,7 @@ part of 'friendship.dart';
 
 Friendship _$FriendshipFromJson(Map<String, dynamic> json) => Friendship(
       intimacy: (json['intimacy'] as num).toDouble(),
-      recentTopics: (json['recentTopics'] as List<dynamic>)
+      recentTopics: (json['recent_topics'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
     );
@@ -16,5 +16,5 @@ Friendship _$FriendshipFromJson(Map<String, dynamic> json) => Friendship(
 Map<String, dynamic> _$FriendshipToJson(Friendship instance) =>
     <String, dynamic>{
       'intimacy': instance.intimacy,
-      'recentTopics': instance.recentTopics,
+      'recent_topics': instance.recentTopics,
     };

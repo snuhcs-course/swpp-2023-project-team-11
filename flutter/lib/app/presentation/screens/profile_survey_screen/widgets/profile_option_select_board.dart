@@ -93,7 +93,7 @@ class _ProfileOptionSelectBoardState extends State<ProfileOptionSelectBoard> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(color: isSelected?MyColor.orange_1:Colors.black.withOpacity(0.1), width: 1)),
-                              padding: EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(6),
                               child: Text(
                                 widget.keywords[index].toString(),
                                 style: TextStyle(

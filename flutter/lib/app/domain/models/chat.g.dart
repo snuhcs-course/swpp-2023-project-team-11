@@ -6,23 +6,20 @@ part of 'chat.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-NormalChat _$NormalChatFromJson(Map<String, dynamic> json) => NormalChat(
-      messageType: $enumDecode(_$ChatTypeEnumMap, json['messageType']),
-      id: json['id'] as String,
-      text: json['text'] as String,
-      senderId: json['senderId'] as String,
-      sentAt: DateTime.parse(json['sentAt'] as String),
+Chat _$ChatFromJson(Map<String, dynamic> json) => Chat(
+      seqId: json['seq_id'] as int,
+      chattingRoomId: json['chatting_id'] as int,
+      senderName: json['sender'] as String,
+      senderEmail: json['email'] as String,
+      message: json['msg'] as String,
+      sentAt: DateTime.parse(json['timestamp'] as String),
     );
 
-Map<String, dynamic> _$NormalChatToJson(NormalChat instance) =>
-    <String, dynamic>{
-      'messageType': _$ChatTypeEnumMap[instance.messageType]!,
-      'id': instance.id,
-      'senderId': instance.senderId,
-      'text': instance.text,
-      'sentAt': instance.sentAt.toIso8601String(),
+Map<String, dynamic> _$ChatToJson(Chat instance) => <String, dynamic>{
+      'seq_id': instance.seqId,
+      'chatting_id': instance.chattingRoomId,
+      'sender': instance.senderName,
+      'email': instance.senderEmail,
+      'msg': instance.message,
+      'timestamp': instance.sentAt.toIso8601String(),
     };
-
-const _$ChatTypeEnumMap = {
-  ChatType.normal: 'normal',
-};

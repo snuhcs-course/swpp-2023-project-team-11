@@ -10,7 +10,8 @@ class PasswordScreenController extends GetxController {
   String get password => _password.value;
   final _passwordAgain = "".obs;
 
-  bool get passwordEntered => _password.value.isNotEmpty && (_password.value.length >= 6) && (_password.value.length <= 20);
+  bool get passwordEntered => _password.value.isNotEmpty && (_password.value.length >= 6) && (_password.value.length <= 20)
+  && RegExp(r'^[A-Za-z0-9]+$').hasMatch(_password.value);
 
   bool get passwordsEqual => _password.value.isNotEmpty && (_password.value == _passwordAgain.value);
 

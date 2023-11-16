@@ -27,8 +27,10 @@ class UserRepositoryImpl implements UserRepository {
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
-    } catch (e) {
+    } catch (e,s) {
       print("알 수 없는 에러 발생");
+      print(e);
+      print(s);
       return Result.fail(DefaultIssue.unknown);
     }
 
@@ -39,13 +41,13 @@ class UserRepositoryImpl implements UserRepository {
     final Dio dio = DioInstance.getDio;
 
     const path = "/user/all";
-    print(baseUrl + path);
+    // print(baseUrl + path);
     try{
       final response = await dio.get(
           baseUrl + path
       );
       final data = response.data as List;
-      print("fetch${data}");
+      // print("fetch$data");
       if (data == null) throw Exception();
 
       List<User> users = [];
@@ -61,12 +63,46 @@ class UserRepositoryImpl implements UserRepository {
       final statusCode = e.response?.statusCode;
       print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
-    } catch (e) {
+    } catch (e, s) {
       print("알 수 없는 에러 발생");
+      print(e);
+      print(s);
       return Result.fail(DefaultIssue.unknown);
     }
 
 
   }
+
+  @override
+  Future<Result<int, DefaultIssue>> editUserProfile(
+      {required Map<String, dynamic> createData, required Map<String, dynamic> deleteData}) async {
+    final Dio dio = DioInstance.getDio;
+
+    const path_create = "/user/tag/create";
+    const path_delete = "/user/tag/delete";
+
+    try{
+      final response = dio.put(baseUrl + path_create, data: createData);
+    } on DioException catch(e) {
+      // 이걸로 분기를 해서 대응해라
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    }
+
+    try{
+      final response = dio.put(baseUrl + path_delete, data: createData);
+    } on DioException catch(e) {
+      // 이걸로 분기를 해서 대응해라
+      final statusCode = e.response?.statusCode;
+      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      return Result.fail(DefaultIssue.badRequest);
+    }
+
+    return Result.success(0);
+
+  }
+
+
 
 }

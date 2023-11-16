@@ -63,11 +63,11 @@ class MakeProfileScreenController extends GetxController{
     "핀란드어": Language.finnish,
   };
 
-  bool get notEmpty => _nickname.value.isNotEmpty && _aboutMe.value.isNotEmpty
-                      && (selectedMainLanguage.value != "") && (selectedLanguages.value.length != 0);
+  bool get notEmpty => _nickname.value.isNotEmpty && (_nickname.value.length <= 8) && _aboutMe.value.isNotEmpty
+                      && (selectedMainLanguage.value != "") && (selectedLanguages.value.isNotEmpty);
 
   void onNextButtonTap() {
-    print("${nickname} ${aboutMe} ${selectedMainLanguage} ${selectedLanguages}");
+    print("$nickname $aboutMe $selectedMainLanguage $selectedLanguages");
     Get.toNamed(Routes.Maker(nextRoute: Routes.PROFILE_SURVEY));
   }
 

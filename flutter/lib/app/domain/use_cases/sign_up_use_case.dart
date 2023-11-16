@@ -1,6 +1,4 @@
-import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
-import 'package:mobile_app/app/domain/repository_interfaces/user_repository.dart';
 import 'package:mobile_app/app/domain/result.dart';
 import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 
@@ -13,7 +11,7 @@ class SignUpUseCase {
     required User user,
     required String emailToken,
     required void Function() onFail,
-    required void Function() onSuccess,
+    required void Function(User user) onSuccess,
 }) async {
     final signUpResult = await _authService.signUp(
       email: email,
@@ -24,8 +22,7 @@ class SignUpUseCase {
     switch(signUpResult) {
       case Success(:final data) : {
         await _authService.setAuthorized(accessToken: data.accessToken);
-        Get.put<User>(user,permanent: true);
-        onSuccess();
+        onSuccess(user);
       }
       case Fail(:final issue) :{
         onFail();

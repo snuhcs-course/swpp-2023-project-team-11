@@ -6,14 +6,14 @@ part 'user.g.dart';
 abstract class User {
   // final String id;
   final String name;
-  final UserType userType;
+  final UserType type;
   final String email;
   final Profile profile;
 
   const User({
     // required this.id,
     required this.name,
-    required this.userType,
+    required this.type,
     required this.email,
     required this.profile,
   });
@@ -37,14 +37,17 @@ abstract class User {
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class KoreanUser extends User {
+  @JsonKey(name: "languages")
   final List<Language> wantedLanguages;
+  final Language mainLanguage;
 
   KoreanUser({
     // required super.id,
     required super.name,
-    required super.userType,
+    required super.type,
     required super.email,
     required this.wantedLanguages,
+    required this.mainLanguage,
     required super.profile,
   });
 
@@ -56,7 +59,7 @@ class KoreanUser extends User {
   int get getNationCode => 82;
 
   @override
-  Language get getMainLanguage => Language.korean;
+  Language get getMainLanguage => mainLanguage;
 
   @override
   // TODO: implement getLanguages
@@ -64,16 +67,17 @@ class KoreanUser extends User {
 }
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ForeignUser extends User {
-  final int nationCode;
+  @JsonKey(name: "main_language")
   final Language mainLanguage;
+  @JsonKey(name : "languages")
   final List<Language> subLanguages;
+
 
   ForeignUser({
     // required super.id,
     required super.name,
-    required super.userType,
+    required super.type,
     required super.email,
-    required this.nationCode,
     required this.mainLanguage,
     required this.subLanguages,
     required super.profile,
@@ -83,7 +87,7 @@ class ForeignUser extends User {
   Map<String, dynamic> toJson() => _$ForeignUserToJson(this);
 
   @override
-  int get getNationCode => nationCode;
+  int get getNationCode => profile.nationCode;
 
   @override
   // TODO: implement getMainLanguage
@@ -118,10 +122,10 @@ enum Language {
 }
 
 enum Mbti {
-  intj ("INTJ"), intp ("INTP"), entj ("ENTJ"), entp ("ENTP"),
-  infj ("INFJ"), infp ("INFP"), enfj ("ENFJ"), enfp ("ENFP"),
-  istj ("ISTJ"), isfj ("ISFJ"), estj ("ESTJ"), esfj ("ESFJ"),
-  istp ("ISTP"), isfp ("ISFP"), estp ("ESTP"), esfp ("ESFP"), unknown ("UNKNOWN");
+  INTJ ("INTJ"), INTP ("INTP"), ENTJ ("ENTJ"), ENTP ("ENTP"),
+  INFJ ("INFJ"), INFP ("INFP"), ENFJ ("ENFJ"), ENFP ("ENFP"),
+  ISTJ ("ISTJ"), ISFJ ("ISFJ"), ESTJ ("ESTJ"), ESFJ ("ESFJ"),
+  ISTP ("ISTP"), ISFP ("ISFP"), ESTP ("ESTP"), ESFP ("ESFP"), UNKNOWN ("UNKNOWN");
 
   final String name;
 
@@ -140,8 +144,12 @@ class Profile {
   final int admissionYear;
   final String aboutMe;
   final Mbti mbti;
+
+  final int nationCode;
   final List<Hobby> hobbies;
+  @JsonKey(name: "foods")
   final List<FoodCategory> foodCategories;
+  @JsonKey(name: "movies")
   final List<MovieGenre> movieGenres;
   final List<Location> locations;
   final String? imgUrl;
@@ -158,6 +166,7 @@ class Profile {
     required this.foodCategories,
     required this.movieGenres,
     required this.locations,
+    required this.nationCode,
     this.imgUrl,
   });
 

@@ -37,7 +37,7 @@ class AuthServiceImpl implements AuthService {
 
   @override
   Future<void> setAuthorized({required String accessToken}) async {
-    print("access token: ${accessToken}"); //
+    print("access token: $accessToken"); //
     await _authStorage.write(key: "accessToken", value: accessToken);
     DioInstance.addAuthorizationHeader(accessToken);
   }
@@ -66,7 +66,7 @@ class AuthServiceImpl implements AuthService {
             "admission_year": user.profile.admissionYear,
             "about_me": user.profile.aboutMe,
             "mbti": user.profile.mbti.toString(),
-            "nation_code": user.getNationCode,
+            "nation_code": user.profile.nationCode,
             "foods": user.profile.foodCategories.map((e) => e.name).toList(),
             "movies": user.profile.movieGenres.map((e) => e.name).toList(),
             "hobbies": user.profile.hobbies.map((e) => e.name).toList(),
@@ -148,5 +148,11 @@ class AuthServiceImpl implements AuthService {
       print("알 수 없는 에러 발생");
       return Result.fail(DefaultIssue.badRequest);
     }
+  }
+
+  @override
+  Future<String?> get getSessionKey async {
+    final sessionKey = await _authStorage.read(key: 'accessToken');
+    return sessionKey;
   }
 }
