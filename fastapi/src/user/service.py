@@ -224,9 +224,10 @@ def get_similarity(df_me: pd.DataFrame, df_target: pd.DataFrame) -> float:
         cnt += len(set(my_list) & set(target_list))
         my_size += len(my_list)
         target_size += len(target_list)
-    similarity = cnt / np.sqrt((my_size * target_size))
 
-    return similarity
+    if my_size == 0 or target_size == 0:
+        return None
+    return cnt / np.sqrt((my_size * target_size))
 
 
 def get_mbti_f(initiator: User, responder: User) -> int:
