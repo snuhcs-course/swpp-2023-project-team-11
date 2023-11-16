@@ -24,7 +24,6 @@ class ChatMessage extends StatelessWidget {
 
   bool get _alignLeft => senderType != SenderType.me;
 
-  bool get needsProfileImg => senderType != SenderType.me && !sameSenderWithBeforeMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +31,7 @@ class ChatMessage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: _alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
       children: [
-        if (needsProfileImg)
-          const CircleAvatar(
-            backgroundImage: AssetImage('assets/images/sneki_profile.png'),
-            radius: 18.5,
-          ),
+        if (_alignLeft && !sameSenderWithBeforeMessage)
         CircleAvatar(
           backgroundImage: (senderType == SenderType.sneki)? const AssetImage('assets/images/sneki_profile.png') : ProfilePic.call(senderEmail!),
           radius: 18.5,

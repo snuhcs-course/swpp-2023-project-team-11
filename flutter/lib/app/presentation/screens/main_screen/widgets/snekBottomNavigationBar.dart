@@ -15,12 +15,27 @@ class SnekBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     items = [
-      BottomNavigationBarItem(icon: (currentIndex == 0)? Image.asset("assets/images/home_filled.png", height: 24):Image.asset("assets/images/home.png", height: 24), label: "0"),
-      BottomNavigationBarItem(icon: (currentIndex == 1)? Image.asset("assets/images/chat-round-dots_filled.png", height: 24):Image.asset("assets/images/chat-round-dots.png", height: 24), label: "1"),
-      BottomNavigationBarItem(icon: Icon(Icons.person, color: (currentIndex == 2)? MyColor.orange_1: Colors.black.withOpacity(0.4),), label: "2"),
+      BottomNavigationBarItem(
+          icon: (currentIndex == 0)
+              ? Image.asset("assets/images/home_filled.png", height: 24)
+              : Image.asset("assets/images/home.png", height: 24),
+          label: "0"),
+      BottomNavigationBarItem(
+          icon: (currentIndex == 1)
+              ? Image.asset("assets/images/chat-round-dots_filled.png", height: 24)
+              : Image.asset("assets/images/chat-round-dots.png", height: 24),
+          label: "1"),
+      BottomNavigationBarItem(
+          icon: Icon(
+            Icons.person,
+            color: (currentIndex == 2) ? MyColor.orange_1 : Colors.black.withOpacity(0.4),
+          ),
+          label: "2"),
     ];
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 84, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 84, vertical: 16).copyWith(
+        bottom: 16 + MediaQuery.of(context).padding.bottom / 2,
+      ),
       padding: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -40,13 +55,12 @@ class SnekBottomNavigationBar extends StatelessWidget {
         children: items
             .map(
               (item) => GestureDetector(
-            onTap: () => onTap.call(int.parse(item.label!)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: item.icon,
+                  onTap: () => onTap.call(int.parse(item.label!)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    child: item.icon,
+                  )),
             )
-          ),
-        )
             .toList(),
       ),
     );
