@@ -19,13 +19,7 @@ class ValidChattingRoomController extends GetxController {
   void addChat(Chat chat, [bool proxyMode = false]) {
     final userEmail = Get.find<UserController>().userEmail;
     if (proxyMode) {
-      final tempChatVm = ChatVM(
-        senderType: SenderType.me,
-        text: chat.message,
-        createdAt: chat.sentAt,
-        sequenceId: chat.seqId,
-        temp: true,
-      );
+      final tempChatVm = ChatVM.fromChat(chat, temp: true);
       chatVmList.add(
         tempChatVm,
       );
@@ -45,16 +39,8 @@ class ValidChattingRoomController extends GetxController {
           return;
         }
       }
-      chatVmList.add(
-        ChatVM(
-          senderType: userEmail == chat.senderEmail ? SenderType.me : SenderType.you,
-          text: chat.message,
-          createdAt: chat.sentAt,
-          sequenceId: chat.seqId,
-        ),
-      );
+      chatVmList.add(ChatVM.fromChat(chat));
     }
-
     if (Get.currentRoute == "/main/room") {
       print("scroll down listen");
       Future.delayed(const Duration(milliseconds: 100))
@@ -63,9 +49,33 @@ class ValidChattingRoomController extends GetxController {
   }
 
   void deleteChat(int seqId) {
-    final target = chatVmList.firstWhere((element) => element.sequenceId ==seqId);
+    final target = chatVmList.firstWhere((element) => element.sequenceId == seqId);
     chatVmList.remove(target);
+  }
 
+  int _getLatestChatIndex() {
+    for (int i = chatVmList.length - 1; i >= 0; i--) {
+      final target = chatVmList[i].sequenceId;
+      if (target < 0) {
+        continue;
+      }
+      return chatVmList[i].sequenceId;
+    }
+    return chatVmList.length;
+  }
+
+  void reFetchChatsFromResume() {
+    _fetchAllChatUseCase.call(
+      chattingRoomId: chattingRoom.id.toString(),
+      sequenceId: chatVmList[_getLatestChatIndex()].sequenceId,
+      whenSuccess: (chats) {
+        chatVmList.insertAll(
+          _getLatestChatIndex(),
+          chats.map((e) => ChatVM.fromChat(e)),
+        );
+      },
+      whenFail: () {},
+    );
   }
 
   @override
@@ -101,19 +111,29 @@ class ChatVM {
   bool temp;
   bool needsDelete;
 
-   ChatVM({
+  ChatVM({
     required this.senderType,
     required this.text,
     required this.createdAt,
     required this.sequenceId,
     this.temp = false,
-     this.needsDelete = false,
+    this.needsDelete = false,
   });
 
-   void updateTemp({required int sequenceId, required bool temp}) {
-     this.sequenceId = sequenceId;
-     this.temp = temp;
-   }
+  factory ChatVM.fromChat(Chat chat, {bool temp = false}) {
+    return ChatVM(
+      senderType: SenderType.me,
+      text: chat.message,
+      createdAt: chat.sentAt,
+      sequenceId: chat.seqId,
+      temp: temp,
+    );
+  }
+
+  void updateTemp({required int sequenceId, required bool temp}) {
+    this.sequenceId = sequenceId;
+    this.temp = temp;
+  }
 
   ChatVM copyWith({
     SenderType? senderType,

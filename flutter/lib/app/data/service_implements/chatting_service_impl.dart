@@ -12,14 +12,18 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class ChattingServiceImpl implements ChattingService {
   static WebSocketChannel? chatSocketChannel;
   static const _chatWebSocketUrl = "ws://3.35.9.226:8000/ws/connect";
+  static String? cachedSessionKey;
+  static StreamSubscription? cachedSubscription;
+  static void Function(dynamic)? cachedOnData;
 
   @override
   StreamSubscription initChatConnection({
     required String sessionKey,
     required void Function(Chat chat) onMessageChatReceive,
   }) {
+    cachedSessionKey = sessionKey;
     chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
-    final subscription = chatSocketChannel!.stream.listen((event) {
+    cachedOnData = (event) {
       final decoded = jsonDecode(event);
 
       print("data layer : socket received $decoded");
@@ -32,13 +36,20 @@ class ChattingServiceImpl implements ChattingService {
         final chat = Chat.fromJson(body);
         onMessageChatReceive(chat);
       }
+    };
+    final subscription = chatSocketChannel!.stream.listen(cachedOnData, onError: (e, s) {
+      print("socket error");
+    }, onDone: () {
+      print("socket done");
+      print(DateTime.now());
+      print("------------");
     });
     chatSocketChannel!.sink.add(jsonEncode({
       "type": "system",
       "body": {"session_key": sessionKey}
     }));
     print(sessionKey);
-
+    cachedSubscription = subscription;
     return subscription;
   }
 
@@ -80,8 +91,6 @@ class ChattingServiceImpl implements ChattingService {
     }
   }
 
-
-
   @override
   Future<void> sendChat({required String chatText, required String chattingRoomId}) async {
     chatSocketChannel!.sink.add(jsonEncode(
@@ -95,8 +104,27 @@ class ChattingServiceImpl implements ChattingService {
     ));
   }
 
+  Future<void> reConnect() async {
+    if (cachedSubscription != null) {
+      chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
+      cachedSubscription!.pause();
+      await cachedSubscription!.cancel();
+      cachedSubscription = chatSocketChannel!.stream.listen(cachedOnData);
+      chatSocketChannel!.sink.add(jsonEncode({
+        "type": "system",
+        "body": {"session_key": cachedSessionKey}
+      }));
+    }
+  }
+
   @override
   void closeChannel() {
+    cachedSubscription!.cancel();
     chatSocketChannel!.sink.close();
+
+    cachedSubscription = null;
+    chatSocketChannel = null;
+    cachedSessionKey = null;
+    cachedOnData = null;
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/accept_chatting_request_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/disconnect_chatting_channel_use_case.dart';
@@ -57,10 +58,17 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
     _centerChatStreamSubscription = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
       print("receive");
       // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom.
-      final targetRoomController = Get.find<ValidChattingRoomController>(
-        tag: chat.chattingRoomId.toString(),
-      );
-      targetRoomController.addChat(chat);
+      try {
+
+        final targetRoomController = Get.find<ValidChattingRoomController>(
+          tag: chat.chattingRoomId.toString(),
+        );
+        targetRoomController.addChat(chat);
+      } catch(e) {
+        print(e);
+      }
+
+      // targetRoomController.addChat(chat);
     });
   }
 
@@ -219,8 +227,7 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
   void onResumed() async {
     print("onResumed");
     print("stream paused : ${_centerChatStreamSubscription?.isPaused}");
-    if (_centerChatStreamSubscription?.isPaused==true) {
-      await _openChatConnection();
-    }
+    await ChattingServiceImpl().reConnect();
+
   }
 }
