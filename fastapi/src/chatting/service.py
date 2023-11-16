@@ -98,10 +98,10 @@ def get_all_texts(
     )
     if chatting_id is not None:
         query = query.where(Chatting.id == chatting_id)
-    if limit is not None:
-        query = query.limit(limit=limit)
     if timestamp is not None:
         query = query.where(Text.timestamp <= timestamp)
+    if limit is not None:
+        query = query.limit(limit=limit)
 
     return query.all()
 
