@@ -163,7 +163,7 @@ def create_intimacy(db: DbSession, user_id: int | List[int], chatting_id: int, i
         "timestamp": timestamp,
     } for user_id in user_id]).returning(Intimacy)))
 
-
+#TODO : get_topics 언어선택
 def get_topics(db: DbSession, tag: str, limit: int) -> List[Topic]:
     topics = db.query(Topic).where(Topic.tag == tag).order_by(
         func.random()).limit(limit).all()

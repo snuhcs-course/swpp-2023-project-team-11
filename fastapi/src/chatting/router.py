@@ -153,6 +153,8 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
     .add(InvalidSessionException())
     .build()
 )
+
+# TODO language 선택 기능 추가
 def get_topic_recommendation(
         chatting_id: int,
         limit: int = Query(
