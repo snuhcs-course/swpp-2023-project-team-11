@@ -122,6 +122,11 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
 
     curr_texts = service.get_all_texts(db, user_id, chatting_id, limit=20)
     if is_default:
+        # we cannot calculate delta value with default intimacy
+        prev_texts = []
+        similarity = None
+        num_F = None
+    else:
         prev_texts = service.get_all_texts(
             db, user_id, chatting_id, limit=20, timestamp=recent_intimacy.timestamp)
         initiator = chatting.initiator
@@ -130,11 +135,6 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
         df_responder = get_user_dataframe(responder)
         similarity = get_similarity(df_initiator, df_responder)
         num_F = get_mbti_f(initiator, responder)
-    else:
-        # we cannot calculate delta value with default intimacy
-        prev_texts = []
-        similarity = None
-        num_F = None
 
     intimacy = calculator.calculate(
         user_id, curr_texts, prev_texts, recent_intimacy, similarity, num_F)
@@ -158,7 +158,7 @@ def get_topic_recommendation(
         limit: int = Query(
             1, description="how many topics to return"),
         user_id: int = Depends(check_session),
-        db: DbSession = Depends(DbConnector.get_db)) -> TopicResponse:
+        db: DbSession = Depends(DbConnector.get_db)) -> List[TopicResponse]:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
     topics = service.get_topics(db, tag, limit)
