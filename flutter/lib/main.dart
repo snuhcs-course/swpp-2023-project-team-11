@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/presentation/global_model_controller/language_mode_controller.dart';
 import 'package:mobile_app/core/utils/translation.dart';
 import 'package:mobile_app/routes/get_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,14 @@ class MyApp extends StatelessWidget {
       getPages: GetPages.pages,
       translations: MyTranslation(),
       locale: MyLanguageUtil.getLocale,
+      initialBinding: InitialBinding(),
     );
+  }
+}
+
+class InitialBinding implements Bindings {
+  @override
+  void dependencies() {
+    Get.put(LanguageModeController());
   }
 }
