@@ -48,11 +48,11 @@ class ChattingRoomsScreenController extends GetxController{
 
     // print("${difference.inMinutes} is the difference in time^^");
     if(difference.compareTo(const Duration(hours: 1)) < 0){
-      return "${difference.inMinutes} 분 전";
+      return "${difference.inMinutes} "+"분 전".tr;
     }else if (difference.compareTo(const Duration(days: 1)) < 0){
-      return "${difference.inHours} 시간 전";
+      return "${difference.inHours} "+"시간 전".tr;
     }else{
-      return "${timeOfChat.month}월 ${timeOfChat.day}일";
+      return "${timeOfChat.month} / ${timeOfChat.day}";
     }
   }
 

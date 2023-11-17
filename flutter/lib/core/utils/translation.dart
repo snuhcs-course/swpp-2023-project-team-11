@@ -112,7 +112,26 @@ class MyTranslation extends Translations {
       "좋아하는 것들" :"What you like",
       "희망 교환 언어" : "Hope exchange language",
       "주 언어 외 구사 가능 언어" : "Language that you can speak\nother than your main language",
-
+      "상대방의 채팅 수락을\n대기하는 중이에요" :"I'm waiting for the other person's acceptance of the chat",
+      "상대방이 채팅 요청을 수락할 때까지\n조금만 기다려 주세요 :)" : "Please wait a little while for the other party to accept the chat request :)",
+      '다른 친구들 더 확인하기': "Checking out other friends more.",
+      " 채팅" : " Chatting",
+      "새로운 채팅 요청":"Request for a new chat",
+      "아직 아무도 친구가 되지 않았어요!": "No one has become friends yet!",
+      "친구 신청을 보내고" : "After Requesting Chat,",
+      "새로운 친구를 만들어보세요" : "make Foreign Friends!",
+      "친구 둘러보기" : "Let's Browse Friends",
+      "종료된 채팅방입니다": "Terminated Chatting room",
+      "분 전" : "hours ago",
+      "시간 전" : "minutes ago",
+      "채팅을 시작해봐요!" : "Let's start chatting!",
+      "아직 상대가 수락하지 않았습니다" : "The other person hasn't accepted it yet",
+      "채팅방 나가기" : "Exit",
+      "채팅 요청" : "Chat Requests",
+      "새로운 채팅 요청이 지금은 없어요!" :"There are no new chat requests right now!",
+      "님의 채팅 요청이 왔어요!" : "'s chat request is arrived!",
+      "삭제" : "Remove",
+      "수락" : "Accept",
 
 
 

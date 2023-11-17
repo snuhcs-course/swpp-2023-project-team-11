@@ -16,9 +16,9 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const NotiAppBar(
+      appBar: NotiAppBar(
         title: Text(
-          "채팅 요청",
+          "채팅 요청".tr,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
       ),
@@ -41,14 +41,14 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            "새로운 채팅 요청이 지금은 없어요!",
+          Text(
+            "새로운 채팅 요청이 지금은 없어요!".tr,
             style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 36,
           ),
-          SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기")
+          SmallButton(onPressed: controller.onBrowseFriendsButtonTap, text: "친구 둘러보기".tr)
         ],
       ),
     );
@@ -93,14 +93,14 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                               fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff2d3a45))),
                       const SizedBox(width: 8),
                       Text(
-                          "${chatroom.createdAt.toLocal().year}년 ${chatroom.createdAt.toLocal().month}월 ${chatroom.createdAt.toLocal().day}일 ${chatroom.id}",
+                          "${chatroom.createdAt.toLocal().year} / ${chatroom.createdAt.toLocal().month} / ${chatroom.createdAt.toLocal().day}",
                           style: const TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xffff9162)))
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${chatroom.initiator.name}님의 채팅 요청이 왔어요!",
+                    chatroom.initiator.name+"님의 채팅 요청이 왔어요!".tr,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -114,13 +114,12 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                 icon: Icon(Icons.more_vert, color: const Color(0xff2d3a45).withOpacity(0.4),),
                 itemBuilder: (context) {
                   return [
-                    const PopupMenuItem<int>(value: 0, child: Text("삭제")),
-                    const PopupMenuItem<int>(value: 1, child: Text("수락")),
+                    PopupMenuItem<int>(value: 0, child: Text("삭제".tr)),
+                    PopupMenuItem<int>(value: 1, child: Text("수락".tr)),
                   ];
                 },
                 onSelected: (value) {
                   if (value == 0) {
-                    print("삭제");
                   } else if (value == 1) {
                     controller.onAcceptButtonTap(chatroom);
                   }
