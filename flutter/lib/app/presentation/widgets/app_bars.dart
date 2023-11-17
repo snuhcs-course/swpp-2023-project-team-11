@@ -122,7 +122,7 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
       ),
       clipBehavior: Clip.none,
       title: isMyProfile
-          ? const Text("내 프로필",
+          ? Text("내 프로필".tr,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white))
           : null,
       centerTitle: false,
@@ -132,13 +132,13 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                   icon: const Icon(Icons.settings),
                   itemBuilder: (context) {
                     return [
-                      const PopupMenuItem<int>(
+                      PopupMenuItem<int>(
                           value: 0,
-                          child: Text("프로필 편집",
+                          child: Text("프로필 편집".tr,
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-                      const PopupMenuItem<int>(
+                      PopupMenuItem<int>(
                           value: 1,
-                          child: Text("언어 변경",
+                          child: Text("언어 변경".tr,
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
                     ];
                   },

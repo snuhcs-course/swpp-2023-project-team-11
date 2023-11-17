@@ -132,21 +132,22 @@ class MyTranslation extends Translations {
       "님의 채팅 요청이 왔어요!" : "'s chat request is arrived!",
       "삭제" : "Remove",
       "수락" : "Accept",
-
-
-
-
-
-
-
-
+      "로그아웃": "Sign Out",
+      "내 프로필": "My Profile",
+      "프로필 편집" : "Edit Profile",
+      "언어 변경" : "Change Language",
+      "enum": "@value"
     },
+    "kr" : {
+      "enum" : "@value"
+    }
   };
 }
 
 abstract class MyLanguageUtil {
   static LanguageMode _currentLanguage = LanguageMode.kr;
   static Locale get getLocale => Locale(_currentLanguage.name);
+  static bool get isKr => _currentLanguage == LanguageMode.kr;
   static void toggle(){
     if (_currentLanguage==LanguageMode.kr) {
       _currentLanguage = LanguageMode.en;
@@ -156,6 +157,12 @@ abstract class MyLanguageUtil {
       Get.updateLocale(Locale(LanguageMode.kr.name));
     }
 
+  }
+
+  static String getTrParamWithEnumValue({required String krName, required String enName,}) {
+    return "enum".trParams({
+      "value": isKr?krName:enName,
+    });
   }
 }
 

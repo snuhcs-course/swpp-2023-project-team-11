@@ -9,98 +9,6 @@ class ProfileDetailColumn extends StatelessWidget{
 
   final User user;
 
-  final Map <Language, String> languageFlagMap = {
-    Language.korean: "Korean 🇰🇷",
-    Language.english: "English 🇺🇸",
-    Language.spanish: "Spanish 🇪🇸",
-    Language.chinese: "Chinese 🇨🇳",
-    Language.arabic: "Arabic 🇸🇦",
-    Language.french: "French 🇫🇷",
-    Language.german: "German 🇩🇪",
-    Language.japanese: "Japanese 🇯🇵",
-    Language.russian: "Russian 🇷🇺",
-    Language.portuguese: "Portuguese 🇵🇹",
-    Language.italian: "Italian 🇮🇹",
-    Language.dutch: "Dutch 🇳🇱",
-    Language.swedish: "Swedish 🇸🇪",
-    Language.turkish: "Turkish 🇹🇷",
-    Language.hebrew: "Hebrew 🇮🇱",
-    Language.hindi: "Hindi 🇮🇳",
-    Language.thai: "Thai 🇹🇭",
-    Language.greek: "Greek 🇬🇷",
-    Language.vietnamese: "Vietnamese 🇻🇳",
-    Language.finnish: "Finnish 🇫🇮"
-  };
-
-  final Map <Hobby, String> hobbyKoreanMap = {
-    Hobby.painting: "그림 그리기 🎨",
-    Hobby.gardening: "정원 가꾸기 🌿",
-    Hobby.hiking: "등산 ⛰️",
-    Hobby.reading: "독서 📚",
-    Hobby.cooking: "요리 🍳",
-    Hobby.photography: "사진 찍기 📷",
-    Hobby.dancing: "춤추기 💃",
-    Hobby.swimming: "수영 🏊",
-    Hobby.cycling: "자전거 타기 🚴",
-    Hobby.traveling: "여행 ✈️",
-    Hobby.gaming: "게임 🎮",
-    Hobby.fishing: "낚시 🎣",
-    Hobby.knitting: "뜨개질 🧶",
-    Hobby.music: "노래 🎶",
-    Hobby.yoga: "요가 🧘",
-    Hobby.writing: "글쓰기 ✍️",
-    Hobby.shopping: "쇼핑 🛍️",
-    Hobby.teamSports: "팀 운동 ⚽",
-    Hobby.fitness: "헬스 💪",
-    Hobby.movie: "영화 보기 🎥"
-  };
-
-  final Map<FoodCategory, String> foodKoreanMap = {
-    FoodCategory.korean: "한식 🍚",
-    FoodCategory.spanish: "스페인 음식 🥘",
-    FoodCategory.american: "미국식 음식 🍔",
-    FoodCategory.italian: "양식 🍝",
-    FoodCategory.thai: "동남아 음식 🍛",
-    FoodCategory.chinese: "중식 🍜",
-    FoodCategory.japanese: "일식 🍣",
-    FoodCategory.indian: "인도 음식 🍛",
-    FoodCategory.mexican: "멕시코 음식 🌮",
-    FoodCategory.vegan: "채식 🥗",
-    FoodCategory.dessert: "디저트류 🍰",
-  };
-
-  final Map<MovieGenre, String> movieKoreanMap = {
-    MovieGenre.action: "액션 💥",
-    MovieGenre.adventure: "어드벤처 🌄",
-    MovieGenre.animation: "애니 🎬",
-    MovieGenre.comedy: "코미디 😄",
-    MovieGenre.drama: "드라마 🎭",
-    MovieGenre.fantasy: "판타지 🪄",
-    MovieGenre.horror: "공포 😱",
-    MovieGenre.mystery: "미스터리 🕵️",
-    MovieGenre.romance: "로맨스 💌",
-    MovieGenre.scienceFiction: "SF 🚀",
-    MovieGenre.thriller: "스릴러 💀",
-    MovieGenre.western: "서부극 🌵",
-  };
-
-  final Map<Location, String> locationKoreanMap = {
-    Location.humanity: "인문대",
-    Location.naturalScience: "자연대",
-    Location.dormitory: "기숙사",
-    Location.socialScience: "사회과학대",
-    Location.humanEcology: "생활대",
-    Location.agriculture: "농대",
-    Location.highEngineering: "윗공대",
-    Location.lowEngineering: "아랫공대",
-    Location.business: "경영대",
-    Location.jahayeon: "자하연",
-    Location.studentUnion: "학생회관",
-    Location.seolYeep: "설입",
-    Location.nockDoo: "녹두",
-    Location.bongcheon: "봉천",
-  };
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -225,7 +133,7 @@ class ProfileDetailColumn extends StatelessWidget{
             padding: const EdgeInsets.all(6),
             margin: const EdgeInsets.all(4),
             child: Text(
-              languageFlagMap[user.getMainLanguage]!,
+              user.getMainLanguage.toString(),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -251,7 +159,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  hobbyKoreanMap[hobby]!,
+                  hobby.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -276,7 +184,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  foodKoreanMap[foodCategory]!,
+                  foodCategory.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -300,7 +208,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  movieKoreanMap[moviegenre]!,
+                  moviegenre.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -324,7 +232,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  locationKoreanMap[location]!,
+                  location.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -348,7 +256,7 @@ class ProfileDetailColumn extends StatelessWidget{
             padding: const EdgeInsets.all(6),
             margin: const EdgeInsets.all(4),
             child: Text(
-              languageFlagMap[language]!,
+              language.toString(),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
