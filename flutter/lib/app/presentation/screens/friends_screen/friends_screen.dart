@@ -27,7 +27,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
       body: controller.obx(
               (state) {
             if (state!.isEmpty) {
-              return const Center(child: Text("현재 검색되는 유저가 존재하지 않습니다"));
+              return Center(child: Text("현재 검색되는 유저가 존재하지 않습니다".tr));
             }
             return SmartRefresher(
                 enablePullDown: true,
@@ -126,7 +126,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                             fontWeight: FontWeight.w400,
                             color: const Color(0xff2d3a45).withOpacity(0.8))),
                     const SizedBox(height: 2),
-                    Text("희망언어: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
+                    Text("${"희망 언어".tr}: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,

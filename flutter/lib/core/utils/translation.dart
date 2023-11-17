@@ -100,7 +100,19 @@ class MyTranslation extends Translations {
       "이제 거의 다 왔어요!" : "Almost there!",
       "어떤 영화 장르를 좋아하시나요? 몇 개 골라주세요!" : "Do you have any movie genre(s) that you prefer?",
       "마지막이에요!" : "And the final question...",
-      "주로 학교에서 출몰하는 장소를 골라주세요" : "Where do you usually hang around in school?"
+      "주로 학교에서 출몰하는 장소를 골라주세요" : "Where do you usually hang around in school?",
+      "현재 검색되는 유저가 존재하지 않습니다" : "Currently, no user is being searched",
+      "희망 언어" : "Language of hope",
+      "채팅 신청" : "Request a chat",
+      "사용하는 주언어": "The main language",
+      "# 주로 출몰하는 장소" : "# Mainly haunting places",
+      "# 영화 장르" : "# Movie genre",
+      "# 음식" : "# Food",
+      "# 취미": "# Hobby",
+      "좋아하는 것들" :"What you like",
+      "희망 교환 언어" : "Hope exchange language",
+      "주 언어 외 구사 가능 언어" : "Language that you can speak\nother than your main language",
+
 
 
 

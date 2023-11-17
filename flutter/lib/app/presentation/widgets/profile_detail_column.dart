@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 
@@ -111,8 +112,8 @@ class ProfileDetailColumn extends StatelessWidget{
           _buildMainLanguageContainer(),
         Text(
           (user.getNationCode == 82)
-              ? "희망 교환 언어"
-              : "주 언어 외 구사 가능 언어",
+              ? "희망 교환 언어".tr
+              : "주 언어 외 구사 가능 언어".tr,
           style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -122,7 +123,7 @@ class ProfileDetailColumn extends StatelessWidget{
         _buildLanguageList(),
         const SizedBox(height: 24),
         Text(
-          "좋아하는 것들",
+          "좋아하는 것들".tr,
           style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -138,7 +139,7 @@ class ProfileDetailColumn extends StatelessWidget{
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("# 취미",
+                Text("# 취미".tr,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -149,7 +150,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
                 const SizedBox(height: 6),
-                Text("# 음식",
+                Text("# 음식".tr,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -160,7 +161,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
                 const SizedBox(height: 6),
-                Text("# 영화 장르",
+                Text("# 영화 장르".tr,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -171,7 +172,7 @@ class ProfileDetailColumn extends StatelessWidget{
                 Divider(
                     color: Colors.black.withOpacity(0.1), thickness: 1),
                 const SizedBox(height: 6),
-                Text("# 주로 출몰하는 장소",
+                Text("# 주로 출몰하는 장소".tr,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -209,7 +210,7 @@ class ProfileDetailColumn extends StatelessWidget{
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "사용하는 주언어",
+            "사용하는 주언어".tr,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

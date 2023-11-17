@@ -19,13 +19,9 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
       backgroundColor: Colors.white,
       appBar: FriendDetailAppBar(
         profileImage: ProfilePic.call(controller.user.email),
-        // AssetImage(
-        //   'assets/images/snek_profile_img_${Random().nextInt(5) + 1}.webp',
-        // ),
         userName: controller.user.name,
         userEmail: controller.user.email,
       ),
-      // TODO 화면 그리기
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: SingleChildScrollView(
@@ -38,7 +34,7 @@ class FriendDetailScreen extends GetView<FriendDetailScreenController> {
         child: MainButton(
           mainButtonType: MainButtonType.key,
           onPressed: controller.onRequestButtonTap,
-          text: "채팅 신청",
+          text: "채팅 신청".tr,
         ),
       ),
     );
