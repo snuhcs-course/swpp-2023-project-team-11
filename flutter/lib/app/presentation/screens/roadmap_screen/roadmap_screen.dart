@@ -17,19 +17,19 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
     return Scaffold(
       extendBody: true,
       backgroundColor: MyColor.purple,
-      appBar: const ChattingRoomAppBar(
-        title: "Sneki의 추천",
+      appBar: ChattingRoomAppBar(
+        title: "Sneki의 추천".tr,
       ),
       body: controller.obx((state) {
         if (state!.isEmpty) {
-          return const Center(child: Text("아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요"));
+          return Center(child: Text("아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요".tr));
         }
         return _buildTopicList(state);
       },
           onLoading: const Center(
               child: CircularProgressIndicator(color: MyColor.orange_1))),
       bottomNavigationBar: BottomSnekiButton(
-        toBeDisplayed: "새로운 추천을 원해요",
+        toBeDisplayed: "새로운 추천을 원해요".tr,
     onPressed: (){controller.onNewRecommendationTap();})
     );
   }

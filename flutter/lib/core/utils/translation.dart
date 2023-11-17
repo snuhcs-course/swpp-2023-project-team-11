@@ -128,7 +128,7 @@ class MyTranslation extends Translations {
       "아직 상대가 수락하지 않았습니다" : "The other person hasn't accepted it yet",
       "채팅방 나가기" : "Exit",
       "채팅 요청" : "Chat Requests",
-      "새로운 채팅 요청이 지금은 없어요!" :"There are no new chat requests right now!",
+      "새로운 채팅 요청이 지금은 없어요!" :"There are \nno new chat requests right now!",
       "님의 채팅 요청이 왔어요!" : "'s chat request is arrived!",
       "삭제" : "Remove",
       "수락" : "Accept",
@@ -136,6 +136,9 @@ class MyTranslation extends Translations {
       "내 프로필": "My Profile",
       "프로필 편집" : "Edit Profile",
       "언어 변경" : "Change Language",
+      "Sneki의 추천" : "Sneki's Recommendation",
+      "아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요" : "A recommendation hasn't been made yet. Please chat more",
+      "새로운 추천을 원해요": "I want more Recommendations",
       "enum": "@value"
     },
     "kr" : {
