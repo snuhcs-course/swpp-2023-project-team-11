@@ -1,0 +1,1 @@
+DEFAULT_INTIMACY: float = 36.5

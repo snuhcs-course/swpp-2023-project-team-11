@@ -1,147 +1,92 @@
-from datetime import date
-from sqlalchemy import insert, delete
 import unittest
+from unittest.mock import patch, MagicMock, Mock
+
+from sqlalchemy import insert
 
 from src.auth.dependencies import *
 from src.auth.service import *
 from src.database import Base, DbConnector
-from src.user.models import Language, Profile
+from tests.utils import *
 
 
 class TestDependencies(unittest.TestCase):
-    snu_email = "test@snu.ac.kr"
-    naver_email = "test@naver.com"
-    token = "token"
-    password = "password"
-    salt = "salt"
-    hash = "TgnJJnmbbfKJLmZiArqCc61kGYrZlvlfsatsFfKlQK4="
-    session_key = "session_key"
-    name = "SNEK"
-
-    def setUp(self) -> None:
-        Base.metadata.create_all(bind=DbConnector.engine)
-        for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.snu_email}).returning(Email.id))
-            verification_id = db.scalar(
-                insert(EmailVerification).values({
-                    "token": self.token,
-                    "email_id": email_id,
-                })
-                .returning(EmailVerification.id)
-            )
-            lang_id = db.scalar(insert(Language).values({"name": "korean"}).returning(Language.id))
-            profile_id = db.scalar(
-                insert(Profile).values({
-                    "name": self.name,
-                    "birth": date.today(),
-                    "sex": "",
-                    "major": "",
-                    "admission_year": 2023,
-                    "nation_code": 82,
-                })
-                .returning(Profile.id)
-            )
-            db.execute(insert(User).values({
-                "salt": self.salt,
-                "hash": self.hash,
-                "user_id": profile_id,
-                "verification_id": verification_id,
-                "lang_id": lang_id,
-            }))
-            db.execute(insert(Session).values({
-                "session_key": self.session_key,
-                "user_id": profile_id,
-            }))
-            db.commit()
-    
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(Session))
-            db.execute(delete(User))
-            db.execute(delete(Profile))
-            db.execute(delete(Language))
-            db.execute(delete(EmailVerification))
-            db.execute(delete(Email))
-            db.commit()
-
-    def test_check_password(self):
-        valid_req = OAuth2PasswordRequestForm(username=self.snu_email, password=self.password)
-        invalid_email_req = OAuth2PasswordRequestForm(username=self.naver_email, password=self.password)
-        invalid_password_req = OAuth2PasswordRequestForm(username=self.snu_email, password="")
-
-        for db in DbConnector.get_db():
-            check_password(valid_req, db)
-            with self.assertRaises(InvalidUserException):
-                check_password(invalid_email_req, db)
-            with self.assertRaises(InvalidPasswordException):
-                check_password(invalid_password_req, db)
-
-    def test_get_session(self):
-        for db in DbConnector.get_db():
-            self.assertEqual(get_session(self.session_key, db).user.profile.name, self.name)
-            with self.assertRaises(InvalidSessionException):
-                get_session("", db)
-
-
-class TestService(unittest.TestCase):
     email = "test@snu.ac.kr"
-    token = "token"
     password = "password"
+    session_key = "session_key"
     salt = "salt"
     hash = "TgnJJnmbbfKJLmZiArqCc61kGYrZlvlfsatsFfKlQK4="
-    name = "SNEK"
 
-    def setUp(self) -> None:
+    @patch('src.auth.dependencies.get_user_by_email')
+    @InjectMock("db")
+    def test_check_password(self, mock_get_user_by_email: MagicMock, db: DbSession):
+        dummy_user = Mock()
+        dummy_user.salt = self.salt
+        dummy_user.hash = self.hash
+        mock_get_user_by_email.side_effect = lambda db, email: dummy_user
+
+        valid_req = OAuth2PasswordRequestForm(
+            username=self.email, password=self.password)
+        invalid_password_req = OAuth2PasswordRequestForm(
+            username=self.email, password="")
+
+        check_password(valid_req, db)
+        with self.assertRaises(InvalidPasswordException):
+            check_password(invalid_password_req, db)
+
+    @patch('src.auth.service.get_session_by_key')
+    @InjectMock("db")
+    def test_check_session(self, mock_get_session_by_key: MagicMock, db: DbSession):
+        dummy_session = Mock()
+        dummy_session.user_id = 1
+        mock_get_session_by_key.side_effect = lambda db, session_key: dummy_session
+
+        self.assertEqual(check_session(self.session_key, db),
+                         dummy_session.user_id)
+
+
+class TestDb(unittest.TestCase):
+    session_key = "session-key"
+
+    @classmethod
+    def setUpClass(cls) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
         for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
-            verification_id = db.scalar(
-                insert(EmailVerification).values({
-                    "token": self.token,
-                    "email_id": email_id,
-                })
-                .returning(EmailVerification.id)
-            )
-            lang_id = db.scalar(insert(Language).values({"name": "Korean"}).returning(Language.id))
-            self.profile_id = db.scalar(
-                insert(Profile).values({
-                    "name": self.name,
-                    "birth": date.today(),
-                    "sex": "",
-                    "major": "",
-                    "admission_year": 2023,
-                    "nation_code": 82,
-                })
-                .returning(Profile.id)
-            )
-            db.execute(insert(User).values({
-                "salt": self.salt,
-                "hash": self.hash,
-                "user_id": self.profile_id,
-                "verification_id": verification_id,
-                "lang_id": lang_id,
-            }))
+            cls.profile_id = setup_user(db, "")
             db.commit()
 
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(Session))
-            db.execute(delete(User))
-            db.execute(delete(Profile))
-            db.execute(delete(Language))
-            db.execute(delete(EmailVerification))
-            db.execute(delete(Email))
-            db.commit()
+    @classmethod
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        teardown_user(db)
+        db.commit()
 
-    def test_create_delete_session(self):
-        for db in DbConnector.get_db():
-            session_key = create_session(self.profile_id, db)
-            with self.assertRaises(IntegrityError):
-                db.execute(insert(Session).values({"session_key": session_key, "user_id": self.profile_id}))
-            db.commit()
-            with self.assertRaises(InvalidSessionException):
-                delete_session("", db)
-            delete_session(session_key, db)
+    @inject_db
+    def get_session_by_key(self, db: DbSession):
+        db.execute(insert(Session).values({
+            "session_key": self.session_key,
+            "user_id": self.profile_id,
+        }))
+
+        self.assertEqual(get_session_by_key(
+            db, self.session_key).user_id, self.profile_id)
+        with self.assertRaises(InvalidSessionException):
+            get_session_by_key(db, "")
+
+    @inject_db
+    def test_create_session(self, db: DbSession):
+        create_session(db, self.session_key, self.profile_id)
+        with self.assertRaises(InternalServerError):
+            create_session(db, self.session_key, self.profile_id)
+
+    @inject_db
+    def test_delete_session(self, db: DbSession):
+        create_session(db, self.session_key, self.profile_id)
+        delete_session(db, self.session_key)
+        with self.assertRaises(InvalidSessionException):
+            delete_session(db, self.session_key)
+        with self.assertRaises(InvalidSessionException):
+            delete_session(db, "")
+
 
 if __name__ == '__main__':
     unittest.main()

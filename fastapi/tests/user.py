@@ -1,15 +1,20 @@
+import pandas as pd
 from sqlalchemy import insert, delete, select
 import unittest
+from unittest.mock import patch, MagicMock, Mock
 
 from src.database import Base, DbConnector
 from src.user.dependencies import *
 from src.user.models import *
 from src.user.service import *
+from tests.utils import *
 
 
 class TestDependencies(unittest.TestCase):
     snu_email = "test@snu.ac.kr"
     naver_email = "test@naver.com"
+    code = 100000
+    token = "token"
 
     def test_check_snu_email(self):
         valid_req = EmailRequest(email=self.snu_email)
@@ -19,13 +24,187 @@ class TestDependencies(unittest.TestCase):
         with self.assertRaises(InvalidEmailException):
             self.assertEqual(check_snu_email(invalid_req), self.naver_email)
 
+    @patch('src.user.service.get_verification_code')
+    @InjectMock('db')
+    def test_check_verification_code(self, mock_get_verification_code: MagicMock, db: DbSession) -> None:
+        code = Mock()
+        code.code = self.code
+        code.email_id = 1
+        mock_get_verification_code.side_effect = lambda db, email: code
+
+        valid_req = VerificationRequest(email=self.snu_email, code=self.code)
+        invalid_code_req = VerificationRequest(email=self.snu_email, code=0)
+
+        check_verification_code(valid_req, db)
+        with self.assertRaises(InvalidEmailCodeException):
+            check_verification_code(invalid_code_req, db)
+
+    @patch('src.user.service.get_verification')
+    @InjectMock('db')
+    def test_check_verification_token(self, mock_get_verification: MagicMock, db: DbSession) -> None:
+        verification = Mock()
+        verification.token = self.token
+        verification.id = 1
+        mock_get_verification.side_effect = lambda db, email: verification
+
+        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
+                              nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
+        valid_req = CreateUserRequest(email=self.snu_email, token=self.token, password="", profile=profile,
+                                      main_language="", languages=[])
+        invalid_token_req = CreateUserRequest(email=self.snu_email, token="", password="", profile=profile,
+                                              main_language="", languages=[])
+
+        check_verification_token(valid_req, db)
+        with self.assertRaises(InvalidEmailTokenException):
+            check_verification_token(invalid_token_req, db)
+
 
 class TestService(unittest.TestCase):
+    def test_sort_target_users(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "japan_food"],
+            movies=["horror", "action"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+
+        your_profile1 = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=82,
+            foods=["italian_food", "japan_food"], movies=["romance", "action"],
+            locations=["up", "jahayeon"],
+            hobbies=["golf"])
+
+        your_profile2 = Profile(
+            name="abdula", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+
+        your_profile3 = Profile(
+            name="jiho", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            nation_code=1, mbti=None,
+            foods=["japan_food"], movies=["action"],
+            locations=["jahayeon"],
+            hobbies=["golf", "soccer", "book"])
+
+        me = User(user_id=0, verification_id=1, lang_id=1,
+                  salt="1", hash="1", profile=my_profile)
+        you1 = User(user_id=1, verification_id=2, lang_id=2,
+                    salt="2", hash="2", profile=your_profile1)
+        you2 = User(user_id=2, verification_id=3, lang_id=3,
+                    salt="3", hash="3", profile=your_profile2)
+        you3 = User(user_id=3, verification_id=4, lang_id=4,
+                    salt="4", hash="4", profile=your_profile3)
+        yous = [you1, you2, you3]
+
+        # 0.5345, 0.7826, 0.5773
+        result = sort_target_users(me, yous)
+        self.assertEqual(result[0].user_id, 2)
+        self.assertEqual(result[0].profile.name, "abdula")
+        self.assertEqual(result[1].user_id, 3)
+        self.assertEqual(result[1].profile.name, "jiho")
+        self.assertEqual(result[2].user_id, 1)
+        self.assertEqual(result[2].profile.name, "sangin")
+
+        result = sort_target_users(me, [])
+        self.assertEqual(result, [])
+
+    def test_get_user_dataframe(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "japan_food"],
+            movies=["horror"],
+            locations=["up", "down", "jahayeon"],
+            hobbies=["soccer", "golf"]
+        )
+        me = User(user_id=0, verification_id=1, lang_id=1,
+                  salt="1", hash="1", profile=my_profile)
+        df_answer = pd.DataFrame.from_dict({
+            "id": 0,
+            "foods": ["korean_food", "japan_food"],
+            "movies": ["horror"],
+            "hobbies": ["soccer", "golf"],
+            "locations": ["up", "down", "jahayeon"],
+        }, orient="index").T
+        df_me = get_user_dataframe(me)
+        features = ["id", "foods", "movies", "hobbies", "locations"]
+        for feature in features:
+            self.assertEqual(df_me.loc[:, feature].values,
+                             df_answer.loc[:, feature].values)
+
+    def test_get_similarity(self):
+        df_me1 = pd.DataFrame.from_dict({
+            "id": 0,
+            "foods": ["korean_food", "italian_food", "chinese_food"],
+            "movies": ["horror", "action", "romance"],
+            "hobbies": ["soccer", "book"],
+            "locations": ["jahayeon"],
+        }, orient="index").T
+        df_target1 = pd.DataFrame.from_dict({
+            "id": 2,
+            "foods": ["korean_food", "japan_food"],
+            "movies": ["horror"],
+            "hobbies": ["soccer", "golf"],
+            "locations": ["up", "down", "jahayeon"],
+        }, orient="index").T
+
+        df_me2 = pd.DataFrame.from_dict({
+            "id": 0,
+            "foods": ["korean_food", "italian_food", "chinese_food"],
+            "movies": ["horror", "action", "romance"],
+            "hobbies": ["soccer", "book"],
+            "locations": ["jahayeon"],
+        }, orient="index").T
+        df_target2 = pd.DataFrame.from_dict({
+            "id": 2,
+            "foods": ["japan_food"],
+            "movies": ["thriller", "drama", "comedy"],
+            "hobbies": ["golf"],
+            "locations": ["up", "down"],
+        }, orient="index").T
+
+        self.assertEqual(get_similarity(df_me1, df_target1), 4/np.sqrt(72))
+        self.assertEqual(get_similarity(df_me2, df_target2), 0)
+
+    def test_get_mbti_f(self):
+        my_profile = Profile(
+            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti="isfj", nation_code=82,
+            foods=["korean_food", "thai_food"],
+            movies=["horror", "action", "comedy"],
+            locations=["up", "down"],
+            hobbies=["soccer", "golf"]
+        )
+        your_profile = Profile(
+            name="abdula", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
+            mbti=None, nation_code=0,
+            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
+            locations=['up', "down", "jahayeon"],
+            hobbies=["soccer"])
+
+        my_user = User(user_id=0, verification_id=1, lang_id=1,
+                       salt="1", hash="1", profile=my_profile)
+        your_user = User(user_id=1, verification_id=3, lang_id=3,
+                         salt="3", hash="3", profile=your_profile)
+        self.assertEqual(get_mbti_f(my_user, your_user), 1)
+
+    @unittest.skip("We do not actually send email")
+    def test_send_code_via_email(self):
+        send_code_via_email(self.email, self.code)
+
+
+class TestDb(unittest.TestCase):
     name = "SNEK"
     email = "test@snu.ac.kr"
     naver_email = "test@naver.com"
     code = 100000
     token = "token"
+    password = "password"
 
     foods: List[str] = ['A', 'B', 'C', 'D']
     hobbies: List[str] = ['A', 'B', 'C', 'D']
@@ -45,265 +224,180 @@ class TestService(unittest.TestCase):
     user_names: List[str] = [
         "user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8",
     ]
-    user_nation_codes: List[int] = [KOREA_CODE, 13, KOREA_CODE, 14, KOREA_CODE, 15, KOREA_CODE, 16]
+    user_nation_codes: List[int] = [KOREA_CODE, 13,
+                                    KOREA_CODE, 14, KOREA_CODE, 15, KOREA_CODE, 16]
     user_main_lang_idxs: List[int] = [0, 0, 0, 0, 1, 1, 1, 1]
     user_lang_idxs: List[List[int]] = [
         [0, 2], [0, 2], [0, 3], [0, 3], [1, 2], [1, 2], [1, 3], [1, 3]
     ]
 
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
         Base.metadata.create_all(bind=DbConnector.engine)
         for db in DbConnector.get_db():
-            db.execute(insert(Food).values([{"name": name} for name in self.foods]))
-            db.execute(insert(Hobby).values([{"name": name} for name in self.hobbies]))
-            db.execute(insert(Movie).values([{"name": name} for name in self.movies]))
-            db.execute(insert(Location).values([{"name": name} for name in self.locations]))
-            lang_ids = list(db.scalars(insert(Language).values([{"name": name} for name in self.languages]).returning(Language.id)))
+            db.execute(insert(Food).values(
+                [{"name": name} for name in cls.foods]))
+            db.execute(insert(Hobby).values(
+                [{"name": name} for name in cls.hobbies]))
+            db.execute(insert(Movie).values(
+                [{"name": name} for name in cls.movies]))
+            db.execute(insert(Location).values(
+                [{"name": name} for name in cls.locations]))
+            lang_ids = list(db.scalars(insert(Language).values(
+                [{"name": name} for name in cls.languages]).returning(Language.id)))
 
-            email_ids = db.scalars(insert(Email).values([{"email": email} for email in self.user_emails]).returning(Email.id))
+            email_ids = db.scalars(insert(Email).values(
+                [{"email": email} for email in cls.user_emails]).returning(Email.id))
             verification_ids = db.scalars(insert(EmailVerification).values([{
-                    "token": self.token,
-                    "email_id": email_id
-                } for email_id in email_ids]).returning(EmailVerification.id))
+                "token": cls.token,
+                "email_id": email_id
+            } for email_id in email_ids]).returning(EmailVerification.id))
             profile_ids = list(db.scalars(insert(Profile).values([{
-                    "name": name,
-                    "birth": date.today(),
-                    "sex": "male",
-                    "major": "Hello",
-                    "admission_year": 2023,
-                    "nation_code": nation_code,
-                } for name, nation_code in zip(self.user_names, self.user_nation_codes)]).returning(Profile.id)))
+                "name": name,
+                "birth": date.today(),
+                "sex": "male",
+                "major": "Hello",
+                "admission_year": 2023,
+                "nation_code": nation_code,
+            } for name, nation_code in zip(cls.user_names, cls.user_nation_codes)]).returning(Profile.id)))
             db.execute(insert(User).values([{
-                    "user_id": profile_id,
-                    "verification_id": verification_id,
-                    "lang_id": lang_ids[main_lang_idx],
-                    "salt": "",
-                    "hash": ""
-                } for profile_id, verification_id, main_lang_idx in zip(profile_ids, verification_ids, self.user_main_lang_idxs)]))
+                "user_id": profile_id,
+                "verification_id": verification_id,
+                "lang_id": lang_ids[main_lang_idx],
+                "salt": "",
+                "hash": ""
+            } for profile_id, verification_id, main_lang_idx in zip(profile_ids, verification_ids, cls.user_main_lang_idxs)]))
             db.execute(insert(user_lang).values([{
-                    "user_id": user_id,
-                    "lang_id": lang_ids[lang_idx]
-                } for user_id, lang_idxs in zip(profile_ids, self.user_lang_idxs) for lang_idx in lang_idxs]))
+                "user_id": user_id,
+                "lang_id": lang_ids[lang_idx]
+            } for user_id, lang_idxs in zip(profile_ids, cls.user_lang_idxs) for lang_idx in lang_idxs]))
             db.commit()
 
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(user_lang))
-            db.execute(delete(User))
-            db.execute(delete(Profile))
-            db.execute(delete(EmailVerification))
-            db.execute(delete(EmailCode))
-            db.execute(delete(Email))
-            db.execute(delete(Language))
-            db.execute(delete(Location))
-            db.execute(delete(Movie))
-            db.execute(delete(Hobby))
-            db.execute(delete(Food))
-            db.commit()
+    @classmethod
+    @inject_db
+    def tearDownClass(cls, db: DbSession) -> None:
+        db.execute(delete(User))
+        db.execute(delete(Profile))
+        db.execute(delete(Email))
+        db.execute(delete(Language))
+        db.execute(delete(Location))
+        db.execute(delete(Movie))
+        db.execute(delete(Hobby))
+        db.execute(delete(Food))
+        db.commit()
 
-    def test_create_verification_code(self):
-        for db in DbConnector.get_db():
-            code = create_verification_code(self.email, db)
-            self.assertEqual(
-                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
-                code
-            )
-            code = create_verification_code(self.email, db)
-            self.assertEqual(
-                db.scalar(select(EmailCode.code).join(EmailCode.email).where(Email.email == self.email)),
-                code
-            )
+    @inject_db
+    def tearDown(self, db: DbSession) -> None:
+        db.execute(delete(Email).where(Email.email == self.email))
+        db.commit()
 
-    @unittest.skip("We do not actually send email")
-    def test_send_code_via_email(self):
-        send_code_via_email(self.email, self.code)
+    @inject_db
+    def test_verification_code(self, db: DbSession):
+        create_verification_code(db, self.email, self.code)
+        self.assertEqual(get_verification_code(db, self.email).code, self.code)
+        create_verification_code(db, self.email, 0)
+        self.assertEqual(get_verification_code(db, self.email).code, 0)
+        with self.assertRaises(InvalidEmailCodeException):
+            get_verification_code(db, "")
 
-    def test_check_verification_code(self) -> None:
-        valid_req = VerificationRequest(email=self.email, code=self.code)
-        invalid_email_req = VerificationRequest(email=self.naver_email, code=self.code)
-        invalid_code_req = VerificationRequest(email=self.email, code=0)
+    @inject_db
+    def test_verification(self, db: DbSession):
+        email_id = db.scalar(insert(Email).values(
+            {"email": self.email}).returning(Email.id))
 
-        for db in DbConnector.get_db():
-            db.add(EmailCode(code=self.code, email=Email(email=self.email)))
-            db.flush()
+        create_verification(db, self.token, self.email, email_id)
+        self.assertEqual(get_verification(db, self.email).token, self.token)
+        create_verification(db, "", self.email, email_id),
+        self.assertEqual(get_verification(db, self.email).token, "")
+        with self.assertRaises(InvalidEmailTokenException):
+            get_verification(db, "")
 
-            check_verification_code(valid_req, db)
-            with self.assertRaises(InvalidEmailCodeException):
-                check_verification_code(invalid_email_req, db)
-            with self.assertRaises(InvalidEmailCodeException):
-                check_verification_code(invalid_code_req, db)
+    @inject_db
+    def test_user(self, db: DbSession):
+        email_id = db.scalar(insert(Email).values(
+            {"email": self.email}).returning(Email.id))
+        verification_id = db.scalar(insert(EmailVerification).values(
+            {"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
+        main_lang_id = get_language_by_name(db, 'A')
+        salt, hash = generate_salt_hash(self.password)
+        db.commit()
 
-    def test_create_verification(self):
-        for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
-            db.flush()
-
-            self.assertEqual(
-                create_verification(self.email, email_id, db),
-                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
-            )
-            self.assertEqual(
-                create_verification(self.email, email_id, db),
-                db.scalar(select(EmailVerification.token).join(EmailVerification.email).where(Email.email == self.email)),
-            )
-
-    def test_check_verification_token(self) -> None:
-        profile = ProfileData(name="", birth=date.today(), sex="", major="", admission_year=2000, about_me=None, mbti=None,
-                          nation_code=KOREA_CODE, foods=[], movies=[], hobbies=[], locations=[])
-        valid_req = CreateUserRequest(email=self.email, token=self.token, password="", profile=profile,
-                                      main_language="", languages=[])
-        invalid_email_req = CreateUserRequest(email=self.naver_email, token=self.token, password="", profile=profile,
-                                              main_language="", languages=[])
-        invalid_token_req = CreateUserRequest(email=self.email, token="", password="", profile=profile,
-                                              main_language="", languages=[])
-
-        for db in DbConnector.get_db():
-            db.add(EmailVerification(token=self.token, email=Email(email=self.email)))
-            db.flush()
-
-            check_verification_token(valid_req, db)
-            with self.assertRaises(InvalidEmailTokenException):
-                check_verification_token(invalid_email_req, db)
-            with self.assertRaises(InvalidEmailTokenException):
-                check_verification_token(invalid_token_req, db)
-
-    def test_create_user(self):
-        for db in DbConnector.get_db():
-            email_id = db.scalar(insert(Email).values({"email": self.email}).returning(Email.id))
-            verification_id = db.scalar(insert(EmailVerification).values({"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
-            db.commit()
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=13, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='A', languages=['B'])
-            user_id = create_user(req, verification_id, db)
-            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
-            self.assertEqual(user.user_id, user_id)
-            self.assertEqual(user.profile.name, self.name)
-            self.assertEqual(set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'} )
-            self.assertEqual(set(map(lambda item: item.name, user.profile.movies)), {'A', 'B'})
-            self.assertEqual(set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
-            self.assertEqual(set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
-            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'A', 'B'})
-            with self.assertRaises(EmailInUseException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='A', languages=['B'])
-            user_id = create_user(req, verification_id, db)
-            user = db.query(User).join(User.profile).where(Profile.name == self.name).first()
-            self.assertEqual(set(map(lambda item: item.name, user.languages)), {'B'})
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'X'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='A', languages=['B'])
-            with self.assertRaises(InvalidFoodException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'X'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='A', languages=['B'])
-            with self.assertRaises(InvalidMovieException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'X'], locations=['A', 'B']
-                ), main_language='A', languages=['B'])
-            with self.assertRaises(InvalidHobbyException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'X']
-                ), main_language='A', languages=['B'])
-            with self.assertRaises(InvalidLocationException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='X', languages=['B'])
-            with self.assertRaises(InvalidLanguageException):
-                create_user(req, verification_id, db)
-        for db in DbConnector.get_db():
-            req = CreateUserRequest(email=self.email, token=self.token, password="", profile=ProfileData(
-                    name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
-                    nation_code=KOREA_CODE, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
-                ), main_language='A', languages=['X'])
-            with self.assertRaises(InvalidLanguageException):
-                create_user(req, verification_id, db)
-
-    def test_create_salt_hash(self):
-        salt, hash = create_salt_hash('')
-        self.assertEqual(len(salt), 24)
-        self.assertEqual(len(hash), 44)
-
-    def test_get_target_users(self):
-        for db in DbConnector.get_db():
-            kor_user = db.query(User).join(User.profile).where(Profile.name == 'user1').first()
-            for_user = db.query(User).join(User.profile).where(Profile.name == 'user8').first()
-
-            targets = list(map(lambda user: user.profile.name, get_target_users(kor_user, db)))
-            self.assertEqual(set(targets), set(['user2', 'user4', 'user6']))
-            targets = list(map(lambda user: user.profile.name, get_target_users(for_user, db)))
-            self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
-
-    def test_sort_target_users(self):
-        my_profile = Profile(
-            name="sangin", birth=date(1999, 5, 14), sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti="isfj", nation_code=82,
-            foods=["korean_food", "japan_food"],
-            movies=["horror", "action"],
-            locations=["up", "down"],
-            hobbies=["soccer", "golf"]
+        profile = ProfileData(
+            name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+            nation_code=13, foods=['A', 'B'], movies=['A', 'B'], hobbies=['A', 'B'], locations=['A', 'B']
         )
+        req = CreateUserRequest(email=self.email, token=self.token, password=self.password,
+                                profile=profile, main_language='A', languages=['B'])
 
-        your_profile1 = Profile(
-            name="sangin", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            mbti=None, nation_code=82,
-            foods=["italian_food", "japan_food"], movies=["romance", "action"],
-            locations=["up", "jahayeon"],
-            hobbies=["golf"])
+        profile_id = create_profile(db, profile)
+        create_user(db, req, verification_id,
+                    profile_id, main_lang_id, salt, hash)
+        user = get_user_by_id(db, profile_id)
+        self.assertEqual(user.user_id, profile_id)
+        self.assertEqual(get_user_by_email(db, self.email).user_id, profile_id)
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.movies)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.languages)), {'B'})
+        with self.assertRaises(InvalidUserException):
+            get_user_by_id(db, -1)
+        with self.assertRaises(InvalidUserException):
+            get_user_by_email(db, "")
+        with self.assertRaises(EmailInUseException):
+            create_user(db, req, verification_id,
+                    profile_id, main_lang_id, salt, hash)
+        db.rollback()
 
-        your_profile2 = Profile(
-            name="abdula", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-             mbti=None,nation_code=0,
-            foods=["korean_food", "japan_food", "italian_food"], movies=["horror", "action", "romance"],
-            locations=['up', "down", "jahayeon"],
-            hobbies=["soccer"])
+        profile.foods[1] = 'X'
+        with self.assertRaises(InvalidFoodException):
+            create_profile(db, profile)
+        db.rollback()
 
-        your_profile3 = Profile(
-            name="jiho", birth=date(1999, 5, 14)
-            , sex="male", major="CLS", admission_year=2018, about_me="alpha male",
-            nation_code=1, mbti=None,
-            foods=["japan_food"], movies=["action"],
-            locations=["jahayeon"],
-            hobbies=["golf", "soccer", "book"])
+        profile.foods[1] = 'B'
+        profile.movies[1] = 'X'
+        with self.assertRaises(InvalidMovieException):
+            create_profile(db, profile)
+        db.rollback()
 
-        me = User(user_id = 0, verification_id=1, lang_id=1, salt="1", hash="1", profile=my_profile)
-        you1 = User(user_id = 1, verification_id=2, lang_id=2, salt="2", hash="2", profile=your_profile1)
-        you2 = User(user_id = 2, verification_id=3, lang_id=3, salt="3", hash="3", profile=your_profile2)
-        you3 = User(user_id = 3, verification_id=4, lang_id=4, salt="4", hash="4", profile=your_profile3)
-        yous = [you1, you2, you3]
+        profile.movies[1] = 'B'
+        profile.hobbies[1] = 'X'
+        with self.assertRaises(InvalidHobbyException):
+            create_profile(db, profile)
+        db.rollback()
 
-        result = sort_target_users(me, yous)
-        self.assertEqual(result[0].user_id, 2)
-        self.assertEqual(result[0].profile.name, "abdula")
-        self.assertEqual(result[1].user_id, 1)
-        self.assertEqual(result[1].profile.name, "sangin")
-        self.assertEqual(result[2].user_id, 3)
-        self.assertEqual(result[2].profile.name, "jiho")
+        profile.hobbies[1] = 'B'
+        profile.locations[1] = 'X'
+        with self.assertRaises(InvalidLocationException):
+            create_profile(db, profile)
+        db.rollback()
 
-        result = sort_target_users(me, [])
-        self.assertEqual(result, [])
+        profile.locations[1] = 'B'
+        req.languages[0] = 'X'
+        profile_id = create_profile(db, profile)
+        with self.assertRaises(InvalidLanguageException):
+            create_user(db, req, verification_id,
+                        profile_id, main_lang_id, salt, hash)
+        db.rollback()
+
+    @inject_db
+    def test_get_target_users(self, db: DbSession):
+        kor_user = db.query(User).join(User.profile).where(
+            Profile.name == 'user1').first()
+        for_user = db.query(User).join(User.profile).where(
+            Profile.name == 'user8').first()
+
+        targets = list(map(lambda user: user.profile.name,
+                       get_target_users(db, kor_user)))
+        self.assertEqual(set(targets), set(['user2', 'user4', 'user6']))
+        targets = list(map(lambda user: user.profile.name,
+                       get_target_users(db, for_user)))
+        self.assertEqual(set(targets), set(['user7', 'user3', 'user5']))
 
 
 if __name__ == '__main__':
