@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:mobile_app/core/utils/translation.dart';
 
 part 'user.g.dart';
-
 
 abstract class User {
   // final String id;
@@ -17,7 +17,6 @@ abstract class User {
     required this.email,
     required this.profile,
   });
-
 
   factory User.fromMap(Map<String, dynamic> map) {
     final userType = UserType.values.byName(map["type"]);
@@ -52,8 +51,8 @@ class KoreanUser extends User {
   });
 
   factory KoreanUser.fromJson(Map<String, dynamic> json) => _$KoreanUserFromJson(json);
-  Map<String, dynamic> toJson() => _$KoreanUserToJson(this);
 
+  Map<String, dynamic> toJson() => _$KoreanUserToJson(this);
 
   @override
   int get getNationCode => 82;
@@ -65,13 +64,13 @@ class KoreanUser extends User {
   // TODO: implement getLanguages
   List<Language> get getLanguages => wantedLanguages;
 }
+
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ForeignUser extends User {
   @JsonKey(name: "main_language")
   final Language mainLanguage;
-  @JsonKey(name : "languages")
+  @JsonKey(name: "languages")
   final List<Language> subLanguages;
-
 
   ForeignUser({
     // required super.id,
@@ -84,6 +83,7 @@ class ForeignUser extends User {
   });
 
   factory ForeignUser.fromJson(Map<String, dynamic> json) => _$ForeignUserFromJson(json);
+
   Map<String, dynamic> toJson() => _$ForeignUserToJson(this);
 
   @override
@@ -104,28 +104,59 @@ enum UserType {
 }
 
 enum Language {
-  korean ("korean"), english ("english"), spanish ("spanish"),
-  chinese ("chinese"), arabic ("arabic"), french ("french"),
-  german ("german"), japanese ("japanese"), russian ("russian"),
-  portuguese ("portuguese"), italian ("italian"), dutch ("dutch"),
-  swedish ("swedish"), turkish ("turkish"), hebrew ("hebrew"), hindi ("hindi"),
-  thai ("thai"), greek ("greek"), vietnamese ("vietnamese"), finnish ("finnish");
+  korean("Korean", "한국어"),
+  english("English", "영어"),
+  spanish("Spanish", "스페인어"),
+  chinese("Chinese", "중국어"),
+  arabic("Arabic", "아랍어"),
+  french("French", "프랑스어"),
+  german("German", "독일어"),
+  japanese("Japanese", "일본어"),
+  russian("Russian", "러시아어"),
+  portuguese("Portuguese", "포르투갈어"),
+  italian("Italian", "이탈리아어"),
+  dutch("Dutch", "네덜란드어"),
+  swedish("Swedish", "스웨덴어"),
+  turkish("Turkish", "터키어"),
+  hebrew("Hebrew", "히브리어"),
+  hindi("Hindi", "힌디어"),
+  thai("Thai", "태국어"),
+  greek("Greek", "그리스어"),
+  vietnamese("Vietnamese", "베트남어"),
+  finnish("Finnish", "핀란드어");
 
-  final String name;
+  final String krName;
+  final String enName;
 
-  const Language(this.name);
+  const Language(this.enName, this.krName);
 
   @override
   String toString() {
-    return name;
+    return MyLanguageUtil.getTrParamWithEnumValue(
+      krName: krName + languageEmojiMap[this]!,
+      enName: enName + languageEmojiMap[this]!,
+    );
   }
 }
 
 enum Mbti {
-  INTJ ("INTJ"), INTP ("INTP"), ENTJ ("ENTJ"), ENTP ("ENTP"),
-  INFJ ("INFJ"), INFP ("INFP"), ENFJ ("ENFJ"), ENFP ("ENFP"),
-  ISTJ ("ISTJ"), ISFJ ("ISFJ"), ESTJ ("ESTJ"), ESFJ ("ESFJ"),
-  ISTP ("ISTP"), ISFP ("ISFP"), ESTP ("ESTP"), ESFP ("ESFP"), UNKNOWN ("UNKNOWN");
+  INTJ("INTJ"),
+  INTP("INTP"),
+  ENTJ("ENTJ"),
+  ENTP("ENTP"),
+  INFJ("INFJ"),
+  INFP("INFP"),
+  ENFJ("ENFJ"),
+  ENFP("ENFP"),
+  ISTJ("ISTJ"),
+  ISFJ("ISFJ"),
+  ESTJ("ESTJ"),
+  ESFJ("ESFJ"),
+  ISTP("ISTP"),
+  ISFP("ISFP"),
+  ESTP("ESTP"),
+  ESFP("ESFP"),
+  UNKNOWN("UNKNOWN");
 
   final String name;
 
@@ -136,6 +167,7 @@ enum Mbti {
     return name;
   }
 }
+
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Profile {
   final DateTime birth;
@@ -154,7 +186,6 @@ class Profile {
   final List<Location> locations;
   final String? imgUrl;
 
-
   const Profile({
     required this.birth,
     required this.sex,
@@ -171,115 +202,211 @@ class Profile {
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) => _$ProfileFromJson(json);
+
   Map<String, dynamic> toJson() => _$ProfileToJson(this);
 }
 
 enum Sex {
-  male("male"),
-  female("female"),
-  nonBinary("non_binary");
+  male("남성", "male"),
+  female("여성", "female"),
+  nonBinary("논바이너리", "non_binary");
 
+  final String krName;
   final String enName;
-  const Sex(this.enName);
+
+  const Sex(this.krName, this.enName);
 
   @override
-  String toString() => enName;
+  String toString() => MyLanguageUtil.getTrParamWithEnumValue(
+    krName: krName,
+    enName: enName,
+  );
 }
 
 enum FoodCategory {
-  korean("한식"),
-  spanish("스페인 음식"),
-  american("미국식 음식"),
-  italian("양식"),
-  thai("동남아 음식"),
-  chinese("중식"),
-  japanese("일식"),
-  indian("인도 음식"),
-  mexican("멕시코 음식"),
-  vegan("채식"),
-  dessert("디저트 류");
+  korean("Korean", "한식"),
+  spanish("Spanish", "스페인 음식"),
+  american("American", "미국식 음식"),
+  italian("Italian", "양식"),
+  thai("Thai", "동남아 음식"),
+  chinese("Chinese", "중식"),
+  japanese("Japanese", "일식"),
+  indian("Indian", "인도 음식"),
+  mexican("Mexican", "멕시코 음식"),
+  vegan("Vegan", "채식"),
+  dessert("Dessert", "디저트 류");
 
+  final String enName;
   final String krName;
-  const FoodCategory(this.krName);
+
+  const FoodCategory(this.enName, this.krName);
 
   @override
-  String toString() => krName;
+  String toString() => MyLanguageUtil.getTrParamWithEnumValue(
+    krName: krName+ foodEmojiMap[this]!,
+    enName: enName+ foodEmojiMap[this]!,
+  );
 }
 
 enum MovieGenre {
-  action("액션"),
-  adventure("어드벤처"),
-  animation("애니"),
-  comedy("코미디"),
-  drama("드라마"),
-  fantasy("판타지"),
-  horror("공포"),
-  mystery("미스터리"),
-  romance("로맨스"),
-  scienceFiction("SF"),
-  thriller("스릴러"),
-  western("서부극");
+  action("Action", "액션"),
+  adventure("Adventure", "어드벤처"),
+  animation("Animation", "애니"),
+  comedy("Comedy", "코미디"),
+  drama("Drama", "드라마"),
+  fantasy("Fantasy", "판타지"),
+  horror("Horror", "공포"),
+  mystery("Mystery", "미스터리"),
+  romance("Romance", "로맨스"),
+  scienceFiction("Science Fiction", "SF"),
+  thriller("Thriller", "스릴러"),
+  western("Western", "서부극");
 
   final String krName;
-  const MovieGenre(this.krName);
+  final String enName;
+
+  const MovieGenre(this.enName, this.krName);
 
   @override
-  String toString() => krName;
+  String toString() =>MyLanguageUtil.getTrParamWithEnumValue(
+    krName: krName+ movieEmojiMap[this]!,
+    enName: enName+ movieEmojiMap[this]!,
+  );
 }
 
 enum Hobby {
-  painting("그림 그리기"),
-  gardening("정원 가꾸기"),
-  hiking("등산"),
-  reading("독서"),
-  cooking("요리"),
-  photography("사진 찍기"),
-  dancing("춤추기"),
-  swimming("수영"),
-  cycling("자전거 타기"),
-  traveling("여행"),
-  gaming("게임"),
-  fishing("낚시"),
-  knitting("뜨개질"),
-  music("노래"),
-  yoga("요가"),
-  writing("글쓰기"),
-  shopping("쇼핑"),
-  teamSports("팀 운동"),
-  fitness("헬스"),
-  movie("영화 보기");
+  painting("Painting", "그림 그리기"),
+  gardening("Gardening", "정원 가꾸기"),
+  hiking("Hiking", "등산"),
+  reading("Reading", "독서"),
+  cooking("Cooking", "요리"),
+  photography("Photography", "사진 찍기"),
+  dancing("Dancing", "춤추기"),
+  swimming("Swimming", "수영"),
+  cycling("Cycling", "자전거 타기"),
+  traveling("Traveling", "여행"),
+  gaming("Gaming", "게임"),
+  fishing("Fishing", "낚시"),
+  knitting("Knitting", "뜨개질"),
+  music("Music", "노래"),
+  yoga("Yoga", "요가"),
+  writing("Writing", "글쓰기"),
+  shopping("Shopping", "쇼핑"),
+  teamSports("Team Sports", "팀 운동"),
+  fitness("Fitness", "헬스"),
+  movie("Movie", "영화 보기");
 
+  final String enName;
   final String krName;
 
-  const Hobby(this.krName);
+  const Hobby(this.enName, this.krName);
 
   @override
   String toString() {
-    return krName;
+    return MyLanguageUtil.getTrParamWithEnumValue(
+      krName: "$krName ${hobbyEmojiMap[this]!}",
+      enName: "$enName ${hobbyEmojiMap[this]!}",
+    );
   }
 }
 
-enum Location {
-  humanity("인문대"),
-  naturalScience("자연대"),
-  dormitory("기숙사"),
-  socialScience("사회과학대"),
-  humanEcology("생활대"),
-  agriculture("농대"),
-  highEngineering("윗 공대"),
-  lowEngineering("아랫 공대"),
-  business("경영대"),
-  jahayeon("자하연"),
-  studentUnion("학생회관"),
-  seolYeep("설입"),
-  nockDoo("녹두"),
-  bongcheon("봉천");
 
+enum Location {
+  humanity("Humanity", "인문대"),
+  naturalScience("Natural Science", "자연대"),
+  dormitory("Dormitory", "기숙사"),
+  socialScience("Social Science", "사회과학대"),
+  humanEcology("Human Ecology", "생활대"),
+  agriculture("Agriculture", "농대"),
+  highEngineering("Engineering(up)", "윗 공대"),
+  lowEngineering("Engineering(down)", "아랫 공대"),
+  business("Business", "경영대"),
+  jahayeon("Jahayeon", "자하연"),
+  studentUnion("Student Union", "학생회관"),
+  seolYeep("Seoul Nat'l Station", "설입"),
+  nockDoo("Nockdoo (Daehak-dong)", "녹두"),
+  bongcheon("Bongcheon Station", "봉천");
+
+  final String enName;
   final String krName;
 
-  const Location(this.krName);
+  const Location(this.enName, this.krName);
 
   @override
-  String toString() => krName;
+  String toString() => MyLanguageUtil.getTrParamWithEnumValue(
+        krName: krName,
+        enName: enName,
+      );
 }
 
+Map<Language, String> languageEmojiMap = {
+  Language.korean: " 🇰🇷",
+  Language.english: " 🇺🇸",
+  Language.spanish: " 🇪🇸",
+  Language.chinese: " 🇨🇳",
+  Language.arabic: " 🇸🇦",
+  Language.french: " 🇫🇷",
+  Language.german: " 🇩🇪",
+  Language.japanese: " 🇯🇵",
+  Language.russian: " 🇷🇺",
+  Language.portuguese: " 🇵🇹",
+  Language.italian: " 🇮🇹",
+  Language.dutch: " 🇳🇱",
+  Language.swedish: " 🇸🇪",
+  Language.turkish: " 🇹🇷",
+  Language.hebrew: " 🇮🇱",
+  Language.hindi: " 🇮🇳",
+  Language.thai: " 🇹🇭",
+  Language.greek: " 🇬🇷",
+  Language.vietnamese: " 🇻🇳",
+  Language.finnish: " 🇫🇮"
+};
+final Map <Hobby, String> hobbyEmojiMap = {
+  Hobby.painting: "🎨",
+  Hobby.gardening: "🌿",
+  Hobby.hiking: "⛰️",
+  Hobby.reading: "📚",
+  Hobby.cooking: "🍳",
+  Hobby.photography: "📷",
+  Hobby.dancing: "💃",
+  Hobby.swimming: "🏊",
+  Hobby.cycling: "🚴",
+  Hobby.traveling: "✈️",
+  Hobby.gaming: "🎮",
+  Hobby.fishing: "🎣",
+  Hobby.knitting: "🧶",
+  Hobby.music: "🎶",
+  Hobby.yoga: "🧘",
+  Hobby.writing: "✍️",
+  Hobby.shopping: "🛍️",
+  Hobby.teamSports: "⚽",
+  Hobby.fitness: "💪",
+  Hobby.movie: "🎥"
+};
+final Map<FoodCategory, String> foodEmojiMap = {
+  FoodCategory.korean: " 🍚",
+  FoodCategory.spanish: " 🥘",
+  FoodCategory.american: " 🍔",
+  FoodCategory.italian: " 🍝",
+  FoodCategory.thai: " 🍛",
+  FoodCategory.chinese: " 🍜",
+  FoodCategory.japanese: " 🍣",
+  FoodCategory.indian: " 🍛",
+  FoodCategory.mexican: " 🌮",
+  FoodCategory.vegan: " 🥗",
+  FoodCategory.dessert: " 🍰",
+};
+final Map<MovieGenre, String> movieEmojiMap = {
+  MovieGenre.action: " 💥",
+  MovieGenre.adventure: " 🌄",
+  MovieGenre.animation: " 🎬",
+  MovieGenre.comedy: " 😄",
+  MovieGenre.drama: " 🎭",
+  MovieGenre.fantasy: " 🪄",
+  MovieGenre.horror: " 😱",
+  MovieGenre.mystery: " 🕵️",
+  MovieGenre.romance: " 💌",
+  MovieGenre.scienceFiction: " 🚀",
+  MovieGenre.thriller: " 💀",
+  MovieGenre.western: " 🌵",
+};

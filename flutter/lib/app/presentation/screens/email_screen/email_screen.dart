@@ -25,8 +25,8 @@ class EmailScreen extends GetView<EmailScreenController> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4).copyWith(
                     top: 16),
-                child: const Text(
-                  '회원가입을 위해\n학교 이메일을 인증해주세요',
+                child: Text(
+                  '회원가입을 위해\n학교 이메일을 인증해주세요'.tr,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -40,7 +40,7 @@ class EmailScreen extends GetView<EmailScreenController> {
                   Expanded(
                     child: MainTextFormField(
                       textEditingController: controller.emailCon,
-                      hintText: "학교 이메일 입력",
+                      hintText: "학교 이메일 입력".tr,
                       textStyle:
                       const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w400),
@@ -50,7 +50,7 @@ class EmailScreen extends GetView<EmailScreenController> {
                   const SizedBox(width: 12),
                   Obx(() {
                     return SmallButton(
-                      text: '인증하기',
+                      text: '인증하기'.tr,
                       onPressed: controller.certable.value? controller.onAuthButtonTap : null,
                     );
                   }),
@@ -59,7 +59,7 @@ class EmailScreen extends GetView<EmailScreenController> {
               const SizedBox(height: 10),
               Obx(() {
                 if (controller.warningType == 1) {
-                  return const Text("서울대학교 계정을 사용해주세요 :)",
+                  return Text("서울대학교 계정을 사용해주세요 :)".tr,
                       style: TextStyle(
                           color: MyColor.purple,
                           fontSize: 14,
@@ -97,7 +97,7 @@ class EmailScreen extends GetView<EmailScreenController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 20),
-          Text("이메일로 전송된 코드를 입력해주세요.",
+          Text("이메일로 전송된 코드를 입력해주세요.".tr,
               style: TextStyle(
                   color: const Color(0xff2d3a45).withOpacity(0.8),
                   fontWeight: FontWeight.w500,
@@ -110,20 +110,20 @@ class EmailScreen extends GetView<EmailScreenController> {
                 Expanded(
                   child: MainTextFormField(
                     textEditingController: controller.codeCon,
-                    hintText: "코드 6자리 입력",
+                    hintText: "코드 6자리 입력".tr,
                     textStyle:
                     const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                     verticalPadding: 15,
                   ),
                 ),
                 const SizedBox(width: 12),
-                SmallButton(text: '확인', onPressed: controller.verifiable.value? controller.onCodeButtonTap:null),
+                SmallButton(text: '확인'.tr, onPressed: controller.verifiable.value? controller.onCodeButtonTap:null),
               ],
             ),
           ),
           Obx(() {
             if (controller.warningType == 2) {
-              return const Text("잘못된 코드에요. 다시 한번 확인해주세요!",
+              return Text("잘못된 코드에요. 다시 한번 확인해주세요!".tr,
                   style: TextStyle(
                       color: Color(0xff9f75d1),
                       fontSize: 14,
@@ -133,7 +133,7 @@ class EmailScreen extends GetView<EmailScreenController> {
             }
           }),
           if (controller.certSuccess.value)
-            const Text("성공적으로 인증되었어요!",
+            Text("성공적으로 인증되었어요!".tr,
                 style: TextStyle(
                     color: MyColor.purple,
                     fontWeight: FontWeight.w600,

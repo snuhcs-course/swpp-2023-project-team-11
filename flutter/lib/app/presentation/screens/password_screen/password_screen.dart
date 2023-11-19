@@ -21,13 +21,13 @@ class PasswordScreen extends GetView<PasswordScreenController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('사용할 비밀번호를\n입력해주세요',
+            Text('사용할 비밀번호를\n입력해주세요'.tr,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                 )),
             const SizedBox(height: 8),
-            Text("*6자 이상, 20자 이하의 숫자/영문",
+            Text("*6자 이상, 20자 이하의 숫자/영문".tr,
                 style: TextStyle(
                     color: const Color(0xff2d3a45).withOpacity(0.8),
                     fontWeight: FontWeight.w400,
@@ -37,7 +37,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
               child: MainTextFormField(
                 obscureText: true,
                 textEditingController: controller.passwordCon,
-                hintText: '비밀번호 입력',
+                hintText: '비밀번호 입력'.tr,
                 textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
@@ -65,7 +65,7 @@ class PasswordScreen extends GetView<PasswordScreenController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 20),
-          Text("비밀번호를 재입력해주세요.",
+          Text("비밀번호를 재입력해주세요.".tr,
               style: TextStyle(
                   color: const Color(0xff2d3a45).withOpacity(0.8),
                   fontWeight: FontWeight.w500,
@@ -75,21 +75,21 @@ class PasswordScreen extends GetView<PasswordScreenController> {
             child: MainTextFormField(
               obscureText: true,
               textEditingController: controller.passwordAgainCon,
-              hintText: "비밀번호 재입력",
+              hintText: "비밀번호 재입력".tr,
               textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
               verticalPadding: 15,
             ),
           ),
           controller.passwordsEqual
-              ? const Text(
-                  "비밀번호가 일치해요!",
+              ? Text(
+                  "비밀번호가 일치해요!".tr,
                   style: TextStyle(
                       color: MyColor.purple,
                       fontWeight: FontWeight.w600,
                       fontSize: 14),
                 )
               : Text(
-                  "비밀번호가 일치하지 않아요",
+                  "비밀번호가 일치하지 않아요".tr,
                   style: TextStyle(
                       color: const Color(0xff2d3a45).withOpacity(0.36),
                       fontWeight: FontWeight.w600,

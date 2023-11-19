@@ -59,8 +59,8 @@ class _ProfileOptionSelectBoardState extends State<ProfileOptionSelectBoard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 22),
-                  const Text(
-                    '키워드를 선택해주세요',
+                  Text(
+                    '키워드를 선택해주세요'.tr,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

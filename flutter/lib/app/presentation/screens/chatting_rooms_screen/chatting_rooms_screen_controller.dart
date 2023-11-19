@@ -46,13 +46,12 @@ class ChattingRoomsScreenController extends GetxController{
     DateTime timeOfChat = timeOfLatestChatMessage(chattingRoom).toLocal();
     Duration difference = DateTime.timestamp().difference(timeOfChat.add(timeOfChat.timeZoneOffset)); // 여기 시간 계산이 왜 이상한지를 모르겠네요ㅠ
 
-    // print("${difference.inMinutes} is the difference in time^^");
     if(difference.compareTo(const Duration(hours: 1)) < 0){
-      return "${difference.inMinutes} 분 전";
+      return "${difference.inMinutes} "+"분 전".tr;
     }else if (difference.compareTo(const Duration(days: 1)) < 0){
-      return "${difference.inHours} 시간 전";
+      return "${difference.inHours} "+"시간 전".tr;
     }else{
-      return "${timeOfChat.month}월 ${timeOfChat.day}일";
+      return "${timeOfChat.month} / ${timeOfChat.day}";
     }
   }
 
@@ -74,7 +73,7 @@ class ChattingRoomsScreenController extends GetxController{
       Get.toNamed(Routes.Maker(nextRoute: Routes.ROOM), arguments: chattingRoom);
     } else if(!chattingRoom.isApproved){
       Fluttertoast.showToast(
-          msg: "수락되지 않은 채팅방입니다",
+          msg: "수락되지 않은 채팅방입니다".tr,
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -84,7 +83,7 @@ class ChattingRoomsScreenController extends GetxController{
       );
     } else{
       Fluttertoast.showToast(
-          msg: "더 이상 사용하지 않는 채팅방입니다",
+          msg: "더 이상 사용하지 않는 채팅방입니다".tr,
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -100,16 +99,16 @@ class ChattingRoomsScreenController extends GetxController{
     if(chattingRoom.isApproved){
       await Get.dialog(
           BasicDialog(
-            title: '정말로 진행중인 채팅에서 나갈건가요?',
+            title: '정말로 진행중인 채팅에서 나갈건가요?'.tr,
             contentWidget: const SizedBox.shrink(),
             mainLogicButton: MainButton(
               mainButtonType: MainButtonType.key,
-              text: "네",
+              text: "네".tr,
               onPressed: (){quitable = true;Get.back();},
             ),
             leftSubButton: MainButton(
               mainButtonType: MainButtonType.light,
-              text: "아니요",
+              text: "아니요".tr,
               onPressed: (){quitable = false;Get.back();},
             ),
           )

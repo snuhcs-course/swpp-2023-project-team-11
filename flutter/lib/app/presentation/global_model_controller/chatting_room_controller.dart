@@ -87,12 +87,7 @@ class ValidChattingRoomController extends GetxController {
         sp.setString(chattingRoom.id.toString(), json.encode(chats.last));
         // print("${sp.getString(chattingRoom.id.toString())} is what i found from sp - encoding");
         final userEmail = Get.find<UserController>().userEmail;
-        chatVmList.addAll(chats.map((chat) => ChatVM(
-              senderType: userEmail == chat.senderEmail ? SenderType.me : SenderType.you,
-              text: chat.message,
-              createdAt: chat.sentAt,
-              sequenceId: chat.seqId,
-            )));
+        chatVmList.addAll(chats.map((chat) => ChatVM.fromChat(chat)));
       },
       whenFail: () {},
     );
@@ -112,7 +107,7 @@ class ChatVM {
   bool temp;
   bool needsDelete;
 
-  ChatVM({
+  ChatVM._({
     required this.senderType,
     required this.text,
     required this.createdAt,
@@ -122,8 +117,9 @@ class ChatVM {
   });
 
   factory ChatVM.fromChat(Chat chat, {bool temp = false}) {
-    return ChatVM(
-      senderType: SenderType.me,
+    final myEmail = Get.find<UserController>().userEmail;
+    return ChatVM._(
+      senderType: chat.senderEmail == myEmail ? SenderType.me : SenderType.you,
       text: chat.message,
       createdAt: chat.sentAt,
       sequenceId: chat.seqId,
@@ -143,7 +139,7 @@ class ChatVM {
     int? sequenceId,
     bool? temp,
   }) {
-    return ChatVM(
+    return ChatVM._(
       senderType: senderType ?? this.senderType,
       text: text ?? this.text,
       createdAt: createdAt ?? this.createdAt,

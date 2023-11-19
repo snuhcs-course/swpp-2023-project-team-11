@@ -59,7 +59,7 @@ class ProfileSurveyScreen extends GetView<ProfileSurveyScreenController> {
           child: BottomChattingForm(
             textEditingController: controller.chattingCon,
             onPressed: controller.enableSendButton.value? controller.onSendButtonTap: null,
-            hintText: "선택 완료 시 우측 보내기 버튼 클릭",
+            hintText: "선택 완료 시 우측 보내기 버튼 클릭".tr,
             context: context,
           ),
         ),

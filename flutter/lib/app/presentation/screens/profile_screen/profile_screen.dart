@@ -37,8 +37,8 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                 children: [
                   Text(
                     (controller.userController.userProfile.nationCode == 82)
-                        ? "희망 교환 언어"
-                        : "주 언어 외 구사 가능 언어",
+                        ? "희망 교환 언어".tr
+                        : "주 언어 외 구사 가능 언어".tr,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -55,7 +55,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
               }),
               const SizedBox(height: 24),
               Text(
-                "좋아하는 것들",
+                "좋아하는 것들".tr,
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
               const SizedBox(height: 24),
               MainButton(
                   mainButtonType: MainButtonType.key,
-                  text: "로그아웃",
+                  text: "로그아웃".tr,
                   onPressed: controller.onLogOutButtonTap),
               const SizedBox(height: 100)
             ],
@@ -107,7 +107,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("# 취미",
+            Text("# 취미".tr,
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -117,7 +117,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
-            Text("# 음식",
+            Text("# 음식".tr,
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -127,7 +127,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
-            Text("# 영화 장르",
+            Text("# 영화 장르".tr,
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -137,7 +137,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
-            Text("# 주로 출몰하는 장소",
+            Text("# 주로 출몰하는 장소".tr,
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -172,7 +172,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "사용하는 주언어",
+            "사용하는 주언어".tr,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -187,8 +187,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
             padding: const EdgeInsets.all(6),
             margin: const EdgeInsets.all(4),
             child: Text(
-              controller
-                  .languageFlagMap[controller.userController.userMainLanguage]!,
+              controller.userController.userMainLanguage.toString(),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -215,7 +214,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  controller.hobbyKoreanMap[hobby]!,
+                  hobby.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -241,7 +240,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  controller.foodKoreanMap[foodCategory]!,
+                  foodCategory.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -267,7 +266,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  controller.movieKoreanMap[moviegenre]!,
+                  moviegenre.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -293,7 +292,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     vertical: 8, horizontal: 10),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  controller.locationKoreanMap[location]!,
+                  location.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -321,7 +320,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                 padding: const EdgeInsets.all(6),
                 margin: const EdgeInsets.all(4),
                 child: Text(
-                  controller.languageFlagMap[language]!,
+                  language.toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

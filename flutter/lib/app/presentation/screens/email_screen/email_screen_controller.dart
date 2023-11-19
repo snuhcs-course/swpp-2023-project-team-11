@@ -13,7 +13,7 @@ class EmailScreenController extends GetxController {
 
   final TextEditingController emailCon = TextEditingController();
   final TextEditingController codeCon = TextEditingController();
-  final certSuccess = false.obs; //
+  final certSuccess = true.obs; //
   final certable = true.obs;
   final verifiable = true.obs;
   final emailSent = false.obs;
