@@ -1,4 +1,3 @@
-import 'package:get/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:mobile_app/core/utils/translation.dart';
 
@@ -259,7 +258,7 @@ enum MovieGenre {
   horror("Horror", "공포"),
   mystery("Mystery", "미스터리"),
   romance("Romance", "로맨스"),
-  scienceFiction("ScienceFiction", "SF"),
+  scienceFiction("Science Fiction", "SF"),
   thriller("Thriller", "스릴러"),
   western("Western", "서부극");
 
@@ -316,11 +315,11 @@ enum Location {
   humanity("Humanity", "인문대"),
   naturalScience("Natural Science", "자연대"),
   dormitory("Dormitory", "기숙사"),
-  socialScience("Social SCience", "사회과학대"),
+  socialScience("Social Science", "사회과학대"),
   humanEcology("Human Ecology", "생활대"),
   agriculture("Agriculture", "농대"),
-  highEngineering("High Engineering", "윗 공대"),
-  lowEngineering("Low Engineering", "아랫 공대"),
+  highEngineering("Engineering(up)", "윗 공대"),
+  lowEngineering("Engineering(down)", "아랫 공대"),
   business("Business", "경영대"),
   jahayeon("Jahayeon", "자하연"),
   studentUnion("Student Union", "학생회관"),

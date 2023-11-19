@@ -172,7 +172,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "사용하는 주언어",
+            "사용하는 주언어".tr,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
