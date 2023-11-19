@@ -163,7 +163,6 @@ def create_intimacy(db: DbSession, user_id: int | List[int], chatting_id: int, i
         "timestamp": timestamp,
     } for user_id in user_id]).returning(Intimacy)))
 
-#TODO : get_topics 언어선택
 def get_topics(db: DbSession, tag: str, limit: int, is_korean: bool = True) -> List[Topic]:
     topics = db.query(Topic).where(Topic.is_korean == is_korean).where(Topic.tag == tag).order_by(
         func.random()).limit(limit).all()
