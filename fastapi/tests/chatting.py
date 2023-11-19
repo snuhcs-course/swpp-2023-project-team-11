@@ -30,6 +30,7 @@ class TestDependencies(unittest.TestCase):
 class TestPapagoClient(unittest.TestCase):
     client = PapagoClient
 
+    @unittest.skip("Requires external API keys")
     def test_translate_text(self):
         translated = self.client.translate("I am Happy!")
         #평어체/경어체 논의 후 선택
@@ -93,7 +94,7 @@ class TestIgnoresEmptyInputTranslationClient(unittest.TestCase):
 
 class TestClovaClient(unittest.TestCase):
     client = ClovaClient
-
+    @unittest.skip("Requires external API keys")
     def test_get_sentiment(self):
         sentiment = self.client.get_sentiment("I am sad.")
         #the scope of sentiment [-5,10] 
