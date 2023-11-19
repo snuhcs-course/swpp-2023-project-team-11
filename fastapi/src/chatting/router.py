@@ -153,6 +153,7 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
     .add(InvalidSessionException())
     .build()
 )
+
 def get_topic_recommendation(
         chatting_id: int,
         limit: int = Query(
@@ -161,7 +162,8 @@ def get_topic_recommendation(
         db: DbSession = Depends(DbConnector.get_db)) -> List[TopicResponse]:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
-    topics = service.get_topics(db, tag, limit)
+    is_korean = service.is_korean_by_user_id(db, user_id)
+    topics = service.get_topics(db, tag, limit, is_korean)
 
     return list(from_topic(topic) for topic in topics)
 
