@@ -455,14 +455,14 @@ class TestDb(unittest.TestCase):
                     {"topic": "I'm so mad", "tag": "B", "is_korean": False},
                     {"topic": "I'm so sad", "tag": "C", "is_korean": False},
                     {"topic": "I'm so happy", "tag": "C", "is_korean": False},
-                    {"topic": "I'm so exciting", "tag": "C", "is_korean": True}
+                    {"topic": "곧 종강이다~!", "tag": "C", "is_korean": True}
                 ]
             )
         )
         db.commit()
         self.assertIn(get_topics(db, 'C', 1, False)[0].topic, [
                       "I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "I'm so exciting")
+        self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "곧 종강이다~!")
         self.assertEqual(len(get_topics(db, 'A', 1, True)), 0)
         self.assertEqual(len(get_topics(db, 'B', 1, True)), 0)
 
