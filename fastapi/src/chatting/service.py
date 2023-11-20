@@ -420,7 +420,10 @@ class IntimacyCalculator:
             curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
         except PapagoKoreanToKoreanException: 
             curr_translated = '.'.join(text.msg for text in curr_texts)
-        sentiment = self.__sentiment.get_sentiment(curr_translated)
+        try : 
+            sentiment = self.__sentiment.get_sentiment(curr_translated)
+        except ClovaApiException:
+            sentiment = 0
 
         frequency = self.score_frequency(curr_texts)
         frequency_delta = self.score_frequency_delta(prev_texts, curr_texts)
