@@ -215,7 +215,8 @@ class Client(metaclass=ABCMeta):
         data = cls.data(text)
         response = requests.post(url, data=data, headers=headers)
         if response.status_code != 200:
-            raise cls.api_error()
+            #raise cls.api_error()
+            return None
         return response
 
 
@@ -290,6 +291,8 @@ class PapagoClient(TranslationClient):
 
     @classmethod
     def parse_response(cls, response: requests.Response) -> str:
+        if response is None:
+            return None
         response = response.json()
         return response["message"]["result"]["translatedText"]
 
@@ -342,6 +345,8 @@ class ClovaClient(SentimentClient):
 
     @classmethod
     def parse_response(cls, response: requests.Response) -> float:
+        if response is None:
+            return 0
         data = json.loads(response.text)
         positive = data["document"]["confidence"]["positive"]
         negative = data["document"]["confidence"]["negative"]
