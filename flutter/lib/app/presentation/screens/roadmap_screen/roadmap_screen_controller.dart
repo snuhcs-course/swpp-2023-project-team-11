@@ -37,12 +37,6 @@ class RoadmapScreenController extends GetxController  with StateMixin<List<Topic
     change(null, status: RxStatus.loading());
     _fetchTopicsUseCase(chattingRoomId: chattingRoom.id, whenSuccess: (topics){
       change(topics, status: RxStatus.success());
-      topics.add(const Topic(topicId: 0, topic: "second topic", tag: "C"));
-      topics.add(const Topic(topicId: 0, topic: "3rd topic", tag: "C"));
-      // topics.add(Topic(topicId: 0, topic: "4 topic", tag: "C"));
-      // topics.add(Topic(topicId: 0, topic: "5 topic", tag: "C"));
-      // topics.add(Topic(topicId: 0, topic: "6 topic", tag: "C"));
-      // topics.add(Topic(topicId: 0, topic: "7 topic", tag: "C"));
 
     }, whenFail: (){});
   }
