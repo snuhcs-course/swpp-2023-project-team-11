@@ -26,3 +26,7 @@ class PapagoApiException(ExternalApiError):
 class ChattingAlreadyExistException(HTTPException):
     def __init__(self):
         super().__init__(400, detail='chatting already exist')
+
+class PapagoKoreanToKoreanException(HTTPException):
+    def __init__(self):
+        super().__init__(400, detail='papago does not support korean to korean translation')
