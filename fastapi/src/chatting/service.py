@@ -209,9 +209,11 @@ class Client(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def handle_error_response(cls, response: requests.Response) -> None:
+    def handle_error_response(cls, response: requests.Response) -> requests.Response:
         if response.status_code != 200:
             raise cls.api_error()
+        else:
+            return response
 
     @classmethod
     def post(cls, text: str) -> requests.Response:
@@ -219,8 +221,8 @@ class Client(metaclass=ABCMeta):
         headers = cls.headers()
         data = cls.data(text)
         response = requests.post(url, data=data, headers=headers)
-        if response.status_code != 200:
-            cls.handle_error_response(response)
+        # if response.status_code != 200:
+        #     cls.handle_error_response(response)
         return response
     
 
@@ -254,6 +256,7 @@ class TranslationClient(Client):
     @classmethod
     def translate(cls, text: str) -> str:
         response = cls.post(text)
+        response = cls.handle_error_response(response)
         return cls.parse_response(response)
 
 
@@ -265,6 +268,7 @@ class SentimentClient(Client):
     @classmethod
     def get_sentiment(cls, text: str) -> float:
         response = cls.post(text)
+        response = cls.handle_error_response(response)
         return cls.parse_response(response)
 
 
@@ -273,6 +277,18 @@ class PapagoClient(TranslationClient):
     CLIENT_ID: str = os.environ.get('SNEK_PAPAGO_CLIENT_ID')
     CLIENT_SECRET: str = os.environ.get('SNEK_PAPAGO_CLIENT_SECRET')
 
+    @classmethod
+    def handle_error_response(cls, response: requests.Response) -> requests.Response:
+        if response.status_code != 200:
+            #if errorCode == "N2MT05", 
+            response = response.json()
+            if response['error']["errorCode"] == "N2MT05":
+                raise  PapagoKoreanToKoreanException()
+            else :
+                super().handle_error_response(response)
+        else:
+            return response
+        
     @classmethod
     def api_error(cls) -> HTTPException:
         return PapagoApiException()
@@ -296,10 +312,10 @@ class PapagoClient(TranslationClient):
 
     @classmethod
     def parse_response(cls, response: requests.Response) -> str:
-        if response is None:
-            return None
         response = response.json()
         return response["message"]["result"]["translatedText"]
+    
+    
 
 
 def IgnoresEmptyInputTranslationClient(wrappee: Type[TranslationClient]) -> Type[TranslationClient]:
@@ -350,8 +366,6 @@ class ClovaClient(SentimentClient):
 
     @classmethod
     def parse_response(cls, response: requests.Response) -> float:
-        if response is None:
-            return 0
         data = json.loads(response.text)
         positive = data["document"]["confidence"]["positive"]
         negative = data["document"]["confidence"]["negative"]
@@ -401,7 +415,11 @@ class IntimacyCalculator:
         similarity: float | None = None,
         num_F: int | None = None,
     ) -> float:
-        curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
+        
+        try :
+            curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
+        except PapagoKoreanToKoreanException: 
+            curr_translated = '.'.join(text.msg for text in curr_texts)
         sentiment = self.__sentiment.get_sentiment(curr_translated)
 
         frequency = self.score_frequency(curr_texts)
