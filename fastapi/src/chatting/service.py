@@ -208,7 +208,7 @@ class Client(metaclass=ABCMeta):
     def data(cls, text: str) -> str | Dict[str, str]:
         pass
 
-    @abstractclassmethod
+    @classmethod
     def handle_error_response(cls, response: requests.Response) -> requests.Response:
         if response.status_code != 200:
             raise cls.api_error()
@@ -221,10 +221,7 @@ class Client(metaclass=ABCMeta):
         headers = cls.headers()
         data = cls.data(text)
         response = requests.post(url, data=data, headers=headers)
-        # if response.status_code != 200:
-        #     cls.handle_error_response(response)
         return response
-    
 
 
 def WrappedClient(wrappee: Type[Client]) -> Type[Client]:
@@ -253,11 +250,10 @@ class TranslationClient(Client):
     def parse_response(cls, response: requests.Response) -> str:
         """Return translated_text"""
 
+
     @classmethod
     def translate(cls, text: str) -> str:
         response = cls.post(text)
-        try : response = cls.handle_error_response(response)
-        except PapagoKoreanToKoreanException : return text
         return cls.parse_response(response)
 
 
@@ -269,8 +265,10 @@ class SentimentClient(Client):
     @classmethod
     def get_sentiment(cls, text: str) -> float:
         response = cls.post(text)
-        try : cls.handle_error_response(response)
-        except ClovaApiException : return 0
+        try:
+            response = cls.handle_error_response(response)
+        except (HTTPException, ExternalApiError):
+            return 0.0
         return cls.parse_response(response)
 
 
@@ -280,17 +278,31 @@ class PapagoClient(TranslationClient):
     CLIENT_SECRET: str = os.environ.get('SNEK_PAPAGO_CLIENT_SECRET')
 
     @classmethod
+    def get_error_code(cls, response: requests.Response) -> String:
+        response = response.json()
+        return response['error']['errorCode']
+
+    @classmethod
     def handle_error_response(cls, response: requests.Response) -> requests.Response:
         if response.status_code != 200:
-            #if errorCode == "N2MT05", 
-            response = response.json()
-            if response['error']["errorCode"] == "N2MT05":
-                raise  PapagoKoreanToKoreanException()
-            else :
+            # errorCode == "N2MT05"
+            error_code = cls.get_error_code(response)
+            if error_code == "N2MT05":
+                raise PapagoKoreanToKoreanException()
+            else:
                 super().handle_error_response(response)
         else:
             return response
-        
+
+    @classmethod
+    def translate(cls, text: str) -> str:
+        response = cls.post(text)
+        try:
+            response = cls.handle_error_response(response)
+        except (HTTPException, ExternalApiError):
+            return text
+        return cls.parse_response(response)
+
     @classmethod
     def api_error(cls) -> HTTPException:
         return PapagoApiException()
@@ -317,8 +329,6 @@ class PapagoClient(TranslationClient):
         response = response.json()
         return response["message"]["result"]["translatedText"]
     
-    
-
 
 def IgnoresEmptyInputTranslationClient(wrappee: Type[TranslationClient]) -> Type[TranslationClient]:
     """
@@ -335,7 +345,6 @@ def IgnoresEmptyInputTranslationClient(wrappee: Type[TranslationClient]) -> Type
         def translate(cls, text: str) -> str:
             if len(text) == 0:
                 return text
-
             return wrappee.translate(text)
 
     return IgnoreEmptyInputClientImpl

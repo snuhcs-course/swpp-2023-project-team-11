@@ -23,9 +23,11 @@ class PapagoApiException(ExternalApiError):
     def __init__(self) -> None:
         super().__init__(detail="translation")
 
+
 class ChattingAlreadyExistException(HTTPException):
     def __init__(self):
         super().__init__(400, detail='chatting already exist')
+
 
 class PapagoKoreanToKoreanException(HTTPException):
     def __init__(self):
