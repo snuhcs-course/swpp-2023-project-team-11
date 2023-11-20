@@ -256,7 +256,8 @@ class TranslationClient(Client):
     @classmethod
     def translate(cls, text: str) -> str:
         response = cls.post(text)
-        response = cls.handle_error_response(response)
+        try : response = cls.handle_error_response(response)
+        except PapagoKoreanToKoreanException : return text
         return cls.parse_response(response)
 
 
@@ -268,7 +269,8 @@ class SentimentClient(Client):
     @classmethod
     def get_sentiment(cls, text: str) -> float:
         response = cls.post(text)
-        response = cls.handle_error_response(response)
+        try : cls.handle_error_response(response)
+        except ClovaApiException : return 0
         return cls.parse_response(response)
 
 
@@ -416,14 +418,8 @@ class IntimacyCalculator:
         num_F: int | None = None,
     ) -> float:
         
-        try :
-            curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
-        except PapagoKoreanToKoreanException: 
-            curr_translated = '.'.join(text.msg for text in curr_texts)
-        try : 
-            sentiment = self.__sentiment.get_sentiment(curr_translated)
-        except ClovaApiException:
-            sentiment = 0
+        curr_translated = self.__translation.translate('.'.join(text.msg for text in curr_texts))
+        sentiment = self.__sentiment.get_sentiment(curr_translated)
 
         frequency = self.score_frequency(curr_texts)
         frequency_delta = self.score_frequency_delta(prev_texts, curr_texts)
