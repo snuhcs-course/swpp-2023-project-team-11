@@ -208,6 +208,11 @@ class Client(metaclass=ABCMeta):
     def data(cls, text: str) -> str | Dict[str, str]:
         pass
 
+    @abstractclassmethod
+    def handle_error_response(cls, response: requests.Response) -> None:
+        if response.status_code != 200:
+            raise cls.api_error()
+
     @classmethod
     def post(cls, text: str) -> requests.Response:
         url = cls.api_url()
@@ -215,9 +220,9 @@ class Client(metaclass=ABCMeta):
         data = cls.data(text)
         response = requests.post(url, data=data, headers=headers)
         if response.status_code != 200:
-            #raise cls.api_error()
-            return None
+            cls.handle_error_response(response)
         return response
+    
 
 
 def WrappedClient(wrappee: Type[Client]) -> Type[Client]:

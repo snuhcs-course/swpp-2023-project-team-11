@@ -97,6 +97,7 @@ class TestClovaClient(unittest.TestCase):
     @unittest.skip("Requires external API keys")
     def test_get_sentiment(self):
         sentiment = self.client.get_sentiment("I am sad.")
+        sentiment = self.client.get_sentiment("")
         #the scope of sentiment [-5,10] 
         self.assertGreaterEqual(sentiment, -5)
         self.assertLessEqual(sentiment, 10)
