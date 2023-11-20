@@ -1,6 +1,6 @@
-from abc import ABCMeta, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 import os
-from typing import Dict, List, Tuple, Type
+from typing import Dict, List, Tuple, Any
 
 import json
 import numpy as np
@@ -185,91 +185,63 @@ def intimacy_tag(intimacy: Intimacy | None) -> str:
         return "A"
 
 
-class Client(metaclass=ABCMeta):
-    """
-    All methods are defined as class method in order to use client as singleton.
-    For all clients, classes themselves as class object are being used, not the instances of them.
-    In type theory, these objects are level 1 type objects, which are the instances of level 2 type object (ABCMeta).
-    """
-
-    @abstractclassmethod
-    def api_error(cls) -> HTTPException:
-        pass
-
-    @abstractclassmethod
-    def api_url(cls) -> str:
-        pass
-
-    @abstractclassmethod
-    def headers(cls) -> Dict[str, str]:
-        pass
-
-    @abstractclassmethod
-    def data(cls, text: str) -> str | Dict[str, str]:
-        pass
-
-    @classmethod
-    def handle_error_response(cls, response: requests.Response) -> requests.Response:
-        if response.status_code != 200:
-            raise cls.api_error()
-        else:
-            return response
-
-    @classmethod
-    def post(cls, text: str) -> requests.Response:
-        url = cls.api_url()
-        headers = cls.headers()
-        data = cls.data(text)
-        response = requests.post(url, data=data, headers=headers)
-        return response
-
-
-def WrappedClient(wrappee: Type[Client]) -> Type[Client]:
-    class WrappedClientImpl(wrappee):
-        @classmethod
-        def api_error(cls) -> HTTPException:
-            return wrappee.api_error()
-
-        @classmethod
-        def api_url(cls) -> str:
-            return wrappee.api_url()
-        
-        @classmethod
-        def headers(cls) -> Dict[str, str]:
-            return wrappee.headers()
-        
-        @classmethod
-        def data(cls, text: str) -> str | Dict[str, str]:
-            return wrappee.data(text)
+class ErrorHandler(metaclass=ABCMeta):
+    """An error handler for Clients."""
     
-    return WrappedClientImpl
+    @abstractmethod
+    def handle(self, response: requests.Response) -> None:
+        pass
+
+
+class Client(metaclass=ABCMeta):
+    """A client interface(abstract class) for external API calls."""
+
+    @abstractmethod
+    def api_url(self) -> str:
+        pass
+
+    @abstractmethod
+    def headers(self) -> Dict[str, str]:
+        pass
+
+    @abstractmethod
+    def data(self, text: str) -> str | Dict[str, str]:
+        pass
+
+    @abstractmethod
+    def error_handler(self) -> ErrorHandler:
+        pass
+
+    def post(self, text: str) -> requests.Response:
+        url = self.api_url()
+        headers = self.headers()
+        data = self.data(text)
+        return requests.post(url, data=data, headers=headers)
+
+    def request(self, text: str) -> Any:
+        response = self.post(text)
+        self.error_handler().handle(response)
+        return response.json()
 
 
 class TranslationClient(Client):
-    @abstractclassmethod
-    def parse_response(cls, response: requests.Response) -> str:
+    @abstractmethod
+    def parse_response(self, response: Any) -> str:
         """Return translated_text"""
 
-
-    @classmethod
-    def translate(cls, text: str) -> str:
-        response = cls.post(text)
-        return cls.parse_response(response)
+    def translate(self, text: str) -> str:
+        response = self.request(text)
+        return self.parse_response(response)
 
 
 class SentimentClient(Client):
-    @abstractclassmethod
-    def parse_response(cls, response: requests.Response) -> float:
+    @abstractmethod
+    def parse_response(self, response: Any) -> float:
         """Return sentiment"""
 
-    @classmethod
-    def get_sentiment(cls, text: str) -> float:
-        response = cls.post(text)
-        try:
-            response = cls.handle_error_response(response)
-        except (HTTPException, ExternalApiError):
-            return 0.0
-        return cls.parse_response(response)
+    def get_sentiment(self, text: str) -> float:
+        response = self.request(text)
+        return self.parse_response(response)
 
 
 class PapagoClient(TranslationClient):
