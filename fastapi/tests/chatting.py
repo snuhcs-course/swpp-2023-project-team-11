@@ -5,7 +5,11 @@ from unittest.mock import patch, MagicMock, Mock
 from sqlalchemy import insert, delete
 
 from src.database import Base, DbConnector
+from src.chatting.constants import *
 from src.chatting.dependencies import *
+from src.chatting.intimacy.calculator import *
+from src.chatting.intimacy.factory import *
+from src.chatting.intimacy.handler import *
 from src.chatting.models import *
 from src.chatting.service import *
 from tests.utils import *
@@ -26,105 +30,136 @@ class TestDependencies(unittest.TestCase):
         self.assertEqual(check_counterpart(req, db), dummy_user.user_id)
 
 
-
-class TestPapagoClient(unittest.TestCase):
-    client = PapagoClient
-
-    @unittest.skip("Requires external API keys")
-    def test_translate_text(self):
-        translated = self.client.translate("I am Happy!")
-        #평어체/경어체 논의 후 선택
-        self.assertEqual(translated, "나는 행복해!")
-        with self.assertRaises(ExternalApiError):
-            self.client.translate("")
-
-
-class MockClient(Client):
-    @classmethod
-    def api_error(cls) -> HTTPException:
-        return ExternalApiError()
-
-    @classmethod
-    def api_url(cls) -> str:
-        return ''
-
-    @classmethod
-    def headers(cls) -> Dict[str, str]:
-        return {}
-
-    @classmethod
-    def data(cls, text: str) -> str | Dict[str, str]:
-        return ''
-
-    @classmethod
-    def post(cls, text: str) -> requests.Response:
-        return requests.Response()
-
-
-class MockTranslationClient(TranslationClient, MockClient):
-    @classmethod
-    def parse_response(cls, response: requests.Response) -> str:
-        ''
-
-    @classmethod
-    def translate(cls, text: str) -> str:
-        raise cls.api_error()
-
-
-class MockSentimentClient(SentimentClient, MockClient):
-    @classmethod
-    def parse_response(cls, response: requests.Response) -> float:
-        ''
-
-    @classmethod
-    def get_sentiment(cls, text: str) -> float:
-        raise cls.api_error()
-
-
-class TestIgnoresEmptyInputTranslationClient(unittest.TestCase):
+class TestPapago(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.client = IgnoresEmptyInputTranslationClient(MockTranslationClient)
+        cls.factory = PapagoServiceFactory(
+            PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
+        cls.korean_detection_factory = KoreanDetetionPapagoServiceFactory(
+            PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
+        cls.response = Mock()
+        cls.response.json = Mock(
+            return_value={"message": {"result": {"translatedText": "나는 행복해!"}}})
 
-    def test_translate_text(self):
-        self.assertEqual(self.client.translate(''), '')
-        with self.assertRaises(ExternalApiError):
-            self.client.translate('I am Happy!')
-
-
-class TestClovaClient(unittest.TestCase):
-    client = ClovaClient
     @unittest.skip("Requires external API keys")
-    def test_get_sentiment(self):
-        sentiment = self.client.get_sentiment("I am sad.")
-        sentiment = self.client.get_sentiment("")
-        #the scope of sentiment [-5,10] 
+    def test_api(self):
+        service = self.factory.create_service()
+        translated = service.call("I am Happy!")
+        # 평어체/경어체 논의 후 선택
+        self.assertIn(translated, ["나는 행복해!", "난 행복해!"])
+        with self.assertRaises(ExternalApiError):
+            service.call("")
+        with self.assertRaises(ExternalApiError):
+            service.call("나는 행복해!")
+
+    @unittest.skip("Requires external API keys")
+    def test_korean_detection(self):
+        service = self.korean_detection_factory.create_service()
+        translated = service.call("I am Happy!")
+        # 평어체/경어체 논의 후 선택
+        self.assertIn(translated, ["나는 행복해!", "난 행복해!"])
+        with self.assertRaises(KoreanTranslationException):
+            service.call("나는 행복해!")
+
+    def test_parser(self):
+        parser = self.factory.create_parser()
+        self.assertEqual(parser.parse(self.response), "나는 행복해!")
+
+
+class TestClova(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.factory = ClovaServiceFactory(CLOVA_CLIENT_ID, CLOVA_CLIENT_SECRET)
+        cls.response = Mock()
+        cls.response.json = lambda: {"document": {
+            "confidence": {"positive": 10, "negative": 3}}}
+
+    @unittest.skip("Requires external API keys")
+    def test_api(self):
+        service = self.factory.create_service()
+        sentiment = service.call("나는 슬퍼.")
+        # the scope of sentiment [-5,10]
         self.assertGreaterEqual(sentiment, -5)
-        self.assertLessEqual(sentiment, 10)
+        self.assertLessEqual(sentiment, 0)
         with self.assertRaises(ClovaApiException):
-            self.client.get_sentiment("")
+            service.call("")
+
+    def test_parser(self):
+        parser = self.factory.create_parser()
+        self.assertAlmostEqual(parser.parse(self.response), 0.7)
 
 
-class TestIgnoresEmptyInputSentimentClient(unittest.TestCase):
+class TestHandler(unittest.TestCase):
+    def setUp(self) -> None:
+        self.valid = Mock()
+        self.valid.status_code = 200
+        self.korean = Mock()
+        self.korean.status_code = 400
+        self.korean.json = lambda: {'error': {'errorCode': 'N2MT05'}}
+        self.unknown = Mock()
+        self.unknown.status_code = 400
+        self.unknown.json = lambda: {}
+
+    def test_handler(self):
+        factory = KoreanDetetionPapagoServiceFactory(
+            PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
+        handler = factory.create_handler()
+        self.assertIsInstance(handler, KoreanDetectionPapagoHandler)
+        handler.handle(self.valid)
+        with self.assertRaises(KoreanTranslationException):
+            handler.handle(self.korean)
+        with self.assertRaises(HTTPException):
+            handler.handle(self.unknown)
+
+
+class TestService(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.client = IgnoresEmptyInputSentimentClient(MockSentimentClient)
+        cls.caller = Mock()
+        cls.handler = Mock()
+        cls.parser = Mock()
+        cls.response = Mock()
+        cls.caller.request = Mock(return_value=cls.response)
+        cls.handler.handle = Mock(return_value=None)
+        cls.parser.parse = Mock(side_effect=lambda response: response.value)
+        cls.response.value = 3
 
-    def test_get_sentiment(self):
-        self.assertEqual(self.client.get_sentiment(''), 0)
-        with self.assertRaises(ExternalApiError):
-            self.client.get_sentiment('I am Happy!')
+    def setUp(self) -> None:
+        self.service = Mock()
+        self.error_service = Mock()
+        self.error_service.call = Mock(side_effect=ExternalApiError('call'))
+        self.fallback = Mock()
+        self.ignore_service = IgnoresEmptyTextService(
+            self.service, self.fallback)
+        self.suppress_service = SuppressErrorTextService(
+            self.error_service, self.fallback)
+
+    def test_base(self):
+        service = BaseTextService(self.caller, self.handler, self.parser)
+        self.assertEqual(service.call('hello'), 3)
+        self.handler.handle.assert_called()
+
+    def test_ignores_empty(self):
+        self.ignore_service.call('')
+        self.service.call.assert_not_called()
+        self.fallback.assert_called()
+        self.ignore_service.call('h')
+        self.service.call.assert_called()
+
+    def test_suppress(self):
+        self.suppress_service.call('')
+        self.fallback.assert_called()
 
 
 class TestIntimacyCalculator(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         translation = Mock()
-        translation.translate = Mock()
-        translation.translate.return_value = '나는 행복해!'
+        translation.call = Mock()
+        translation.call.return_value = '나는 행복해!'
         sentiment = Mock()
-        sentiment.get_sentiment = Mock()
-        sentiment.get_sentiment.return_value = 9.9933326082
+        sentiment.call = Mock()
+        sentiment.call.return_value = 9.9933326082
         cls.calculator = IntimacyCalculator(translation, sentiment)
 
     def test_calculate(self):
@@ -316,8 +351,7 @@ class TestDb(unittest.TestCase):
         db.execute(delete(Text))
         db.execute(delete(Chatting))
         db.commit()
-      
-    
+
     @inject_db
     def test_create_chatting(self, db: DbSession):
         chatting = create_chatting(db, self.initiator_id, self.responder_id)
@@ -328,10 +362,10 @@ class TestDb(unittest.TestCase):
         self.assertEqual(chatting.is_terminated, False)
         db.commit()
 
-        #check create_chatting throw exception when chatting already exists
+        # check create_chatting throw exception when chatting already exists
         with self.assertRaises(ChattingAlreadyExistException):
             create_chatting(db, self.initiator_id, self.responder_id)
-      
+
     @inject_db
     def test_chatting(self, db: DbSession):
         chatting = create_chatting(db, self.initiator_id, self.responder_id)
@@ -481,7 +515,6 @@ class TestDb(unittest.TestCase):
         self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "곧 종강이다~!")
         self.assertEqual(len(get_topics(db, 'A', 1, True)), 0)
         self.assertEqual(len(get_topics(db, 'B', 1, True)), 0)
-
 
         self.assertEqual(get_topics(db, 'B', 1, False)[0].topic, "I'm so mad")
         self.assertEqual(get_topics(db, 'A', 1, False)[0].topic, "I'm so good")
