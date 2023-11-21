@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Dict
 
 from fastapi import HTTPException, Request
@@ -25,7 +26,7 @@ class ErrorResponseDocsBuilder:
             "model": cls.__Response,
         }
 
-    def add(self, error: HTTPException):
+    def add(self, error: HTTPException) -> ErrorResponseDocsBuilder:
         status = error.status_code
         if self.__responses.get(status) is None:
             self.__responses[status] = self.__response(error.detail)
