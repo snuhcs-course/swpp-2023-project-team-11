@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 from src.chatting.intimacy.api import ApiCaller
 from src.chatting.intimacy.handler import ErrorHandler
@@ -16,15 +16,15 @@ class TextService(metaclass=ABCMeta):
         """Calls the service and return response"""
 
 
-class TextServiceWithDefault(TextService):
+class TextServiceWithFallback(TextService):
     """An abstract class which has a default value of response."""
 
-    def __init__(self, default: Any):
-        self.__default = default
+    def __init__(self, fallback: Callable[[str], Any]):
+        self.__fallback = fallback
 
     @property
-    def default(self) -> Any:
-        return self.__default
+    def fallback(self) -> Callable[[str], Any]:
+        return self.__fallback
 
 
 class BaseTextService(TextService):
@@ -44,35 +44,35 @@ class BaseTextService(TextService):
         return self.parser.parse(response)
 
 
-class IgnoresEmptyTextService(TextServiceWithDefault):
+class IgnoresEmptyTextService(TextServiceWithFallback):
     """
     A proxy of text service with proxy pattern
     which ignores an empty text before calling the text service.
     """
 
-    def __init__(self, service: TextService, default: Any):
-        super().__init__(default)
+    def __init__(self, service: TextService, fallback: Callable[[str], Any]):
+        super().__init__(fallback)
         self.__service = service
 
     def call(self, text: str) -> Any:
         if len(text) == 0:
-            return self.default
+            return self.fallback(text)
 
         return self.__service.call(text)
 
 
-class SuppressErrorTextService(TextServiceWithDefault):
+class SuppressErrorTextService(TextServiceWithFallback):
     """
     A proxy of text service with proxy pattern
-    which suppresses all errors raised by handler and returns default.
+    which suppresses all errors raised by handler and calls fallback.
     """
 
-    def __init__(self, service: TextService, default: Any):
-        super().__init__(default)
+    def __init__(self, service: TextService, fallback: Callable[[str], Any]):
+        super().__init__(fallback)
         self.__service = service
 
     def call(self, text: str) -> Any:
         try:
             return self.__service.call(text)
         except ExternalApiError:
-            return self.default
+            return self.fallback(text)

@@ -1,6 +1,5 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from chatting.intimacy.service import TextService
 
 from src.chatting.exceptions import *
 from src.chatting.intimacy.api import *

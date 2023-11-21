@@ -52,7 +52,7 @@ class NotOkHandler(BaseErrorHandler):
     """An error handler which raises exception unless the status code is 200"""
 
     def __init__(self, exc: Type[HTTPException]) -> None:
-        super.__init__()
+        super().__init__()
         self.exc = exc
 
     def handle(self, response: Response) -> None:
@@ -62,11 +62,12 @@ class NotOkHandler(BaseErrorHandler):
             return super().handle(response)
 
 
-class KoreanDetectionPapagoHandler(ErrorHandler):
+class KoreanDetectionPapagoHandler(BaseErrorHandler):
     """A CoR pattern that filters errors by korean input."""
 
     def handle(self, response: Response) -> None:
-        if response.status_code == 400 and response.json().get('errorCode') == 'N2MT05':
+        data = response.json()
+        if response.status_code == 400 and data.get('error') is not None and data['error'].get('errorCode') == 'N2MT05':
             raise KoreanTranslationException()
         else:
             return super().handle(response)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+import json
 from typing import Dict
 
 from requests import Response, post
@@ -27,17 +28,7 @@ class ApiCaller(metaclass=ABCMeta):
         """Sends an external API request."""
 
 
-class PostApiCaller(ApiCaller):
-    """An abstract client with default behavior using post method."""
-
-    def request(self, text: str) -> Response:
-        url = self.api_url()
-        headers = self.headers()
-        data = self.data(text)
-        return post(url, data=data, headers=headers)
-
-
-class PapagoApiCaller(PostApiCaller):
+class PapagoApiCaller(ApiCaller):
     API_URL: str = "https://naveropenapi.apigw.ntruss.com/nmt/v1/translation"
 
     def __init__(self, client_id: str, client_secret: str) -> None:
@@ -60,8 +51,12 @@ class PapagoApiCaller(PostApiCaller):
             text = text[:999]
         return {"source": "auto", "target": "ko", "text": text}
 
+    def request(self, text: str) -> Response:
+        data = self.data(text)
+        return post(self.api_url, data=data, headers=self.headers)
 
-class ClovaApiCaller(PostApiCaller):
+
+class ClovaApiCaller(ApiCaller):
     API_URL: str = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
 
     def __init__(self, client_id: str, client_secret: str) -> None:
@@ -82,3 +77,7 @@ class ClovaApiCaller(PostApiCaller):
 
     def data(self, text: str) -> Dict[str, str]:
         return {"content": text}
+
+    def request(self, text: str) -> Response:
+        data = self.data(text)
+        return post(self.api_url, data=json.dumps(data), headers=self.headers)

@@ -21,7 +21,7 @@ class BaseParser(Parser):
         return response.json()
 
 
-class PapagoParser(Parser):
+class PapagoParser(BaseParser):
     """Parses papago response."""
 
     def parse(self, response: Response) -> Any:
@@ -29,7 +29,7 @@ class PapagoParser(Parser):
         return data["message"]["result"]["translatedText"]
 
 
-class ClovaParser(Parser):
+class ClovaParser(BaseParser):
     """Parses clova response."""
 
     def parse(self, response: Response) -> Any:
