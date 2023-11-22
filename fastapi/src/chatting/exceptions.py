@@ -1,4 +1,3 @@
-from typing import Any
 from fastapi import HTTPException
 
 from src.exceptions import ExternalApiError
@@ -23,6 +22,12 @@ class PapagoApiException(ExternalApiError):
     def __init__(self) -> None:
         super().__init__(detail="translation")
 
+
 class ChattingAlreadyExistException(HTTPException):
     def __init__(self):
         super().__init__(400, detail='chatting already exist')
+
+
+class KoreanTranslationException(ExternalApiError):
+    def __init__(self) -> None:
+        super().__init__(detail="does not support korean to korean translation")
