@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:mobile_app/app/data/dio_instance.dart';
 import 'package:mobile_app/app/domain/models/intimacy.dart';
@@ -14,19 +16,23 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
     const path = "/chatting/topic";
 
     try {
-      final response = await dio.get<Map<String, dynamic>>(baseUrl + path,
-          queryParameters: {"chatting_id": chattingRoomId});
+      final response = await dio.get<String>(
+          baseUrl + path,
+          queryParameters: {"chatting_id": chattingRoomId, "limit": 3},
+        options: Options(headers: {'accept': 'application/json'})
+      );
       final data = response.data;
       if (data == null) throw Exception();
 
       print(response.data);
+      Iterable l = json.decode(response.data!);
 
-      Topic topic = Topic.fromJson(data);
-      return Result.success([topic]);
+      List<Topic> topics = List<Topic>.from(l.map((element) => Topic.fromJson(element)));
+      return Result.success(topics);
     } on DioException catch (e) {
       // 이걸로 분기를 해서 대응해라
       final statusCode = e.response?.statusCode;
-      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      print("로드맵 주제 추천 통신 에러 발생 $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
     } catch (e, s) {
       print("알 수 없는 에러 발생");

@@ -55,7 +55,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
           color: Colors.white, borderRadius: BorderRadius.circular(10)),
       child: Center(
           child: Text(
-            KoreanWordParserUtil.makeTopicSentence(topics[index].topic),
+            "${"추천".tr} ${index+1}: ${KoreanWordParserUtil.makeTopicSentence(topics[index].topic)}",
             textAlign: TextAlign.center,
             softWrap: true,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),

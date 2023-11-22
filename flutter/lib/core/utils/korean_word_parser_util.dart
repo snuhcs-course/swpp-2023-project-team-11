@@ -6,7 +6,7 @@ class KoreanWordParserUtil {
 
   static String makeTopicSentence(text) {
       bool thirdLetterPresent = checkBottomConsonant(text);
-      String uncutSentence = (thirdLetterPresent)? text + "을 해보는건 어떨까?" : text + "를 해보는건 어떨까?";
+      String uncutSentence = text;
       return keepWord(uncutSentence);
   }
 

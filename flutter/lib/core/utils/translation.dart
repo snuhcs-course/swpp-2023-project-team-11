@@ -137,7 +137,7 @@ class MyTranslation extends Translations {
       "내 프로필": "My Profile",
       "프로필 편집" : "Edit Profile",
       "언어 변경" : "Change Language",
-      "Sneki의 추천" : "Sneki's Recommendation",
+      "Sneki의 추천" : "Sneki's Suggestion",
       "아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요" : "A recommendation hasn't been made yet. Please chat more",
       "새로운 추천을 원해요": "I want new recommendations",
       "enum": "@value",
@@ -146,6 +146,7 @@ class MyTranslation extends Translations {
       "아니요" : "No",
       "수락되지 않은 채팅방입니다" : "Not an accepted chatroom yet",
       "더 이상 사용하지 않는 채팅방입니다" : "Chatroom no longer used",
+      "추천": "Suggestion"
 
     },
     "kr" : {
