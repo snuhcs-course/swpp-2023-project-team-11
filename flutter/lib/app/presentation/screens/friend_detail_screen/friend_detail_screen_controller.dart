@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/domain/use_cases/request_chatting_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
 import 'package:mobile_app/app/presentation/screens/friend_detail_screen/widgets/chatting_wait_bottom_sheet.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/loading_util.dart';
 
 class FriendDetailScreenController extends GetxController {
@@ -109,6 +112,15 @@ class FriendDetailScreenController extends GetxController {
         counterPartEmail: user.email,
         whenSuccess: _whenRequestSuccess,
         whenFail: () {
+          Fluttertoast.showToast(
+            msg: "해당 유저와는 이미 채팅이 진행되고 있어요".tr,
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: MyColor.purple,
+              textColor: Colors.white,
+              fontSize: 15.0
+          );
           print("채팅방 생성 실패...");
         },
       );
