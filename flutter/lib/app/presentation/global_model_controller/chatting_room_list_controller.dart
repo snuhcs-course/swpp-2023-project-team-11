@@ -66,7 +66,16 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
       );
       targetRoomController.addChat(chat);
       // every time we listen to a new chat, change the most recent chat for that chatroom
+
       sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
+      // need to change : 이렇게 하니까 순서는 안 바뀌긴 하네요 !!!
+      change(
+        (
+        roomForMain: [..._validRooms, ..._requestingRooms, ..._terminatedRooms],
+        roomForRequested: [..._requestedRooms]
+        ),
+        status: RxStatus.success(),
+      );
       // need to check number of chat. To be used for updating intimacy
 
       if (checkIntimacyUpdateCondition(chat)){

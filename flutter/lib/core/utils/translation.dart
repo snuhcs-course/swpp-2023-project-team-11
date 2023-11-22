@@ -147,7 +147,8 @@ class MyTranslation extends Translations {
       "수락되지 않은 채팅방입니다" : "Not an accepted chatroom yet",
       "더 이상 사용하지 않는 채팅방입니다" : "Chatroom no longer used",
       "추천": "Suggestion",
-      "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user"
+      "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user",
+      "방금 전" : "Just now",
 
     },
     "kr" : {

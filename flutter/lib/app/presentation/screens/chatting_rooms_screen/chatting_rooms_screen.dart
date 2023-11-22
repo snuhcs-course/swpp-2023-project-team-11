@@ -184,7 +184,7 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                                                     .latestChatMessage(chatroom.id)
                                                     .characters
                                                     .length >
-                                                30)
+                                                25)
                                             ? "..."
                                             : ""))
                                     : "채팅을 시작해봐요!".tr)
