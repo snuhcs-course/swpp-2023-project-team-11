@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        fontFamily: 'pretendard'
       ),
       // 여기가 핵심, Get을 활용하여 라우팅을 어떻게 관리하는가에 대한
       initialRoute: Routes.ENTRY,
