@@ -381,6 +381,7 @@ class TestDb(unittest.TestCase):
             db, self.initiator_id, False)), 1)
         self.assertEqual(len(get_all_chattings(
             db, self.responder_id, False)), 1)
+       
         with self.assertRaises(ChattingNotExistException):
             get_chatting_by_id(db, -1)
 
