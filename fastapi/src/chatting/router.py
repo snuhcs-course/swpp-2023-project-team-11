@@ -8,6 +8,7 @@ from src.auth.exceptions import InvalidSessionException
 from src.chatting import service
 from src.chatting.dependencies import *
 from src.chatting.exceptions import *
+from src.chatting.intimacy.calculator import *
 from src.chatting.mapper import *
 from src.chatting.schemas import *
 from src.database import DbConnector
@@ -113,7 +114,7 @@ def get_all_texts(seq_id: int = Query(-1, description="if specified, returns the
     .build()
 )
 def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
-                    calculator: service.IntimacyCalculator = Depends(
+                    calculator: IntimacyCalculator = Depends(
                         get_intimacy_calculator),
                     db: DbSession = Depends(DbConnector.get_db)) -> IntimacyResponse:
     recent_intimacy, is_default = service.get_intimacy(
@@ -153,7 +154,6 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
     .add(InvalidSessionException())
     .build()
 )
-
 def get_topic_recommendation(
         chatting_id: int,
         limit: int = Query(
