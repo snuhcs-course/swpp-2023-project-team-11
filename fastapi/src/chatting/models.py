@@ -51,7 +51,7 @@ class Topic(Base):
     __tablename__ = "topic"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    topic: Mapped[str] = Column(String, nullable=False)
+    topic_kor: Mapped[str] = Column(String, nullable=False)
+    topic_eng: Mapped[str] = Column(String, nullable=False)
     tag: Mapped[str] = Column(String, nullable=False)
-    is_korean: Mapped[bool] = Column(Boolean, nullable=False, default=True)
     #tag A = 제일 친함 / B = 친함 / C = 보통
