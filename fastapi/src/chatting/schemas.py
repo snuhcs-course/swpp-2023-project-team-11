@@ -37,5 +37,6 @@ class IntimacyResponse(BaseModel):
 
 
 class TopicResponse(BaseModel):
-    topic: str = Field(examples=["좋아하는 책에 대한 이야기"])
+    topic_kor: str = Field(examples=["좋아하는 책에 대한 이야기"])
+    topic_eng: str = Field(examples=["Talk about your favorite book"])
     tag: str = Field(examples=["C"])
