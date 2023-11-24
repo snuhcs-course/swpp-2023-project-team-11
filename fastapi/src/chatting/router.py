@@ -162,8 +162,7 @@ def get_topic_recommendation(
         db: DbSession = Depends(DbConnector.get_db)) -> List[TopicResponse]:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
-    is_korean = service.is_korean_by_user_id(db, user_id)
-    topics = service.get_topics(db, tag, limit, is_korean)
+    topics = service.get_topics(db, tag, limit)
 
     return list(from_topic(topic) for topic in topics)
 
