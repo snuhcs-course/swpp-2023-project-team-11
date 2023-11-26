@@ -119,6 +119,28 @@ def create_profile(db: DbSession, profile: ProfileData) -> int:
     return profile_id
 
 
+def create_user_tag(db: DbSession, user_id: int, req: UpdateUserRequest):
+    keys = ["food", "movie", "hobby", "location", "lang"]
+    tables = [user_food, user_movie, user_hobby, user_location, user_lang]
+    models: List[Base] = [Food, Movie, Hobby, Location, Language]
+    items_list: List[List[str]] = [req.food, req.movie, req.hobby, req.location, req.lang]
+    exceptions = [InvalidFoodException, InvalidMovieException, InvalidHobbyException, InvalidLocationException, InvalidLanguageException]
+    for key, table, model, items, exception in zip(keys, tables, models, items_list, exceptions):
+        column = f"{key}_id"
+        create_user_item(db, user_id, table, column, model, items, exception)
+
+
+def delete_user_tag(db: DbSession, user_id: int, req: UpdateUserRequest):
+    keys = ["food", "movie", "hobby", "location", "lang"]
+    tables = [user_food, user_movie, user_hobby, user_location, user_lang]
+    models: List[Base] = [Food, Movie, Hobby, Location, Language]
+    items_list: List[List[str]] = [req.food, req.movie, req.hobby, req.location, req.lang]
+    exceptions = [InvalidFoodException, InvalidMovieException, InvalidHobbyException, InvalidLocationException, InvalidLanguageException]
+    for key, table, model, items, exception in zip(keys, tables, models, items_list, exceptions):
+        column = f"{key}_id"
+        delete_user_item(db, user_id, table, column, model, items, exception)
+
+
 def get_language_by_name(db: DbSession, name: str) -> int:
     lang_id = db.scalar(select(Language.id).where(Language.name == name))
     if lang_id is None:
@@ -172,6 +194,18 @@ def create_user_item(db: DbSession, profile_id: int, table: Table, column: str, 
             "user_id": profile_id,
             column: select(model.id).where(model.name == item)
         }for item in items]))
+    except IntegrityError:
+        raise exception()
+
+
+def delete_user_item(db: DbSession, profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException]):
+    """Raises `@exception`"""
+
+    if len(items) == 0:
+        return
+    try:
+        # TODO Write Query to delete item
+        pass
     except IntegrityError:
         raise exception()
 
