@@ -85,6 +85,44 @@ def create_user(req: CreateUserRequest, verification_id: int = Depends(check_ver
     return SessionResponse(access_token=session_key, token_type="bearer")
 
 
+@router.put(
+    "/tag/create",
+    description="Add user profile tags",
+    summary="Add user tags",
+    responses=ErrorResponseDocsBuilder()
+    .add(InvalidSessionException())
+    .add(InvalidUserException())
+    .add(InvalidFoodException())
+    .add(InvalidHobbyException())
+    .add(InvalidMovieException())
+    .add(InvalidLocationException())
+    .add(InvalidLanguageException())
+    .build()
+)
+def update_user_tag_create(req: UpdateUserRequest, user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> None:
+    service.create_user_tag(db, user_id, req)
+    db.commit()
+
+
+@router.put(
+    "/tag/delete",
+    description="Remove user profile tags",
+    summary="Remove user tags",
+    responses=ErrorResponseDocsBuilder()
+    .add(InvalidSessionException())
+    .add(InvalidUserException())
+    .add(InvalidFoodException())
+    .add(InvalidHobbyException())
+    .add(InvalidMovieException())
+    .add(InvalidLocationException())
+    .add(InvalidLanguageException())
+    .build()
+)
+def update_user_tag_delete(req: UpdateUserRequest, user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> None:
+    service.delete_user_tag(db, user_id, req)
+    db.commit()
+
+
 @router.get(
     "/me",
     description="Get user profile",

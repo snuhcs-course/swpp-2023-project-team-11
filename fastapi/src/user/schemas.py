@@ -1,6 +1,6 @@
 from datetime import date
 from enum import Enum
-from typing import List
+from typing import Annotated, List
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -49,6 +49,14 @@ class CreateUserRequest(BaseModel):
         description="user's main language", examples=["korean"])
     languages: List[str] = Field(
         description="for korean students: desiring languages, for foreign students: available languages", examples=[["japanese", "english"]])
+
+
+class UpdateUserRequest(BaseModel):
+    food: List[str] = Field(default=[], description="list of food tags", examples=[["korean"]])
+    movie: List[str] = Field(default=[], description="list of movie tags", examples=[["action"]])
+    hobby: List[str] = Field(default=[], description="list of hobby tags", examples=[["yoga"]])
+    location: List[str] = Field(default=[], description="list of location tags", examples=[["jahayeon"]])
+    lang: List[str] = Field(default=[], description="list of desired/available languages", examples=[["korean"]])
 
 
 class UserResponse(BaseModel):
