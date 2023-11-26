@@ -166,16 +166,3 @@ def get_topic_recommendation(
     topics = service.get_topics(db, tag, limit, is_korean)
 
     return list(from_topic(topic) for topic in topics)
-
-# # TODO get intimacy endpoint 두 개 다 없애고 get chatting에 Intimacy 추가해서 보내기
-# @router.get("/intimacy", response_model=IntimacyResponse)
-# def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
-#                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
-#     return from_intimacy(intimacy)
-
-# @router.get("/intimacy/all", response_model=List[IntimacyResponse])
-# def get_all_intimacy(chatting_id: int, session: Session = Depends(get_session),
-#                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_all_intimacies(db, user_id, chatting_id, None, None)
-#     return list(from_intimacy(intimacy) for intimacy in intimacy)
