@@ -14,7 +14,7 @@ from src.chatting.schemas import *
 from src.database import DbConnector
 from src.exceptions import ErrorResponseDocsBuilder
 from src.user.exceptions import InvalidUserException
-from src.user.service import get_similarity, get_mbti_f, get_user_dataframe
+from src.user.service import get_similarity, get_mbti_f, get_user_dataframe, is_korean_by_user_id
 
 router = APIRouter(prefix="/chatting", tags=["chatting"])
 
