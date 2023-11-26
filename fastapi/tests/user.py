@@ -288,6 +288,8 @@ class TestDb(unittest.TestCase):
 
     @inject_db
     def tearDown(self, db: DbSession) -> None:
+        db.execute(delete(User).where(User.verification_id == select(EmailVerification.id).join(EmailVerification.email).where(Email.email == self.email)))
+        db.execute(delete(Profile).where(Profile.name == self.name))
         db.execute(delete(Email).where(Email.email == self.email))
         db.commit()
 
@@ -394,6 +396,7 @@ class TestDb(unittest.TestCase):
         main_lang_id = get_language_by_name(db, 'A')
         salt, hash = generate_salt_hash(self.password)
         db.commit()
+
         profile = ProfileData(
             name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
             nation_code=13, foods=[], movies=[], hobbies=[], locations=[]
@@ -403,6 +406,8 @@ class TestDb(unittest.TestCase):
         profile_id = create_profile(db, profile)
         create_user(db, req, verification_id,
                     profile_id, main_lang_id, salt, hash)
+        db.commit()
+
         update_req = UpdateUserRequest(
             food=["A", "B"], movie=["A", "B"], hobby=["A", "B"],
             location=["A", "B"], lang=["A"]
@@ -419,17 +424,21 @@ class TestDb(unittest.TestCase):
             set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
         self.assertEqual(
             set(map(lambda item: item.name, user.languages)), {'A'})
-        db.commit()
-        user = get_user_by_id(db, profile_id)
-        update_req = UpdateUserRequest(
-            food=["A", "C"], movie=["A", "B"], hobby=["A", "B"],
-            location=["A", "B"], lang=["B"]
-        )
-        create_user_tag(db, profile_id, update_req)
-        print(set(map(lambda item: item.name, user.profile.foods)))
+
+        update_req.food[1] = "X"
+        with self.assertRaises(InvalidFoodException):
+            create_user_tag(db, profile_id, update_req)
+        db.rollback()
+        update_req.movie[1] = "C"
         self.assertEqual(
-            set(map(lambda item: item.name, user.profile.foods)),  {"A", "B", "C"}
+            set(map(lambda item: item.name, user.profile.movie)),  {"A", "B", "C"}
         )
+        db.commit()
+
+
+
+
+
 
     @inject_db
     def test_get_target_users(self, db: DbSession):
