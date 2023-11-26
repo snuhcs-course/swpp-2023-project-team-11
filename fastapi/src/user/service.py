@@ -206,7 +206,7 @@ def delete_user_item(db: DbSession, profile_id: int, table: Table, column: str, 
     try:
         # TODO Write Query to delete item
         for item in items:
-            db.execute(delete(table).where(table.c.user_id == profile_id).where(table.c[column] == select(model.id).where(model.name == item)))
+            db.execute(delete(table).where(table.c.user_id == profile_id).where(table.c[column] == select(model.id).where(model.name == item).subquery()))
             
     except IntegrityError:
         raise exception()
