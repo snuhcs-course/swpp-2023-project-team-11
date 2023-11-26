@@ -92,6 +92,11 @@ def create_user(req: CreateUserRequest, verification_id: int = Depends(check_ver
     responses=ErrorResponseDocsBuilder()
     .add(InvalidSessionException())
     .add(InvalidUserException())
+    .add(InvalidFoodException())
+    .add(InvalidHobbyException())
+    .add(InvalidMovieException())
+    .add(InvalidLocationException())
+    .add(InvalidLanguageException())
     .build()
 )
 def update_user_tag_create(req: UpdateUserRequest, user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> None:
@@ -106,6 +111,11 @@ def update_user_tag_create(req: UpdateUserRequest, user_id: int = Depends(check_
     responses=ErrorResponseDocsBuilder()
     .add(InvalidSessionException())
     .add(InvalidUserException())
+    .add(InvalidFoodException())
+    .add(InvalidHobbyException())
+    .add(InvalidMovieException())
+    .add(InvalidLocationException())
+    .add(InvalidLanguageException())
     .build()
 )
 def update_user_tag_delete(req: UpdateUserRequest, user_id: int = Depends(check_session), db: DbSession = Depends(DbConnector.get_db)) -> None:

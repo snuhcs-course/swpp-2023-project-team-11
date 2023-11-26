@@ -288,7 +288,7 @@ class TestDb(unittest.TestCase):
 
     @inject_db
     def tearDown(self, db: DbSession) -> None:
-        db.execute(delete(User).where(User.verification_id == select(EmailVerification.id).join(EmailVerification.email).where(Email.email == self.email)))
+        db.execute(delete(User).where(User.verification_id == select(EmailVerification.id).join(EmailVerification.email).where(Email.email == self.email).scalar_subquery()))
         db.execute(delete(Profile).where(Profile.name == self.name))
         db.execute(delete(Email).where(Email.email == self.email))
         db.commit()
@@ -413,6 +413,7 @@ class TestDb(unittest.TestCase):
             location=["A", "B"], lang=["A"]
         )
         create_user_tag(db, profile_id, update_req)
+        db.commit()
         user = get_user_by_id(db, profile_id)
         self.assertEqual(
             set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'})
@@ -425,20 +426,49 @@ class TestDb(unittest.TestCase):
         self.assertEqual(
             set(map(lambda item: item.name, user.languages)), {'A'})
 
+        update_req.movie[1] = "C"
+        create_user_tag(db, profile_id, update_req)
+        db.commit()
+        user = get_user_by_id(db, profile_id)
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.movies)), {'A', 'B', 'C'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.languages)), {'A'})
+    
         update_req.food[1] = "X"
         with self.assertRaises(InvalidFoodException):
             create_user_tag(db, profile_id, update_req)
         db.rollback()
-        update_req.movie[1] = "C"
-        self.assertEqual(
-            set(map(lambda item: item.name, user.profile.movie)),  {"A", "B", "C"}
+
+        update_req = UpdateUserRequest(
+            food=["A"], movie=["A", "B"], hobby=["A"],
+            location=["A", "B"], lang=["A"]
         )
+        delete_user_tag(db, profile_id, update_req)
         db.commit()
+        user = get_user_by_id(db, profile_id)
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.foods)), {"B"})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.movies)), {"C"})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.hobbies)), {"B"})
+        self.assertEqual(len(user.profile.locations), 0)
+        self.assertEqual(len(user.languages), 0)
 
-
-
-
-
+        update_req = UpdateUserRequest(
+            food=[], movie=[], hobby=["X"],
+            location=[], lang=[]
+        )
+        with self.assertRaises(InvalidHobbyException):
+            delete_user_tag(db, profile_id, update_req)
+        db.rollback()
 
     @inject_db
     def test_get_target_users(self, db: DbSession):

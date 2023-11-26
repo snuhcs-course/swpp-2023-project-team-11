@@ -201,15 +201,10 @@ def create_user_item(db: DbSession, profile_id: int, table: Table, column: str, 
 def delete_user_item(db: DbSession, profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException]):
     """Raises `@exception`"""
 
-    if len(items) == 0:
-        return
-    try:
-        # TODO Write Query to delete item
-        for item in items:
-            db.execute(delete(table).where(table.c.user_id == profile_id).where(table.c[column] == select(model.id).where(model.name == item).subquery()))
-            
-    except IntegrityError:
-        raise exception()
+    for item in items:
+        result = db.execute(delete(table).where(table.c.user_id == profile_id).where(table.c[column] == select(model.id).where(model.name == item).scalar_subquery()))
+        if result.rowcount == 0:
+            raise exception()
 
 
 def sort_target_users(user: User, targets: List[User]) -> List[User]:
