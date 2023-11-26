@@ -51,6 +51,14 @@ class CreateUserRequest(BaseModel):
         description="for korean students: desiring languages, for foreign students: available languages", examples=[["japanese", "english"]])
 
 
+class UpdateUserRequest(BaseModel):
+    food: List[str] | None = Field(None, description="list of food tags", examples=[["korean"]]),
+    movie: List[str] | None = Field(None, description="list of movie tags", examples=[["action"]]),
+    hobby: List[str] | None = Field(None, description="list of hobby tags", examples=[["yoga"]]),
+    location: List[str] | None = Field(None, description="list of location tags", examples=[["jahayeon"]]),
+    lang: List[str] | None = Field(None, description="list of desired/available languages", examples=[["korean"]]),
+
+
 class UserResponse(BaseModel):
     name: str = Field(description="user name", examples=["SNEK"])
     email: EmailStr = Field(description="SNU email",
