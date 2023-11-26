@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import random
 from smtplib import SMTP_SSL
-from sqlalchemy import insert, select, alias, update
+from sqlalchemy import insert, select, alias, update, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DbSession
 from typing import List, Tuple
@@ -205,7 +205,9 @@ def delete_user_item(db: DbSession, profile_id: int, table: Table, column: str, 
         return
     try:
         # TODO Write Query to delete item
-        pass
+        for item in items:
+            db.execute(delete(table).where(table.c.user_id == profile_id).where(table.c[column] == select(model.id).where(model.name == item)))
+            
     except IntegrityError:
         raise exception()
 
