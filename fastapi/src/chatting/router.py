@@ -29,7 +29,7 @@ router = APIRouter(prefix="/chatting", tags=["chatting"])
 def get_all_chattings(is_approved: bool = Query(description="get approved chattings or non-approve-chattings"),
                       limit: int | None = None, user_id: int = Depends(check_session),
                       db: DbSession = Depends(DbConnector.get_db)) -> List[ChattingResponse]:
-    return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
+    return list(from_chatting(chatting, user_id) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
 
 
 @router.post(
@@ -45,7 +45,7 @@ def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
     chatting = service.create_chatting(db, user_id, responder_id)
     db.commit()
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.put(
@@ -63,7 +63,7 @@ def update_chatting(chatting_id: int, user_id: int = Depends(check_session),
     service.create_intimacy(db, [user_id, chatting.initiator_id], chatting.id)
     db.commit()
 
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.delete(
@@ -80,7 +80,7 @@ def delete_chatting(chatting_id: int, user_id: int = Depends(check_session),
     chatting = service.terminate_chatting(db, user_id, chatting_id)
     db.commit()
 
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.get(

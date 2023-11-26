@@ -17,6 +17,8 @@ class ChattingResponse(BaseModel):
     is_approved: bool = Field(
         description="whether chatting is approved by responder")
     is_terminated: bool = Field(description="whether chatting is terminated")
+    recent_intimacy: float = Field(
+        description="recent intimacy value", examples=[41.37262])
     created_at: datetime
 
 

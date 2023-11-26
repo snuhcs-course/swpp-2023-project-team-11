@@ -17,6 +17,7 @@ class Chatting(Base):
     is_terminated: Mapped[bool] = Column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = Column(DateTime, nullable=False)
 
+    intimacies: Mapped[list["Intimacy"]] = relationship(back_populates="chatting")
     initiator: Mapped[User] = relationship(foreign_keys=[initiator_id])
     responder: Mapped[User] = relationship(foreign_keys=[responder_id])
 
@@ -43,7 +44,7 @@ class Intimacy(Base):
     intimacy: Mapped[float] = Column(Float, nullable=False)
     timestamp: Mapped[datetime] = Column(DateTime, nullable=False)
 
-    chatting: Mapped[Chatting] = relationship()
+    chatting: Mapped[Chatting] = relationship(back_populates="intimacies")
     user: Mapped[User] = relationship()
 
 
