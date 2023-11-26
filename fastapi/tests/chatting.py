@@ -502,36 +502,54 @@ class TestDb(unittest.TestCase):
         db.execute(
             insert(Topic).values(
                 [
-                    {"topic": "I'm so good", "tag": "A", "is_korean": False},
-                    {"topic": "I'm so mad", "tag": "B", "is_korean": False},
-                    {"topic": "I'm so sad", "tag": "C", "is_korean": False},
-                    {"topic": "I'm so happy", "tag": "C", "is_korean": False},
-                    {"topic": "곧 종강이다~!", "tag": "C", "is_korean": True}
+                    {"topic_kor": "좋아용", "topic_eng": "I'm so good", "tag": "A"},
+                    {"topic_kor": "화나요!!", "topic_eng": "I'm so mad", "tag": "B"},
+                    {"topic_kor": "사랑해", "topic_eng": "I love you", "tag": "B"},
+                    {"topic_kor": "슬퍼요...","topic_eng": "I'm so sad", "tag": "C"},
+                    {"topic_kor": "행복해요~!~!", "topic_eng": "I'm so happy", "tag": "C"},
+                    {"topic_kor": "곧 종강이다~!", "topic_eng": "Jong-Gang", "tag": "C"}
                 ]
             )
         )
         db.commit()
-        self.assertIn(get_topics(db, 'C', 1, False)[0].topic, [
-                      "I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "곧 종강이다~!")
-        self.assertEqual(len(get_topics(db, 'A', 1, True)), 0)
-        self.assertEqual(len(get_topics(db, 'B', 1, True)), 0)
 
-        self.assertEqual(get_topics(db, 'B', 1, False)[0].topic, "I'm so mad")
-        self.assertEqual(get_topics(db, 'A', 1, False)[0].topic, "I'm so good")
-        # get_topics 함수의 return 값이 random 정렬 되었는지 확인
-        test_list = get_topics(db, 'C', 2, False)
-        self.assertNotEqual(test_list[0].topic, test_list[1].topic)
+        topics_a = get_topics(db, "A", 1)
+        topics_b = get_topics(db, "B", 2)
+        topics_c = get_topics(db, "C", 5)
+
+        # if get_topics get correct topics by tag
+
+        for topic in topics_a:
+            self.assertEqual(topic.topic_kor, "좋아용")
+            self.assertEqual(topic.topic_eng, "I'm so good")
+        for topic in topics_b:
+            self.assertIn(topic.topic_kor, ["사랑해", "화나요!!"])
+            self.assertIn(topic.topic_eng, ["I love you", "I'm so mad"])
+        for topic in topics_c:
+            self.assertIn(topic.topic_kor, ["슬퍼요...", "행복해요~!~!", "곧 종강이다~!"])
+            self.assertIn(topic.topic_eng, ["I'm so sad", "I'm so happy", "Jong-Gang"])
+
+        # if it contains invalid tag or limit = 0
+        self.assertEqual(len(get_topics(db, "D", 2)), 0)
+        self.assertEqual(len(get_topics(db, "C", 0)), 0)
+
+        # # get_topics 함수의 return 값이 random 정렬 되었는지 확인
+        test_list = get_topics(db, 'B', 2)
+        self.assertNotEqual(test_list[0].topic_kor, test_list[1].topic_kor)
+        self.assertNotEqual(test_list[0].topic_eng, test_list[1].topic_eng)
         self.assertEqual(len(test_list), 2)
-        if test_list[0] == "I'm so sad":
-            self.assertEqual(test_list[1].topic, "I'm so happy")
-        elif test_list[0] == "I'm so happy":
-            self.assertEqual(test_list[1].topic, "I'm so sad")
+        if test_list[0].topic_eng == "I'm so mad":
+            self.assertEqual(test_list[1].topic_kor, "사랑해")
+            self.assertEqual(test_list[1].topic_eng, "I love you")
+        elif test_list[0].topic_eng == "I love you":
+            self.assertEqual(test_list[1].topic_kor, "화나요!!")
+            self.assertEqual(test_list[1].topic_eng, "I'm so mad")
 
-        # topic 개수보다 많은 개수를 요청할 경우
-        self.assertEqual(len(get_topics(db, 'C', 3, False)), 2)
-        self.assertEqual(len(get_topics(db, 'C', 4, False)), 2)
-        self.assertEqual(len(get_topics(db, 'B', 5, False)), 1)
+
+        # if requested more than number of topics
+        self.assertEqual(len(get_topics(db, 'C', 3)), 3)
+        self.assertEqual(len(get_topics(db, 'C', 4)), 3)
+        self.assertEqual(len(get_topics(db, 'B', 5)), 2)
 
 
 if __name__ == "__main__":

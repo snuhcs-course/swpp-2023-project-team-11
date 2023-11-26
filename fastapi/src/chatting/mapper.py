@@ -44,6 +44,7 @@ def from_intimacy(intimacy: Intimacy) -> IntimacyResponse:
 
 def from_topic(topic: Topic) -> TopicResponse:
     return TopicResponse(
-        topic=topic.topic,
+        topic_kor=topic.topic_kor,
+        topic_eng=topic.topic_eng,
         tag=topic.tag,
     )
