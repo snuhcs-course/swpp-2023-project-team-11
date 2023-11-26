@@ -8,13 +8,13 @@ from src.auth.exceptions import InvalidSessionException
 from src.chatting import service
 from src.chatting.dependencies import *
 from src.chatting.exceptions import *
-from src.chatting.intimacy.calculator import IntimacyCalculator
+from src.chatting.intimacy.calculator import *
 from src.chatting.mapper import *
 from src.chatting.schemas import *
 from src.database import DbConnector
 from src.exceptions import ErrorResponseDocsBuilder
 from src.user.exceptions import InvalidUserException
-from src.user.service import get_similarity, get_mbti_f, get_user_dataframe
+from src.user.service import get_similarity, get_mbti_f, get_user_dataframe, is_korean_by_user_id
 
 router = APIRouter(prefix="/chatting", tags=["chatting"])
 
@@ -154,7 +154,6 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
     .add(InvalidSessionException())
     .build()
 )
-
 def get_topic_recommendation(
         chatting_id: int,
         limit: int = Query(
@@ -163,7 +162,7 @@ def get_topic_recommendation(
         db: DbSession = Depends(DbConnector.get_db)) -> List[TopicResponse]:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
-    is_korean = service.is_korean_by_user_id(db, user_id)
+    is_korean = is_korean_by_user_id(db, user_id)
     topics = service.get_topics(db, tag, limit, is_korean)
 
     return list(from_topic(topic) for topic in topics)
