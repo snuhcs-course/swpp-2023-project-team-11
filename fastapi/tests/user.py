@@ -386,6 +386,52 @@ class TestDb(unittest.TestCase):
         db.rollback()
 
     @inject_db
+    def test_update_user(self, db: DbSession):
+        email_id = db.scalar(insert(Email).values(
+            {"email": self.email}).returning(Email.id))
+        verification_id = db.scalar(insert(EmailVerification).values(
+            {"email_id": email_id, "token": self.token}).returning(EmailVerification.id))
+        main_lang_id = get_language_by_name(db, 'A')
+        salt, hash = generate_salt_hash(self.password)
+        db.commit()
+        profile = ProfileData(
+            name=self.name, birth=date.today(), sex="male", major="Hello", admission_year=2023,
+            nation_code=13, foods=[], movies=[], hobbies=[], locations=[]
+        )
+        req = CreateUserRequest(email=self.email, token=self.token, password=self.password,
+                                profile=profile, main_language="", languages=[])
+        profile_id = create_profile(db, profile)
+        create_user(db, req, verification_id,
+                    profile_id, main_lang_id, salt, hash)
+        update_req = UpdateUserRequest(
+            food=["A", "B"], movie=["A", "B"], hobby=["A", "B"],
+            location=["A", "B"], lang=["A"]
+        )
+        create_user_tag(db, profile_id, update_req)
+        user = get_user_by_id(db, profile_id)
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.foods)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.movies)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.hobbies)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.locations)), {'A', 'B'})
+        self.assertEqual(
+            set(map(lambda item: item.name, user.languages)), {'A'})
+        db.commit()
+        user = get_user_by_id(db, profile_id)
+        update_req = UpdateUserRequest(
+            food=["A", "C"], movie=["A", "B"], hobby=["A", "B"],
+            location=["A", "B"], lang=["B"]
+        )
+        create_user_tag(db, profile_id, update_req)
+        print(set(map(lambda item: item.name, user.profile.foods)))
+        self.assertEqual(
+            set(map(lambda item: item.name, user.profile.foods)),  {"A", "B", "C"}
+        )
+
+    @inject_db
     def test_get_target_users(self, db: DbSession):
         kor_user = db.query(User).join(User.profile).where(
             Profile.name == 'user1').first()
