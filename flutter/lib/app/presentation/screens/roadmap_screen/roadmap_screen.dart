@@ -5,6 +5,7 @@ import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/korean_word_parser_util.dart';
+import 'package:mobile_app/core/utils/translation.dart';
 
 // ignore: unused_import
 import 'roadmap_screen_controller.dart';
@@ -40,7 +41,12 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
         controller: controller.scrollController,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         itemBuilder: (context, index) {
-          return _buildTopicContainer(topics, index);
+          return GestureDetector(
+            child: _buildTopicContainer(topics, index),
+            onTap: (){
+              print("pressed suggestion bubble");
+              controller.onSuggestionBubbleTap(topics[index]);
+            });
         },
         separatorBuilder: (context, index) {
           return const SizedBox(height: 16);
@@ -55,7 +61,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
           color: Colors.white, borderRadius: BorderRadius.circular(10)),
       child: Center(
           child: Text(
-            "${"추천".tr} ${index+1}: ${KoreanWordParserUtil.makeTopicSentence(topics[index].topic)}",
+            "${"추천".tr} ${index+1}: ${KoreanWordParserUtil.makeTopicSentence(MyLanguageUtil.isKr? topics[index].topic_kor : topics[index].topic_eng)}",
             textAlign: TextAlign.center,
             softWrap: true,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),

@@ -4,7 +4,9 @@ import 'package:mobile_app/app/presentation/global_model_controller/chatting_roo
 import 'package:mobile_app/app/presentation/widgets/app_bars.dart';
 import 'package:mobile_app/app/presentation/widgets/bottom_chatting_form.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
+import 'package:mobile_app/core/utils/string_parser_util.dart';
 
 // ignore: unused_import
 import 'room_screen_controller.dart';
@@ -44,20 +46,38 @@ class RoomScreen extends GetView<RoomScreenController> {
                 if (index>0) {
                   priorChatVm = controller.validChattingRoomController.chatVmList[index-1];
                 }
-                return ChatMessage(
-                  text: chatVm.text,
-                  senderType: chatVm.senderType,
-                  key: ValueKey(chatVm.sequenceId),
-                  tempProxy: chatVm.temp,
-                  needsDelete: chatVm.needsDelete,
-                  onDelete: () {
-                    print(chatVm.sequenceId);
-                    print("try delete");
-                    controller.onChatDeleteButtonTap(chatVm.sequenceId);
-                  },
-                  senderEmail: controller.opponentEmail,
-                  sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
-                ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
+                if(chatVm.text.startsWith(roadmap_prefix)){
+                  // is a roadmap suggestion chat
+                  return ChatMessage(
+                    text: StringParserUtil.buildRoadmapText(chatVm.text), // parse adequately
+                    senderType: SenderType.sneki,
+                    key: ValueKey(chatVm.sequenceId),
+                    // tempProxy: chatVm.temp,
+                    // needsDelete: chatVm.needsDelete,
+                    isRoadmapChat: true,
+                    onDelete: () {
+                      print(chatVm.sequenceId);
+                      print("try delete");
+                      controller.onChatDeleteButtonTap(chatVm.sequenceId);
+                    },
+                    sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == SenderType.sneki,
+                  ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
+                } else{
+                  return ChatMessage(
+                    text: chatVm.text,
+                    senderType: chatVm.senderType,
+                    key: ValueKey(chatVm.sequenceId),
+                    tempProxy: chatVm.temp,
+                    needsDelete: chatVm.needsDelete,
+                    onDelete: () {
+                      print(chatVm.sequenceId);
+                      print("try delete");
+                      controller.onChatDeleteButtonTap(chatVm.sequenceId);
+                    },
+                    senderEmail: controller.opponentEmail,
+                    sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
+                  ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
+                }
               },
               separatorBuilder: (context, index) {
                 return const SizedBox(height: 10);
@@ -70,7 +90,6 @@ class RoomScreen extends GetView<RoomScreenController> {
             BottomChattingForm(
               textEditingController: controller.chattingCon,
               onPressed: controller.enableSendButton.value? controller.onSendButtonTap: null,
-              hintText: "선택 완료 시 우측 보내기 버튼 클릭",
               context: context,
               focusNode: controller.chattingFocusNode,
             ),
@@ -78,6 +97,8 @@ class RoomScreen extends GetView<RoomScreenController> {
       ),
     );
   }
+
+  
 }
 
 

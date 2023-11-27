@@ -139,7 +139,7 @@ class MyTranslation extends Translations {
       "언어 변경" : "Change Language",
       "Sneki의 추천" : "Sneki's Suggestion",
       "아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요" : "A recommendation hasn't been made yet. Please chat more",
-      "새로운 추천을 원해요": "I want new recommendations",
+      "새로운 추천을 원해요": "I want new suggestions",
       "enum": "@value",
       '정말로 진행중인 채팅에서 나갈건가요?' : "Do you really want to\nleave an ongoing chatroom?",
       "네" : "Yes",
@@ -149,6 +149,7 @@ class MyTranslation extends Translations {
       "추천": "Suggestion",
       "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user",
       "방금 전" : "Just now",
+      'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어떄요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
 
     },
     "kr" : {
