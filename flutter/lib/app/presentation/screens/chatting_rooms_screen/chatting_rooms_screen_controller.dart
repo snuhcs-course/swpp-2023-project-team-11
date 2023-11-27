@@ -11,6 +11,7 @@ import 'package:mobile_app/app/presentation/widgets/basic_dialog.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/loading_util.dart';
+import 'package:mobile_app/core/utils/string_parser_util.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +34,7 @@ class ChattingRoomsScreenController extends GetxController{
   String latestChatMessage(int chatRoomId){
     Chat chat = Chat.fromJson(json.decode(spC.getString(chatRoomId.toString())!));
     // print("parsed result = ${chat}");
-    return chat.message;
+    return StringParserUtil.buildRoadmapText(chat.message);
   }
 
   DateTime timeOfLatestChatMessage(ChattingRoom chattingRoom){

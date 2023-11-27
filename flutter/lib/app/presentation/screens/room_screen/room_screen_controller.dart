@@ -75,10 +75,10 @@ class RoomScreenController extends GetxController {
     ).deleteChat(seqId);
   }
   void onSnekiTap() {
-    Get.put<RoomScreenController>(
-      RoomScreenController(sendChatUseCase: _sendChatUseCase),
-      tag: this.chattingRoom.id.toString()
-    );
+    // Get.put<RoomScreenController>(
+    //   RoomScreenController(sendChatUseCase: _sendChatUseCase),
+    //   tag: this.chattingRoom.id.toString()
+    // );
     Get.toNamed(Routes.Maker(nextRoute: Routes.ROADMAP), arguments: chattingRoom);
   }
 
