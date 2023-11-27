@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/translation.dart';
+import 'package:mobile_app/main.dart';
 
 class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -148,6 +150,8 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                       actionFunction!();
                     } else if (value ==1) {
                       MyLanguageUtil.toggle();
+                      sp.setString(language_setting, MyLanguageUtil.getLocale.toString());
+                      print(MyLanguageUtil.getLocale.toString());
                     }
 
                   })
