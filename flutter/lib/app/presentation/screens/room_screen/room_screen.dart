@@ -75,7 +75,7 @@ class RoomScreen extends GetView<RoomScreenController> {
                       controller.onChatDeleteButtonTap(chatVm.sequenceId);
                     },
                     senderEmail: controller.opponentEmail,
-                    sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == chatVm.senderType,
+                    sameSenderWithBeforeMessage: index==0?false : (!priorChatVm.text.startsWith(roadmap_prefix)) && (priorChatVm.senderType == chatVm.senderType),
                   ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
                 }
               },
