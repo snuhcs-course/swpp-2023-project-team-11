@@ -76,7 +76,7 @@ class ChatMessage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   color: MyColor.orange_1.withOpacity(0.9),
                 ),
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 280),
                 child: Text(
                   // roadmap message format:
                   // ex) "ROADMAP_MESSAGE!Discuss worst movies or dramas"

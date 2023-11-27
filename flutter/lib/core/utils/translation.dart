@@ -149,7 +149,7 @@ class MyTranslation extends Translations {
       "추천": "Suggestion",
       "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user",
       "방금 전" : "Just now",
-      'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어떄요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
+      'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어때요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
 
     },
     "kr" : {
