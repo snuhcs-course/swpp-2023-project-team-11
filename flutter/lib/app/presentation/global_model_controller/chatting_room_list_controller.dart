@@ -15,6 +15,7 @@ import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.da
 import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/main.dart';
 
 class ChattingRoomListController extends SuperController<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
@@ -80,7 +81,10 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
 
       if (checkIntimacyUpdateCondition(chat)){
         sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
-        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){}, whenFail: (){});
+        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){
+          sp.setDouble("${chat.chattingRoomId}/${lastUpdatedIntimacyValue}", intimacy.intimacy);
+          print("updated sp intimacy value");
+        }, whenFail: (){});
       }
 
     });
