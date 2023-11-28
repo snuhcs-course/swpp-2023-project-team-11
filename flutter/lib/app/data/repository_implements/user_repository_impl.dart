@@ -82,21 +82,32 @@ class UserRepositoryImpl implements UserRepository {
     const path_delete = "/user/tag/delete";
 
     try{
-      final response = dio.put(baseUrl + path_create, data: createData);
+      final response = await dio.put(baseUrl + path_create, data: createData);
+      print("response edit: ${response.statusCode}");
+
     } on DioException catch(e) {
       // 이걸로 분기를 해서 대응해라
       final statusCode = e.response?.statusCode;
-      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      print("통신 에러 발생 (Create) $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
+    } catch (e) {
+      print("알 수 없는 에러 발생");
+      print(e);
+      return Result.fail(DefaultIssue.unknown);
     }
 
     try{
-      final response = dio.put(baseUrl + path_delete, data: createData);
+      final response = await dio.put(baseUrl + path_delete, data: deleteData);
+      print("response edit: ${response.statusCode}");
     } on DioException catch(e) {
       // 이걸로 분기를 해서 대응해라
       final statusCode = e.response?.statusCode;
-      print("통신 에러 발생 $statusCode, data : ${e.response?.data}");
+      print("통신 에러 발생 (Delete) $statusCode, data : ${e.response?.data}");
       return Result.fail(DefaultIssue.badRequest);
+    } catch (e) {
+      print("알 수 없는 에러 발생");
+      print(e);
+      return Result.fail(DefaultIssue.unknown);
     }
 
     return Result.success(0);

@@ -15,33 +15,30 @@ class ProfileScreenController extends GetxController {
 
   final languagesEditMode = false.obs;
 
-
-
-
-  final List<Map<String, Language>> languages1 = [
-    {"영어": Language.english},
-    {"스페인어": Language.spanish},
-    {"중국어": Language.chinese},
-    {"아랍어": Language.arabic},
-    {"힌디어": Language.hindi},
-    {"태국어": Language.thai},
-    {"그리스어": Language.greek},
-    {"베트남어": Language.vietnamese},
-    {"핀란드어": Language.finnish},
-    {"히브리어": Language.hebrew},
+  final List<Language> languagesList1 = [
+    Language.english,
+    Language.spanish,
+    Language.chinese,
+    Language.arabic,
+    Language.hindi,
+    Language.thai,
+    Language.greek,
+    Language.vietnamese,
+    Language.finnish,
+    Language.hebrew,
   ];
-  final List<Map<String, Language>> languages2 = [
-    {"프랑스어": Language.french},
-    {"일본어": Language.japanese},
-    {"독일어": Language.german},
-    {"러시아어": Language.russian},
-    {"포르투갈어": Language.portuguese},
-    {"이탈리아어": Language.italian},
-    {"네덜란드어": Language.dutch},
-    {"스웨덴어": Language.swedish},
-    {"터키어": Language.turkish},
+  final List<Language> languagesList2 = [Language.french,
+    Language.japanese, Language.german,
+    Language.russian,
+    Language.portuguese,
+    Language.italian,
+    Language.dutch,
+    Language.swedish,
+    Language.turkish,
   ];
 
+  final RxList<Language> toAdd = <Language>[].obs;
+  final RxList<Language> toRemove = <Language>[].obs;
 
   void onLogOutButtonTap() async {
     LoadingUtil.withLoadingOverlay(asyncFunction: () async {
@@ -50,8 +47,8 @@ class ProfileScreenController extends GetxController {
   }
 
   void onProfileEditActivateTap() async {
-    print("editing profile mode activated");
-    languagesEditMode.value = false;
+    print("need to erase this function");
+    // languagesEditMode.value = false;
   }
 
   // functions for editing languages category
@@ -61,46 +58,58 @@ class ProfileScreenController extends GetxController {
 
   void onLanguagesEditCompleteTap() async {
     // need to call update user profile at the repo at this point
-    // await _editProfileUseCase.call({"lang": toAdd.value}, {"lang": toRemove.value}, () {print("profile edit success");}, () {print("profile edit fail");});
+    // print(toAdd.value);
+    List<String> toAddString = [];
+    toAdd.forEach((element) {toAddString.add(element.enName.toLowerCase());});
+    List<String> toRemoveString = [];
+    toRemove.forEach((element) {toRemoveString.add(element.enName.toLowerCase());});
+
+    print("add: ${toAddString}, remove: ${toRemoveString}");
+
+    await _editProfileUseCase
+        .call({"lang": toAddString}, {"lang": toRemoveString}, () {
+      print("profile edit success");
+    }, () {
+      print("profile edit fail");
+    });
 
     User user = userController.user;
-    user.getLanguages.addAll(toAdd.value);
-    for (Language l in toRemove.value) {
+    user.getLanguages.addAll(toAdd);
+    for (Language l in toRemove) {
       user.getLanguages.remove(l);
     }
 
-    toAdd.value.clear();
-    toRemove.value.clear();
+    toAdd.clear();
+    toRemove.clear();
 
     print("language edit complete");
     languagesEditMode.value = false;
   }
 
-  final RxList<Language> toAdd = <Language>[].obs;
-  final RxList<Language> toRemove = <Language>[].obs;
+
 
   void languagesEditManager(Language languageOfInterest) {
-    if (toAdd.value.contains(languageOfInterest)) {
-      toAdd.value.remove(languageOfInterest);
-    } else if (toRemove.value.contains(languageOfInterest)) {
-      toRemove.value.remove(languageOfInterest);
+    if (toAdd.contains(languageOfInterest)) {
+      toAdd.remove(languageOfInterest);
+    } else if (toRemove.contains(languageOfInterest)) {
+      toRemove.remove(languageOfInterest);
     } else if (userController.userLanguages.contains(languageOfInterest)) {
-      toRemove.value.add(languageOfInterest);
+      toRemove.add(languageOfInterest);
     } else {
-      toAdd.value.add(languageOfInterest);
+      toAdd.add(languageOfInterest);
     }
 
     toAdd.refresh();
     toRemove.refresh();
 
     print(userController.userLanguages);
-    print("current result: ${toAdd.value} and ${toRemove.value}");
+    print("current result: ${toAdd} and ${toRemove}");
   }
 
   bool languageStatusCheck(Language languageOfInterest) {
-    if (toAdd.value.contains(languageOfInterest) ||
+    if (toAdd.contains(languageOfInterest) ||
         (userController.userLanguages.contains(languageOfInterest) &&
-            !toRemove.value.contains(languageOfInterest))) {
+            !toRemove.contains(languageOfInterest))) {
       return true;
     }
     return false;
@@ -114,9 +123,8 @@ class ProfileScreenController extends GetxController {
     Get.offAllNamed(Routes.ENTRY);
   }
 
-  ProfileScreenController(
-      {required SignOutUseCase signOutUseCase,
-      required EditProfileUseCase editProfileUseCase})
+  ProfileScreenController({required SignOutUseCase signOutUseCase,
+    required EditProfileUseCase editProfileUseCase})
       : _signOutUseCase = signOutUseCase,
         _editProfileUseCase = editProfileUseCase;
 }

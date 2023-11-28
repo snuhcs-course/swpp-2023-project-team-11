@@ -341,27 +341,27 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         children: [
           Row(
             children: [
-              for(var language in controller.languages1) if (language.values.first != controller.userController.userMainLanguage) Align(
+              for(var language in controller.languagesList1) if (language != controller.userController.userMainLanguage) Align(
                 child: GestureDetector(
                   onTap: () {
-                    controller.languagesEditManager(language.values.first);
+                    controller.languagesEditManager(language);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: controller.languageStatusCheck(language.values.first) ? MyColor
+                        border: Border.all(color: controller.languageStatusCheck(language) ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
                     padding: const EdgeInsets.all(6),
                     margin: const EdgeInsets.all(4),
                     child: Text(
-                      language.keys.first,
+                      language.toString(),
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: controller.languageStatusCheck(language.values.first)
+                        fontWeight: controller.languageStatusCheck(language)
                             ? FontWeight.bold
                             : FontWeight.w500,
-                        color: controller.languageStatusCheck(language.values.first) ? MyColor
+                        color: controller.languageStatusCheck(language) ? MyColor
                             .orange_1 : MyColor
                             .textBaseColor,
                       ),
@@ -373,27 +373,27 @@ class ProfileScreen extends GetView<ProfileScreenController> {
           ),
           Row(
             children: [
-              for(var language in controller.languages2) if (language.values.first != controller.userController.userMainLanguage) Align(
+              for(var language in controller.languagesList2) if (language != controller.userController.userMainLanguage) Align(
                 child: GestureDetector(
                   onTap: () {
-                    controller.languagesEditManager(language.values.first);
+                    controller.languagesEditManager(language);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: controller.languageStatusCheck(language.values.first) ? MyColor
+                        border: Border.all(color: controller.languageStatusCheck(language) ? MyColor
                             .orange_1 : Colors.black.withOpacity(0.1),
                             width: 1)),
                     padding: const EdgeInsets.all(6),
                     margin: const EdgeInsets.all(4),
                     child: Text(
-                      language.keys.first,
+                      language.toString(),
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: controller.languageStatusCheck(language.values.first)
+                        fontWeight: controller.languageStatusCheck(language)
                             ? FontWeight.bold
                             : FontWeight.w500,
-                        color: controller.languageStatusCheck(language.values.first) ? MyColor
+                        color: controller.languageStatusCheck(language) ? MyColor
                             .orange_1 : MyColor
                             .textBaseColor,
                       ),
