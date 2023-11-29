@@ -40,7 +40,7 @@ class RoadmapScreenController extends GetxController
       chattingRoomId: chattingRoom.id.toString(),
     );
 
-    // validchattingroom controller에 안넣어도 괜찮을까요!?
+    // validchattingroom controller에 안넣어도 괜찮을까요!? .. proxy를 로드맵은 꺼둔 상태
     // put the sent chat into validchattingroom controller
     // RoomScreenController roomScreenController =
     //     Get.find(tag: chattingRoom.id.toString());

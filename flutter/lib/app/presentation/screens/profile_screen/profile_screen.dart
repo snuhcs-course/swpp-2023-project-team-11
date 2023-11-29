@@ -21,7 +21,6 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         userName: controller.userController.userName,
         userEmail: controller.userController.userEmail,
         isMyProfile: true,
-        actionFunction: controller.onProfileEditActivateTap,
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
@@ -45,24 +44,43 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                         color: MyColor.textBaseColor.withOpacity(0.8)),
                   ),
                   Obx(() {
-                    return _buildEditCompleteButton();
+                    return _buildEditPencilButton(
+                        controller.onLanguagesEditActivateTap,
+                        controller.onLanguagesEditCompleteTap,
+                        controller.languagesEditMode.value);
                   })
                 ],
               ),
               const SizedBox(height: 8),
               Obx(() {
-                return _buildLanguageList();
+                return _buildLanguagesList();
               }),
               const SizedBox(height: 24),
-              Text(
-                "좋아하는 것들".tr,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: MyColor.textBaseColor.withOpacity(0.8)),
+              Row(
+                children: [
+                  Text(
+                    "좋아하는 것들".tr,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: MyColor.textBaseColor.withOpacity(0.8)),
+                  ),
+                  Obx(() {
+                    return _buildEditPencilButton(
+                        controller.onLikeTagsEditActivateTap,
+                        controller.onLikeTagsEditCompleteTap,
+                        controller.likeTagsEditMode.value);
+                  }),
+                  Obx(() {
+                    return (controller.likeTagsEditMode.value)? Text("탭을 해 태그를 추가/삭제해봐요".tr, style: TextStyle(
+                        fontSize: 12, color: MyColor.textBaseColor),):SizedBox.shrink();
+                  })
+                ],
               ),
               const SizedBox(height: 8),
-              _buildLikeContainer(),
+              Obx(() {
+                return _buildLikeContainer();
+              }),
               const SizedBox(height: 24),
               MainButton(
                   mainButtonType: MainButtonType.key,
@@ -76,25 +94,25 @@ class ProfileScreen extends GetView<ProfileScreenController> {
     );
   }
 
-  Container _buildEditCompleteButton() {
+  Container _buildEditPencilButton(void Function() startEditMode,
+      void Function() endEditMode, bool editModeObs) {
     return Container(
-                      height: 20,
-                      alignment: Alignment.topCenter,
-                      child: (controller.languagesEditMode.value)
-                          ? IconButton(
-                        onPressed: controller.onLanguagesEditCompleteTap,
-                        icon: const Icon(Icons.done_outline_outlined,
-                            size: 18, color: MyColor.orange_1),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      )
-                          : IconButton(
-                        onPressed: controller.onLanguagesEditActivateTap,
-                        icon: const Icon(Icons.edit,
-                            size: 18, color: MyColor.orange_1),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ));
+        height: 20,
+        alignment: Alignment.topCenter,
+        child: (editModeObs)
+            ? IconButton(
+          onPressed: endEditMode,
+          icon: const Icon(Icons.done_outline_outlined,
+              size: 18, color: MyColor.orange_1),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        )
+            : IconButton(
+          onPressed: startEditMode,
+          icon: const Icon(Icons.edit, size: 18, color: MyColor.orange_1),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ));
   }
 
   Container _buildLikeContainer() {
@@ -113,7 +131,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     fontWeight: FontWeight.w600,
                     color: MyColor.textBaseColor.withOpacity(0.8))),
             const SizedBox(height: 6),
-            _buildHobbyContainer(),
+            _buildTagContainer(Hobby.music),
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
@@ -123,7 +141,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     fontWeight: FontWeight.w600,
                     color: MyColor.textBaseColor.withOpacity(0.8))),
             const SizedBox(height: 6),
-            _buildFoodContainer(),
+            _buildTagContainer(FoodCategory.korean),
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
@@ -133,7 +151,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     fontWeight: FontWeight.w600,
                     color: MyColor.textBaseColor.withOpacity(0.8))),
             const SizedBox(height: 6),
-            _buildMovieContainer(),
+            _buildTagContainer(MovieGenre.animation),
             const SizedBox(height: 6),
             Divider(color: Colors.black.withOpacity(0.1), thickness: 1),
             const SizedBox(height: 6),
@@ -143,7 +161,7 @@ class ProfileScreen extends GetView<ProfileScreenController> {
                     fontWeight: FontWeight.w600,
                     color: MyColor.textBaseColor.withOpacity(0.8))),
             const SizedBox(height: 6),
-            _buildLocationContainer()
+            _buildTagContainer(Location.highEngineering),
           ],
         ),
       ),
@@ -201,110 +219,97 @@ class ProfileScreen extends GetView<ProfileScreenController> {
     );
   }
 
-  Container _buildHobbyContainer() {
-    return Container(
-        child: Wrap(
-          children: [
-            for (Hobby hobby in controller.userController.userProfile.hobbies)
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xfff8f1fb)),
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 10),
-                margin: const EdgeInsets.all(4),
-                child: Text(
-                  hobby.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: MyColor.textBaseColor,
+  Widget _buildTagContainer(dynamic typeElement) {
+    if (controller.likeTagsEditMode.value) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            children: [
+              for (dynamic item in controller.currentList(typeElement)!)
+                GestureDetector(
+                  onTap: (){controller.onRemoveItemTap(item);},
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: const Color(0xfff8f1fb)),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 10),
+                    margin: const EdgeInsets.all(4),
+                    child: Text(
+                      item.toString(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: MyColor.textBaseColor,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ));
-  }
-
-  Container _buildFoodContainer() {
-    return Container(
-        child: Wrap(
-          children: [
-            for (FoodCategory foodCategory
-            in controller.userController.userProfile.foodCategories)
               Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xfff8f1fb)),
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 10),
-                margin: const EdgeInsets.all(4),
-                child: Text(
-                  foodCategory.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: MyColor.textBaseColor,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  height: 36, width: 30,
+                  child: IconButton(onPressed: (){
+                    // open list of tags
+                    controller.editModeBool(typeElement)!.value = !controller.editModeBool(typeElement)!.value;
+                  }, icon: const Icon(Icons.add_rounded, color: MyColor.orange_1, size: 24), padding: EdgeInsets.zero, constraints: BoxConstraints(),)),
+            ],
+          ),
+          if (controller.editModeBool(typeElement)!.value) Divider(color: MyColor.orange_1.withOpacity(0.2), thickness: 1),
+          if (controller.editModeBool(typeElement)!.value) Wrap(
+            children: [
+              for (dynamic item in controller.fullList(typeElement)!) if (!controller.currentList(typeElement)!.contains(item))
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: MyColor.orange_1.withOpacity(0.1)),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8, horizontal: 10),
+                  margin: const EdgeInsets.all(4),
+                  child: GestureDetector(
+                    onTap: (){controller.onAddItemTap(item);},
+                    child: Text(
+                      item.toString(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: MyColor.textBaseColor,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ));
-  }
-
-  Container _buildMovieContainer() {
-    return Container(
-        child: Wrap(
-          children: [
-            for (MovieGenre moviegenre
-            in controller.userController.userProfile.movieGenres)
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xfff8f1fb)),
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 10),
-                margin: const EdgeInsets.all(4),
-                child: Text(
-                  moviegenre.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: MyColor.textBaseColor,
+            ],
+          )
+        ],
+      );
+    } else{
+      return Container(
+          child: Wrap(
+            children: [
+              for (dynamic item in controller.userProfileList(typeElement)!)
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xfff8f1fb)),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8, horizontal: 10),
+                  margin: const EdgeInsets.all(4),
+                  child: Text(
+                    item.toString(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: MyColor.textBaseColor,
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ));
+            ],
+          ));
+    }
   }
 
-  Container _buildLocationContainer() {
-    return Container(
-        child: Wrap(
-          children: [
-            for (Location location
-            in controller.userController.userProfile.locations)
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xfff8f1fb)),
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 10),
-                margin: const EdgeInsets.all(4),
-                child: Text(
-                  location.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: MyColor.textBaseColor,
-                  ),
-                ),
-              ),
-          ],
-        ));
-  }
-
-  Widget _buildLanguageList() {
+  Widget _buildLanguagesList() {
     if (controller.languagesEditMode.value) {
       return _buildLanguagesEditList();
     } else {
@@ -341,69 +346,76 @@ class ProfileScreen extends GetView<ProfileScreenController> {
         children: [
           Row(
             children: [
-              for(var language in controller.languagesList1) if (language != controller.userController.userMainLanguage) Align(
-                child: GestureDetector(
-                  onTap: () {
-                    controller.languagesEditManager(language);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: controller.languageStatusCheck(language) ? MyColor
-                            .orange_1 : Colors.black.withOpacity(0.1),
-                            width: 1)),
-                    padding: const EdgeInsets.all(6),
-                    margin: const EdgeInsets.all(4),
-                    child: Text(
-                      language.toString(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: controller.languageStatusCheck(language)
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: controller.languageStatusCheck(language) ? MyColor
-                            .orange_1 : MyColor
-                            .textBaseColor,
+              for (var language in controller.languagesList1)
+                if (language != controller.userController.userMainLanguage)
+                  Align(
+                    child: GestureDetector(
+                      onTap: () {
+                        controller.languagesEditManager(language);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: controller.languageStatusCheck(language)
+                                    ? MyColor.orange_1
+                                    : Colors.black.withOpacity(0.1),
+                                width: 1)),
+                        padding: const EdgeInsets.all(6),
+                        margin: const EdgeInsets.all(4),
+                        child: Text(
+                          language.toString(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: controller.languageStatusCheck(language)
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: controller.languageStatusCheck(language)
+                                ? MyColor.orange_1
+                                : MyColor.textBaseColor,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              )
+                  )
             ],
           ),
           Row(
             children: [
-              for(var language in controller.languagesList2) if (language != controller.userController.userMainLanguage) Align(
-                child: GestureDetector(
-                  onTap: () {
-                    controller.languagesEditManager(language);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: controller.languageStatusCheck(language) ? MyColor
-                            .orange_1 : Colors.black.withOpacity(0.1),
-                            width: 1)),
-                    padding: const EdgeInsets.all(6),
-                    margin: const EdgeInsets.all(4),
-                    child: Text(
-                      language.toString(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: controller.languageStatusCheck(language)
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: controller.languageStatusCheck(language) ? MyColor
-                            .orange_1 : MyColor
-                            .textBaseColor,
+              for (var language in controller.languagesList2)
+                if (language != controller.userController.userMainLanguage)
+                  Align(
+                    child: GestureDetector(
+                      onTap: () {
+                        controller.languagesEditManager(language);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: controller.languageStatusCheck(language)
+                                    ? MyColor.orange_1
+                                    : Colors.black.withOpacity(0.1),
+                                width: 1)),
+                        padding: const EdgeInsets.all(6),
+                        margin: const EdgeInsets.all(4),
+                        child: Text(
+                          language.toString(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: controller.languageStatusCheck(language)
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: controller.languageStatusCheck(language)
+                                ? MyColor.orange_1
+                                : MyColor.textBaseColor,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              )
+                  )
             ],
           ),
-
         ],
       ),
     );

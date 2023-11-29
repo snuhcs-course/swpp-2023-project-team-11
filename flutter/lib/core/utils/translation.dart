@@ -152,7 +152,8 @@ class MyTranslation extends Translations {
       'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어때요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
       "친밀도 산출을 위해 조금만 더 채팅해주세요" : "Please chat a little more",
       "현재 친밀도: ": "Current intimacy: ",
-      "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!"
+      "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!",
+      "탭을 해 태그를 추가/삭제해봐요" : "Tap to add/remove tags",
 
 
     },
