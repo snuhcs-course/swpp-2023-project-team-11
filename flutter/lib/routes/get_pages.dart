@@ -18,6 +18,8 @@ import 'package:mobile_app/app/presentation/screens/roadmap_screen/roadmap_scree
 import 'package:mobile_app/app/presentation/screens/roadmap_screen/roadmap_screen_binding.dart';
 import 'package:mobile_app/app/presentation/screens/room_screen/room_screen.dart';
 import 'package:mobile_app/app/presentation/screens/room_screen/room_screen_binding.dart';
+import 'package:mobile_app/app/presentation/screens/splash_screen/splash_screen.dart';
+import 'package:mobile_app/app/presentation/screens/splash_screen/splash_screen_binding.dart';
 import 'package:mobile_app/routes/middle_ware.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
@@ -32,6 +34,11 @@ import '../app/presentation/screens/password_screen/password_screen_binding.dart
 
 abstract class GetPages {
   static get pages => [
+        GetPage(
+          name: Routes.SPLASH,
+          page: () => const SplashScreen(),
+          binding: SplashScreenBinding(),
+        ),
         GetPage(
           name: Routes.ENTRY,
           page: () => const EntryScreen(),
@@ -110,10 +117,10 @@ abstract class GetPages {
           page: () => const RoomScreen(),
           binding: RoomScreenBinding(),
         ),
-    GetPage(
-  name: Routes.MAIN + Routes.ROOM + Routes.ROADMAP,
-  page: () => const RoadmapScreen(),
-  binding: RoadmapScreenBinding(),
-)
+        GetPage(
+          name: Routes.MAIN + Routes.ROOM + Routes.ROADMAP,
+          page: () => const RoadmapScreen(),
+          binding: RoadmapScreenBinding(),
+        )
       ];
 }

@@ -16,10 +16,11 @@ class SnekBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     items = [
       BottomNavigationBarItem(
-          icon: (currentIndex == 0)
-              ? Image.asset("assets/images/home_filled.png", height: 24)
-              : Image.asset("assets/images/home.png", height: 24),
-          label: "0"),
+        icon: (currentIndex == 0)
+            ? Image.asset("assets/images/home_filled.png", height: 24)
+            : Image.asset("assets/images/home.png", height: 24),
+        label: "0",
+      ),
       BottomNavigationBarItem(
           icon: (currentIndex == 1)
               ? Image.asset("assets/images/chat-round-dots_filled.png", height: 24)
@@ -52,14 +53,18 @@ class SnekBottomNavigationBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.min,
-        children: items
+        children: items.asMap().entries
             .map(
               (item) => GestureDetector(
-                  onTap: () => onTap.call(int.parse(item.label!)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: item.icon,
-                  )),
+                onTap: () => onTap.call(int.parse(item.value.label!)),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  key: ValueKey(item.key),
+                  child: item.value.icon,
+
+                ),
+              ),
             )
             .toList(),
       ),

@@ -7,6 +7,7 @@ import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 import 'package:mobile_app/core/constants/environment.dart';
 
 class AuthServiceImpl implements AuthService {
+  const AuthServiceImpl();
   static const _authStorage = FlutterSecureStorage();
 
   @override

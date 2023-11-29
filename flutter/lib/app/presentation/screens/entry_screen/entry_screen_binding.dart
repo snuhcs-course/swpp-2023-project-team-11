@@ -9,17 +9,12 @@ import 'entry_screen_controller.dart';
 class EntryScreenBinding implements Bindings {
   @override
   void dependencies() {
-    Get.put(
-      EntryScreenController(
-        signInUseCase: SignInUseCase(
-          authService: AuthServiceImpl(),
-          userRepository: UserRepositoryImpl()
-        ),
-        signUpUseCase: SignUpUseCase(
-          authService: AuthServiceImpl(),
-        ), automaticSignInUseCase: AutomaticSignInUseCase(authService: AuthServiceImpl(),
-          userRepository: UserRepositoryImpl()),
+    Get.put(EntryScreenController(
+      signInUseCase:
+          SignInUseCase(authService: AuthServiceImpl(), userRepository: UserRepositoryImpl()),
+      signUpUseCase: SignUpUseCase(
+        authService: AuthServiceImpl(),
       ),
-    );
+    ));
   }
 }
