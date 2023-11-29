@@ -130,12 +130,12 @@ class ChattingRoomListController extends SuperController<
             : DateTime.timestamp();
     print(lastIntimacyUpdateTimeStamp);
 
-    // return true when this is 1st, 11st, ... chat to the chatroom after listening
-    // return true when this chat is more than 1 minutes later than the last update
-    if (numChat % 10 == 0) return true;
+    // return true when this is 1st, 21st, ... chat to the chatroom after listening
+    // return true when this chat is more than 2 minutes later than the last update
+    if (numChat % 20 == 0) return true;
     if (DateTime.timestamp()
             .difference(lastIntimacyUpdateTimeStamp)
-            .compareTo(const Duration(minutes: 1)) >
+            .compareTo(const Duration(minutes: 2)) >
         0) {
       return true;
     }
