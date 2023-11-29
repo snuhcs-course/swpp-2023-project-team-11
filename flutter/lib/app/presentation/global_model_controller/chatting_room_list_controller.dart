@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
@@ -16,6 +18,7 @@ import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/core/constants/system_strings.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/main.dart';
 
 class ChattingRoomListController extends SuperController<
@@ -61,13 +64,22 @@ class ChattingRoomListController extends SuperController<
   Future<void> _openChatConnection() async {
     print("use case 호출해서 session 열기");
     _centerChatStreamSubscription = await _openChatConnectionUseCase.call(
-      onReceiveChat: (chat) {
+      onReceiveChat: (chat) async {
         print("receive");
         // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom
         final bool validRoomForChatExists =
             _validRooms.where((element) => element.id == chat.chattingRoomId).isNotEmpty;
         if (!validRoomForChatExists) {
-          reloadRooms();
+          await reloadRooms();
+          Fluttertoast.showToast(
+              msg: chat.senderName + "님과의 첫 채팅이 도착했어요!".tr,
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: MyColor.orange_1,
+              textColor: Colors.white,
+              fontSize: 15.0
+          );
           return;
         }
 
@@ -304,5 +316,10 @@ class ChattingRoomListController extends SuperController<
     print("onResumed");
     print("stream paused : ${_centerChatStreamSubscription?.isPaused}");
     await ChattingServiceImpl().reConnect();
+  }
+
+  @override
+  void onHidden() {
+    // TODO: implement onHidden
   }
 }

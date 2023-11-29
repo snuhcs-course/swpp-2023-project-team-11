@@ -84,7 +84,7 @@ class ValidChattingRoomController extends GetxController {
       chattingRoomId: chattingRoom.id.toString(),
       whenSuccess: (chats) {
         print("fetch all");
-        sp.setString(chattingRoom.id.toString(), json.encode(chats.last)); // 여기서 업데이트 하는데 왜 그럴까요 !!!
+        if (chats.isNotEmpty) sp.setString(chattingRoom.id.toString(), json.encode(chats.last)); // 여기서 업데이트 하는데 왜 그럴까요 !!!
         // print("${sp.getString(chattingRoom.id.toString())} is what i found from sp - encoding");
         // final userEmail = Get.find<UserController>().userEmail;
         chatVmList.addAll(chats.map((chat) => ChatVM.fromChat(chat)));
