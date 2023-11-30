@@ -270,4 +270,9 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
     await ChattingServiceImpl().reConnect();
 
   }
+
+  @override
+  void onHidden() {
+    // TODO: implement onHidden
+  }
 }
