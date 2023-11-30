@@ -72,6 +72,6 @@ class ClovaServiceFactory(BaseTextServiceFactory):
         return ClovaParser()
 
 
-class KoreanDetetionPapagoServiceFactory(PapagoServiceFactory):
+class KoreanDetectionPapagoServiceFactory(PapagoServiceFactory):
     def create_handler(self) -> ErrorHandler:
         return super().create_handler().set_front(KoreanDetectionPapagoHandler())

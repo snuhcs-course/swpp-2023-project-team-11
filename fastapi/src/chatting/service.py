@@ -172,9 +172,9 @@ def get_topics(db: DbSession, tag: str, limit: int) -> List[Topic]:
 
 
 def intimacy_tag(intimacy: Intimacy | None) -> str:
-    if intimacy is None or intimacy.intimacy <= 40:
+    if intimacy is None or intimacy.intimacy <= 60:
         return "C"
-    elif intimacy.intimacy <= 70:
+    elif intimacy.intimacy <= 80:
         return "B"
     else:
         return "A"
