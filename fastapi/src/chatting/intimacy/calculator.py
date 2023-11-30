@@ -4,7 +4,7 @@ import numpy as np
 
 from src.chatting.intimacy.service import TextService
 from src.chatting.models import *
-
+from src.chatting.constants import *
 
 class IntimacyCalculator:
     """A facade pattern which calls translation text service and sentiment text service."""
@@ -36,8 +36,12 @@ class IntimacyCalculator:
                           length, length_delta, turn, turn_delta])
 
         weight = self.get_weight(similarity, num_F)
-        new_intimacy: float = recent_intimacy.intimacy + \
-            weight.dot(params.transpose())
+        intimacy_delta = weight.dot(params.transpose())
+        # alpha's range: 1/3 ~ 3
+        alpha = DEFAULT_INTIMACY/(recent_intimacy.intimacy + 12)
+        if intimacy_delta < 0:
+            alpha = (1 / alpha)
+        new_intimacy: float = recent_intimacy.intimacy + intimacy_delta * alpha
         return max(0, min(100, new_intimacy))
 
     @staticmethod
