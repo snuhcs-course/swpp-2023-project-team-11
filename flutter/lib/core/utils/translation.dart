@@ -139,14 +139,22 @@ class MyTranslation extends Translations {
       "언어 변경" : "Change Language",
       "Sneki의 추천" : "Sneki's Suggestion",
       "아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요" : "A recommendation hasn't been made yet. Please chat more",
-      "새로운 추천을 원해요": "I want new recommendations",
+      "새로운 추천을 원해요": "I want new suggestions",
       "enum": "@value",
       '정말로 진행중인 채팅에서 나갈건가요?' : "Do you really want to\nleave an ongoing chatroom?",
       "네" : "Yes",
       "아니요" : "No",
       "수락되지 않은 채팅방입니다" : "Not an accepted chatroom yet",
       "더 이상 사용하지 않는 채팅방입니다" : "Chatroom no longer used",
-      "추천": "Suggestion"
+      "추천": "Suggestion",
+      "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user",
+      "방금 전" : "Just now",
+      'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어때요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
+      "친밀도 산출을 위해 조금만 더 채팅해주세요" : "Please chat a little more",
+      "현재 친밀도: ": "Current intimacy: ",
+      "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!",
+      "탭을 해 태그를 추가/삭제해봐요" : "Tap to add/remove tags",
+
 
     },
     "kr" : {

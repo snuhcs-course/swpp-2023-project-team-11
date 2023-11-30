@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/translation.dart';
+import 'package:mobile_app/main.dart';
 
 class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -132,10 +134,10 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                   icon: const Icon(Icons.settings),
                   itemBuilder: (context) {
                     return [
-                      PopupMenuItem<int>(
-                          value: 0,
-                          child: Text("프로필 편집".tr,
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                      // PopupMenuItem<int>(
+                      //     value: 0,
+                      //     child: Text("프로필 편집".tr,
+                      //         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
                       PopupMenuItem<int>(
                           value: 1,
                           child: Text("언어 변경".tr,
@@ -148,6 +150,8 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                       actionFunction!();
                     } else if (value ==1) {
                       MyLanguageUtil.toggle();
+                      sp.setString(language_setting, MyLanguageUtil.getLocale.toString());
+                      print(MyLanguageUtil.getLocale.toString());
                     }
 
                   })

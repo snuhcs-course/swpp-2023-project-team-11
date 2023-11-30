@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
@@ -15,9 +17,12 @@ import 'package:mobile_app/app/domain/use_cases/open_chat_connection_use_case.da
 import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
+import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/main.dart';
 
-class ChattingRoomListController extends SuperController<({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
+class ChattingRoomListController extends SuperController<
+    ({List<ChattingRoom> roomForMain, List<ChattingRoom> roomForRequested})> {
   StreamSubscription? _centerChatStreamSubscription;
   List<ChattingRoom> _validRooms = [];
 
@@ -58,42 +63,86 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
 
   Future<void> _openChatConnection() async {
     print("use case 호출해서 session 열기");
-    _centerChatStreamSubscription = await _openChatConnectionUseCase.call(onReceiveChat: (chat) {
-      print("receive");
-      // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom
-      final targetRoomController = Get.find<ValidChattingRoomController>(
-        tag: chat.chattingRoomId.toString(),
-      );
-      targetRoomController.addChat(chat);
-      // every time we listen to a new chat, change the most recent chat for that chatroom
-      sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
-      // need to check number of chat. To be used for updating intimacy
+    _centerChatStreamSubscription = await _openChatConnectionUseCase.call(
+      onReceiveChat: (chat) async {
+        print("receive");
+        // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom
+        final bool validRoomForChatExists =
+            _validRooms.where((element) => element.id == chat.chattingRoomId).isNotEmpty;
+        if (!validRoomForChatExists) {
+          await reloadRooms();
+          Fluttertoast.showToast(
+              msg: chat.senderName + "님과의 첫 채팅이 도착했어요!".tr,
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: MyColor.orange_1,
+              textColor: Colors.white,
+              fontSize: 15.0
+          );
+          return;
+        }
+
+        final targetRoomController = Get.find<ValidChattingRoomController>(
+          tag: chat.chattingRoomId.toString(),
+        );
+        targetRoomController.addChat(chat);
 
       if (checkIntimacyUpdateCondition(chat)){
         sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
-        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){}, whenFail: (){});
+        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){
+          sp.setDouble("${chat.chattingRoomId}/${lastUpdatedIntimacyValue}", intimacy.intimacy);
+          print("updated sp intimacy value");
+        }, whenFail: (){});
       }
 
-    });
+        sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
+        // need to change : 이렇게 하니까 순서는 안 바뀌긴 하네요 !!!
+        change(
+          (
+            roomForMain: [..._validRooms, ..._requestingRooms, ..._terminatedRooms],
+            roomForRequested: [..._requestedRooms]
+          ),
+          status: RxStatus.success(),
+        );
+        // need to check number of chat. To be used for updating intimacy
+
+        if (checkIntimacyUpdateCondition(chat)) {
+          sp.setString(
+              "${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
+          _updateIntimacyUseCase.call(
+              chattingRoomId: chat.chattingRoomId,
+              whenSuccess: (Intimacy intimacy) {},
+              whenFail: () {});
+        }
+      },
+    );
   }
 
-  bool checkIntimacyUpdateCondition(Chat chat){
-    int numChat = sp.containsKey("${chat.chattingRoomId}/numChat")? sp.getInt("${chat.chattingRoomId}/numChat")! : 0;
-    sp.setInt("${chat.chattingRoomId}/numChat", numChat+1);
-    DateTime lastIntimacyUpdateTimeStamp = sp.containsKey("${chat.chattingRoomId}/lastIntimacyUpdate")?DateTime.parse(sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!): DateTime.timestamp();
+  bool checkIntimacyUpdateCondition(Chat chat) {
+    int numChat = sp.containsKey("${chat.chattingRoomId}/numChat")
+        ? sp.getInt("${chat.chattingRoomId}/numChat")!
+        : 0;
+    sp.setInt("${chat.chattingRoomId}/numChat", numChat + 1);
+    DateTime lastIntimacyUpdateTimeStamp =
+        sp.containsKey("${chat.chattingRoomId}/lastIntimacyUpdate")
+            ? DateTime.parse(sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!)
+            : DateTime.timestamp();
     print(lastIntimacyUpdateTimeStamp);
 
-    // return true when this is 1st, 11st, ... chat to the chatroom after listening
-    // return true when this chat is more than 1 minutes later than the last update
-    if(numChat % 10 == 0) return true;
-    if(DateTime.timestamp().difference(lastIntimacyUpdateTimeStamp).compareTo(const Duration(minutes: 1)) > 0){
+    // return true when this is 1st, 21st, ... chat to the chatroom after listening
+    // return true when this chat is more than 2 minutes later than the last update
+    if (numChat % 20 == 0) return true;
+    if (DateTime.timestamp()
+            .difference(lastIntimacyUpdateTimeStamp)
+            .compareTo(const Duration(minutes: 2)) >
+        0) {
       return true;
     }
     return false;
-
   }
 
-  bool checkSp(int chatRoomId){
+  bool checkSp(int chatRoomId) {
     return sp.containsKey(chatRoomId.toString());
   }
 
@@ -108,8 +157,8 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
       _removeDependencyForRemovedValidRooms(validRooms);
 
       // sort the valid rooms according to their datetime of most recent chat
-      validRooms.sort((ChattingRoom room1, ChattingRoom room2){
-        if(!checkSp(room1.id) || !checkSp(room2.id)) {
+      validRooms.sort((ChattingRoom room1, ChattingRoom room2) {
+        if (!checkSp(room1.id) || !checkSp(room2.id)) {
           print("not in sp yet!");
           return 0;
         }
@@ -238,8 +287,7 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
       required FetchAllChatUseCase fetchAllChatUseCase,
       required DisconnectChattingChannelUseCase disconnectChattingChannelUseCase,
       required LeaveChattingRoomUseCase leaveChattingRoomUseCase,
-      required UpdateIntimacyUseCase updateIntimacyUseCase
-      })
+      required UpdateIntimacyUseCase updateIntimacyUseCase})
       : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
         _acceptChattingRequestUseCase = acceptChattingRequestUseCase,
         _fetchAllChatUseCase = fetchAllChatUseCase,
@@ -268,6 +316,10 @@ class ChattingRoomListController extends SuperController<({List<ChattingRoom> ro
     print("onResumed");
     print("stream paused : ${_centerChatStreamSubscription?.isPaused}");
     await ChattingServiceImpl().reConnect();
+  }
 
+  @override
+  void onHidden() {
+    // TODO: implement onHidden
   }
 }
