@@ -17,7 +17,7 @@ def check_counterpart(req: CreateChattingRequest, db: DbSession = Depends(DbConn
 
 
 # Global intimacy calculator (singleton)
-__papago_factory = KoreanDetetionPapagoServiceFactory(PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
+__papago_factory = KoreanDetectionPapagoServiceFactory(PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
 __clova_factory = ClovaServiceFactory(CLOVA_CLIENT_ID, CLOVA_CLIENT_SECRET)
 __translation_fallback = lambda text: text
 __translation = __papago_factory.create_service()
