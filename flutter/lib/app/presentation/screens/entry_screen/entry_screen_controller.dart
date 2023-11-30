@@ -8,12 +8,15 @@ import 'package:mobile_app/app/domain/use_cases/automatic_sign_in_use_case.dart'
 import 'package:mobile_app/app/domain/use_cases/sign_in_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/sign_up_use_case.dart';
 import 'package:mobile_app/app/presentation/screens/entry_screen/widgets/sign_in_bottom_sheet.dart';
+import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/utils/loading_util.dart';
+import 'package:mobile_app/core/utils/translation.dart';
+import 'package:mobile_app/main.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 class EntryScreenController extends GetxController {
   final SignInUseCase _signInUseCase;
-
+  final AutomaticSignInUseCase _automaticSignInUseCase;
   final TextEditingController emailCon = TextEditingController();
   final TextEditingController passwordCon = TextEditingController();
 
@@ -23,6 +26,9 @@ class EntryScreenController extends GetxController {
   void onReady() async {
     super.onReady();
     await Future.delayed(const Duration(milliseconds: 200));
+    FlutterNativeSplash.remove();
+    _automaticSignInUseCase.call(onFail: (){}, onSuccess: (User user){onSignInSuccess(user);});
+    if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en')) MyLanguageUtil.toggle();
   }
 
   void onSignUpButtonTap() {
@@ -70,7 +76,7 @@ class EntryScreenController extends GetxController {
   }
 
   EntryScreenController({
-    required SignUpUseCase signUpUseCase,
     required SignInUseCase signInUseCase,
-  }) : _signInUseCase = signInUseCase;
+    required AutomaticSignInUseCase automaticSignInUseCase,
+  }) : _signInUseCase = signInUseCase, _automaticSignInUseCase = automaticSignInUseCase;
 }

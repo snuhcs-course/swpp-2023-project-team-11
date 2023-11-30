@@ -21,7 +21,8 @@ class RoomScreenController extends GetxController {
 
   void scrollDownToBottom([int? milliseconds]) {
     scrollCon.animateTo(scrollCon.position.maxScrollExtent,
-        duration: Duration(milliseconds: milliseconds ?? 200), curve: Curves.linear);
+        duration: Duration(milliseconds: milliseconds ?? 200),
+        curve: Curves.linear);
   }
 
   String get userEmail => Get.find<UserController>().userEmail;
@@ -40,6 +41,7 @@ class RoomScreenController extends GetxController {
   }
 
   int tempSeqId = -1;
+
   String get opponentEmail {
     if (userEmail == chattingRoom.initiator.email) {
       return chattingRoom.responder.email;
@@ -74,8 +76,14 @@ class RoomScreenController extends GetxController {
       tag: chattingRoom.id.toString(),
     ).deleteChat(seqId);
   }
+
   void onSnekiTap() {
-    Get.toNamed(Routes.Maker(nextRoute: Routes.ROADMAP), arguments: chattingRoom);
+    // Get.put<RoomScreenController>(
+    //   RoomScreenController(sendChatUseCase: _sendChatUseCase),
+    //   tag: this.chattingRoom.id.toString()
+    // );
+    Get.toNamed(Routes.Maker(nextRoute: Routes.ROADMAP),
+        arguments: chattingRoom);
   }
 
   @override
@@ -101,11 +109,19 @@ class RoomScreenController extends GetxController {
     scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
     await Future.delayed(const Duration(milliseconds: 60));
     scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
+    await Future.delayed(const Duration(milliseconds: 40));
+    scrollCon.jumpTo(scrollCon.position.maxScrollExtent);
+    // scrollCon.animateTo(
+    //   scrollCon.position.maxScrollExtent,
+    //   duration: const Duration(milliseconds: 100),
+    //   curve: Curves.linear,
+    // );
   }
 
   @override
   void onClose() {
     super.onClose();
+    print("hi-------hi-------hi-------hi-------");
     chattingCon.dispose();
     chattingFocusNode.dispose();
   }

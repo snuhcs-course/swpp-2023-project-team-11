@@ -11,6 +11,7 @@ import 'package:mobile_app/app/presentation/widgets/basic_dialog.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/loading_util.dart';
+import 'package:mobile_app/core/utils/string_parser_util.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +34,7 @@ class ChattingRoomsScreenController extends GetxController{
   String latestChatMessage(int chatRoomId){
     Chat chat = Chat.fromJson(json.decode(spC.getString(chatRoomId.toString())!));
     // print("parsed result = ${chat}");
-    return chat.message;
+    return StringParserUtil.buildRoadmapText(chat.message);
   }
 
   DateTime timeOfLatestChatMessage(ChattingRoom chattingRoom){
@@ -46,7 +47,9 @@ class ChattingRoomsScreenController extends GetxController{
     DateTime timeOfChat = timeOfLatestChatMessage(chattingRoom).toLocal();
     Duration difference = DateTime.timestamp().difference(timeOfChat.add(timeOfChat.timeZoneOffset)); // 여기 시간 계산이 왜 이상한지를 모르겠네요ㅠ
 
-    if(difference.compareTo(const Duration(hours: 1)) < 0){
+    if(difference.compareTo(const Duration(minutes: 1)) < 0){
+      return "방금 전".tr;
+    }else if(difference.compareTo(const Duration(hours: 1)) < 0){
       return "${difference.inMinutes} "+"분 전".tr;
     }else if (difference.compareTo(const Duration(days: 1)) < 0){
       return "${difference.inHours} "+"시간 전".tr;

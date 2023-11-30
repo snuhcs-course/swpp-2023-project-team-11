@@ -175,18 +175,9 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                             ? "종료된 채팅방입니다".tr
                             : (chatroom.isApproved
                                 ? (controller.checkSp(chatroom.id)
-                                    ? (controller
-                                            .latestChatMessage(chatroom.id)
-                                            .characters
-                                            .take(25)
-                                            .toString() +
-                                        ((controller
-                                                    .latestChatMessage(chatroom.id)
-                                                    .characters
-                                                    .length >
-                                                30)
-                                            ? "..."
-                                            : ""))
+                                    ? (controller.latestChatMessage(chatroom.id).characters.take(20).toString() +
+                                        ((controller.latestChatMessage(chatroom.id).characters.length > 20)
+                                            ? "..." : ""))
                                     : "채팅을 시작해봐요!".tr)
                                 : "아직 상대가 수락하지 않았습니다".tr),
                         style: TextStyle(

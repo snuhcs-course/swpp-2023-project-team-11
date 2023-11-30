@@ -14,6 +14,13 @@ class EntryScreen extends GetView<EntryScreenController> {
     return Scaffold(
       backgroundColor: const Color(0xfff2e2f3),
       floatingActionButton: FloatingActionButton(
+        child: Text(
+          "언어변경".tr,
+          style: TextStyle(
+            color: Colors.black38,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         onPressed: () {
           MyLanguageUtil.toggle();
         },
@@ -41,7 +48,8 @@ class EntryScreen extends GetView<EntryScreenController> {
           ),
           const SizedBox(height: 2),
           Text(
-            "간식보다 재밌는 언어교환".tr, textAlign: TextAlign.center,
+            "간식보다 재밌는 언어교환".tr,
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(
