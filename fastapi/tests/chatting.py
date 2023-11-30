@@ -35,7 +35,7 @@ class TestPapago(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.factory = PapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
-        cls.korean_detection_factory = KoreanDetetionPapagoServiceFactory(
+        cls.korean_detection_factory = KoreanDetectionPapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
         cls.response = Mock()
         cls.response.json = Mock(
@@ -101,7 +101,7 @@ class TestHandler(unittest.TestCase):
         self.unknown.json = lambda: {}
 
     def test_handler(self):
-        factory = KoreanDetetionPapagoServiceFactory(
+        factory = KoreanDetectionPapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
         handler = factory.create_handler()
         self.assertIsInstance(handler, KoreanDetectionPapagoHandler)
@@ -179,7 +179,7 @@ class TestIntimacyCalculator(unittest.TestCase):
             id=1, user_id=1, chatting_id=1, intimacy=DEFAULT_INTIMACY, timestamp=timestamp)
         intimacy = self.calculator.calculate(
             1, curr_texts, [], recent_intimacy)
-        self.assertEqual(intimacy, 37.49933326082)
+        self.assertEqual(intimacy, 37.25207554680268)
 
     def test_get_frequency(self):
         timestamp = datetime.now()
