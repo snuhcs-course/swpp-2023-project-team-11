@@ -65,8 +65,9 @@ class ChattingRoomListController extends SuperController<
     _centerChatStreamSubscription = await _openChatConnectionUseCase.call(
       onReceiveChat: (chat) async {
         // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom
-        final bool validRoomForChatExists =
-            _validRooms.where((element) => element.id == chat.chattingRoomId).isNotEmpty;
+        final bool validRoomForChatExists = _validRooms
+            .where((element) => element.id == chat.chattingRoomId)
+            .isNotEmpty;
         if (!validRoomForChatExists) {
           await reloadRooms();
           Fluttertoast.showToast(
@@ -76,8 +77,7 @@ class ChattingRoomListController extends SuperController<
               timeInSecForIosWeb: 1,
               backgroundColor: MyColor.orange_1,
               textColor: Colors.white,
-              fontSize: 15.0
-          );
+              fontSize: 15.0);
           return;
         }
 
@@ -86,18 +86,28 @@ class ChattingRoomListController extends SuperController<
         );
         targetRoomController.addChat(chat);
 
-      if (checkIntimacyUpdateCondition(chat)){
-        sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
-        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){
-          sp.setDouble("${chat.chattingRoomId}/${lastUpdatedIntimacyValue}", intimacy.intimacy);
-        }, whenFail: (){});
-      }
+        if (checkIntimacyUpdateCondition(chat)) {
+          sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate",
+              DateTime.timestamp().toString());
+          _updateIntimacyUseCase.call(
+              chattingRoomId: chat.chattingRoomId,
+              whenSuccess: (Intimacy intimacy) {
+                sp.setDouble(
+                    "${chat.chattingRoomId}/${lastUpdatedIntimacyValue}",
+                    intimacy.intimacy);
+              },
+              whenFail: () {});
+        }
 
         sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
         // need to change : 이렇게 하니까 순서는 안 바뀌긴 하네요 !!!
         change(
           (
-            roomForMain: [..._validRooms, ..._requestingRooms, ..._terminatedRooms],
+            roomForMain: [
+              ..._validRooms,
+              ..._requestingRooms,
+              ..._terminatedRooms
+            ],
             roomForRequested: [..._requestedRooms]
           ),
           status: RxStatus.success(),
@@ -105,8 +115,8 @@ class ChattingRoomListController extends SuperController<
         // need to check number of chat. To be used for updating intimacy
 
         if (checkIntimacyUpdateCondition(chat)) {
-          sp.setString(
-              "${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
+          sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate",
+              DateTime.timestamp().toString());
           _updateIntimacyUseCase.call(
               chattingRoomId: chat.chattingRoomId,
               whenSuccess: (Intimacy intimacy) {},
@@ -123,7 +133,8 @@ class ChattingRoomListController extends SuperController<
     sp.setInt("${chat.chattingRoomId}/numChat", numChat + 1);
     DateTime lastIntimacyUpdateTimeStamp =
         sp.containsKey("${chat.chattingRoomId}/lastIntimacyUpdate")
-            ? DateTime.parse(sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!)
+            ? DateTime.parse(
+                sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!)
             : DateTime.timestamp();
 
     // return true when this is 1st, 21st, ... chat to the chatroom after listening
@@ -157,8 +168,12 @@ class ChattingRoomListController extends SuperController<
         if (!checkSp(room1.id) || !checkSp(room2.id)) {
           return 0;
         }
-        DateTime dateTime1 = Chat.fromJson(json.decode(sp.getString(room1.id.toString())!)).sentAt;
-        DateTime dateTime2 = Chat.fromJson(json.decode(sp.getString(room2.id.toString())!)).sentAt;
+        DateTime dateTime1 =
+            Chat.fromJson(json.decode(sp.getString(room1.id.toString())!))
+                .sentAt;
+        DateTime dateTime2 =
+            Chat.fromJson(json.decode(sp.getString(room2.id.toString())!))
+                .sentAt;
         return dateTime2.compareTo(dateTime1);
       });
       _validRooms = validRooms;
@@ -181,7 +196,8 @@ class ChattingRoomListController extends SuperController<
     );
   }
 
-  void _injectDependencyForAddedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+  void _injectDependencyForAddedValidRooms(
+      List<ChattingRoom> newValidChattingRooms) {
     // add a controller for a chatroom if it is not already present (the chatroom should be a valid one)
     for (final newChattingRoom in newValidChattingRooms) {
       Get.put<ValidChattingRoomController>(
@@ -194,13 +210,15 @@ class ChattingRoomListController extends SuperController<
     }
   }
 
-  void _removeDependencyForRemovedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+  void _removeDependencyForRemovedValidRooms(
+      List<ChattingRoom> newValidChattingRooms) {
     // after fetching chatrooms, if it is different from original list of chatrooms, it means we need to remove some.
     for (final priorChattingRoom in _validRooms) {
-      final priorOneExistsInNewOnes =
-          newValidChattingRooms.any((element) => element.id == priorChattingRoom.id);
+      final priorOneExistsInNewOnes = newValidChattingRooms
+          .any((element) => element.id == priorChattingRoom.id);
       if (!priorOneExistsInNewOnes) {
-        Get.delete<ValidChattingRoomController>(tag: priorChattingRoom.id.toString(), force: true);
+        Get.delete<ValidChattingRoomController>(
+            tag: priorChattingRoom.id.toString(), force: true);
       }
     }
   }
@@ -209,7 +227,8 @@ class ChattingRoomListController extends SuperController<
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
       email: Get.find<UserController>().userEmail,
-      whenSuccess: (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
+      whenSuccess:
+          (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
         _updateRoomsOnlyForNewOnes(
           validRooms: validRooms,
           terminatedRooms: terminatedRooms,
@@ -217,8 +236,7 @@ class ChattingRoomListController extends SuperController<
           requestedRooms: requestedRooms,
         );
       },
-      whenFail: () {
-      },
+      whenFail: () {},
     );
   }
 
@@ -229,8 +247,7 @@ class ChattingRoomListController extends SuperController<
         // TODO 이거 refetch 안하고 최적화 하려면 로컬 메모리에서 처리
         _updateRoomsOnlyForNewOnes(validRooms: [chattingRoom, ..._validRooms]);
       },
-      whenFail: () {
-      },
+      whenFail: () {},
     );
     await reloadRooms();
   }
@@ -241,8 +258,7 @@ class ChattingRoomListController extends SuperController<
       whenSuccess: (chattingRoom) {
         _updateRoomsOnlyForNewOnes();
       },
-      whenFail: () {
-      },
+      whenFail: () {},
     );
     await reloadRooms();
   }
@@ -252,8 +268,18 @@ class ChattingRoomListController extends SuperController<
     _disconnectChattingChannelUseCase.call();
     _centerChatStreamSubscription = null;
     for (var chatRoom in _validRooms) {
-      Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
+      Get.delete<ValidChattingRoomController>(
+          tag: chatRoom.id.toString(), force: true);
     }
+  }
+
+  Future<void> reFetchAllChatsForEachValidRooms() async {
+    final futures = _validRooms.map(
+      (room) async =>
+          await Get.find<ValidChattingRoomController>(tag: room.id.toString())
+              .reFetchChatsFromResume(),
+    );
+    await Future.wait(futures);
   }
 
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;
@@ -269,7 +295,8 @@ class ChattingRoomListController extends SuperController<
       required AcceptChattingRequestUseCase acceptChattingRequestUseCase,
       required OpenChatConnectionUseCase openChatConnectionUseCase,
       required FetchAllChatUseCase fetchAllChatUseCase,
-      required DisconnectChattingChannelUseCase disconnectChattingChannelUseCase,
+      required DisconnectChattingChannelUseCase
+          disconnectChattingChannelUseCase,
       required LeaveChattingRoomUseCase leaveChattingRoomUseCase,
       required UpdateIntimacyUseCase updateIntimacyUseCase})
       : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
@@ -297,7 +324,9 @@ class ChattingRoomListController extends SuperController<
 
   @override
   void onResumed() async {
+    await reFetchAllChatsForEachValidRooms();
     await ChattingServiceImpl().reConnect();
+
   }
 
   @override
