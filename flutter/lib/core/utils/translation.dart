@@ -155,7 +155,8 @@ class MyTranslation extends Translations {
       "현재 친밀도: ": "Current intimacy: ",
       "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!",
       "탭을 해 태그를 추가/삭제해봐요" : "Tap to add/remove tags",
-      "언어변경" : "한글"
+      "언어변경" : "한글",
+      "선택 완료": "Selection complete"
 
     },
     "kr" : {

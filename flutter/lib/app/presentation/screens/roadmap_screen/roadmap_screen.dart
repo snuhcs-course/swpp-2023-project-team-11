@@ -18,49 +18,65 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
-      backgroundColor: MyColor.purple,
-      appBar: ChattingRoomAppBar(
-        title: "Sneki의 추천".tr,
-      ),
-      body: controller.obx((state) {
-        return Column(
-          children: [
-            Center(
-              child: Container(
-                height: 30,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "현재 친밀도: ".tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
-                    ),
-                    // build heart display
-                    (sp.containsKey("${controller.chattingRoom.id}/${lastUpdatedIntimacyValue}"))? Container(
-                      height: 30,
-                      child: _buildIntimacyDisplay(sp.getDouble("${controller.chattingRoom.id}/${lastUpdatedIntimacyValue}")!),
-                    ):Text("친밀도 산출을 위해 조금만 더 채팅해주세요".tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16))
+        extendBody: true,
+        backgroundColor: MyColor.purple,
+        appBar: ChattingRoomAppBar(
+            title: "Sneki의 추천".tr,
+            additionalAction: IconButton(
+              icon: Icon(Icons.refresh_rounded), onPressed: () {
+              controller.onNewRecommendationTap();
+            },
+            )
+        ),
+        body: controller.obx((state) {
+          return Column(
+            children: [
+              Center(
+                child: Container(
+                  height: 30,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "현재 친밀도: ".tr, style: TextStyle(color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16),
+                      ),
+                      // build heart display
+                      (sp.containsKey("${controller.chattingRoom
+                          .id}/${lastUpdatedIntimacyValue}")) ? Container(
+                        height: 30,
+                        child: _buildIntimacyDisplay(sp.getDouble(
+                            "${controller.chattingRoom
+                                .id}/${lastUpdatedIntimacyValue}")!),
+                      ) : Text("친밀도 산출을 위해 조금만 더 채팅해주세요".tr, style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16))
 
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            (state!.isEmpty) ? Center(child: Text("아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요".tr)):Expanded(child: _buildTopicList(state))
-          ],
-        );
-
-      },
-          onLoading: const Center(
-              child: CircularProgressIndicator(color: MyColor.orange_1))),
-      bottomNavigationBar: BottomSnekiButton(
-        toBeDisplayed: "새로운 추천을 원해요".tr,
-    onPressed: (){controller.onNewRecommendationTap();})
+              (state!.isEmpty) ? Center(
+                  child: Text("아직 추천이 만들어지지 않았어요. 조금 더 채팅해주세요".tr)) : Expanded(
+                  child: _buildTopicList(state))
+            ],
+          );
+        },
+            onLoading: const Center(
+                child: CircularProgressIndicator(color: MyColor.orange_1))),
+        bottomNavigationBar: Obx(() {
+          return BottomSnekiButton(
+              toBeDisplayed: "선택 완료".tr,
+              onPressed: controller.selectedTopicExists ? controller
+                  .onSelectCompleteButtonTap : null);
+        })
     );
   }
 
   Widget _buildIntimacyDisplay(double intimacyValue) {
-
-    int fullHearts = intimacyValue < 40? 1 : intimacyValue < 70? 2 : 3;
+    int fullHearts = intimacyValue < 40 ? 1 : intimacyValue < 70 ? 2 : 3;
     // double fraction = rating - fullHearts;
     int emptyHearts = 3 - fullHearts;
 
@@ -94,12 +110,14 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
         controller: controller.scrollController,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         itemBuilder: (context, index) {
-          return GestureDetector(
-            child: _buildTopicContainer(topics, index),
-            onTap: (){
-              print("pressed suggestion bubble");
-              controller.onSuggestionBubbleTap(topics[index]);
-            });
+          return Obx(() {
+            return GestureDetector(
+                child: _buildTopicContainer(topics, index),
+                onTap: () {
+                  print("pressed suggestion bubble");
+                  controller.onSuggestionBubbleTap(topics[index]);
+                });
+          });
         },
         separatorBuilder: (context, index) {
           return const SizedBox(height: 16);
@@ -107,18 +125,31 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
         itemCount: topics.length);
   }
 
-  Container _buildTopicContainer(List<Topic> topics, int index) => Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(10)),
-      child: Center(
-          child: Text(
-            "${"추천".tr} ${index+1}: ${KoreanWordParserUtil.makeTopicSentence(MyLanguageUtil.isKr? topics[index].topic_kor : topics[index].topic_eng)}",
-            textAlign: TextAlign.center,
-            softWrap: true,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ))); // need some additional edit
+  Container _buildTopicContainer(List<Topic> topics, int index) =>
+      Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+          decoration: BoxDecoration(
+              color: (controller.selectedTopicExists &&
+                  (controller.selectedTopic.value!.topic_eng !=
+                      topics[index].topic_eng))
+                  ? Colors.white.withOpacity(0.6)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            border: (controller.selectedTopicExists && (controller.selectedTopic.value!.topic_eng == topics[index].topic_eng)) ? Border.all(color: MyColor.orange_1, width: 2, strokeAlign: BorderSide.strokeAlignOutside) : null,
+
+          ),
+          child: Center(
+              child: Text(
+                "${"추천".tr} ${index + 1}: ${KoreanWordParserUtil
+                    .makeTopicSentence(MyLanguageUtil.isKr
+                    ? topics[index].topic_kor
+                    : topics[index].topic_eng)}",
+                textAlign: TextAlign.center,
+                softWrap: true,
+                style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w500),
+              ))); // need some additional edit
 }
 
 // GetPage(
