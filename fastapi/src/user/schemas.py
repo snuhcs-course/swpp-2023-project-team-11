@@ -24,11 +24,11 @@ class VerificationResponse(BaseModel):
 class ProfileData(BaseModel):
     name: str = Field(description="user name", examples=["SNEK"])
     birth: date
-    sex: str
-    major: str
+    sex: str = Field(examples=["male"])
+    major: str = Field(examples=["CSE"])
     admission_year: int = Field(examples=[2023])
     about_me: str | None = Field(
-        None, description="self introduction", examples=[None])
+        None, description="self introduction", examples=["The best app, SNEK"])
     mbti: str | None = Field(None, description="MBTI", examples=["INTJ"])
     nation_code: int = Field(examples=[82])
     foods: List[str] = Field(examples=[[]])
@@ -52,11 +52,16 @@ class CreateUserRequest(BaseModel):
 
 
 class UpdateUserRequest(BaseModel):
-    food: List[str] = Field(default=[], description="list of food tags", examples=[["korean"]])
-    movie: List[str] = Field(default=[], description="list of movie tags", examples=[["action"]])
-    hobby: List[str] = Field(default=[], description="list of hobby tags", examples=[["yoga"]])
-    location: List[str] = Field(default=[], description="list of location tags", examples=[["jahayeon"]])
-    lang: List[str] = Field(default=[], description="list of desired/available languages", examples=[["korean"]])
+    food: List[str] = Field(
+        default=[], description="list of food tags", examples=[["korean"]])
+    movie: List[str] = Field(
+        default=[], description="list of movie tags", examples=[["action"]])
+    hobby: List[str] = Field(
+        default=[], description="list of hobby tags", examples=[["yoga"]])
+    location: List[str] = Field(
+        default=[], description="list of location tags", examples=[["jahayeon"]])
+    lang: List[str] = Field(
+        default=[], description="list of desired/available languages", examples=[["korean"]])
 
 
 class UserResponse(BaseModel):

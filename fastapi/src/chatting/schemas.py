@@ -24,6 +24,7 @@ class ChattingResponse(BaseModel):
 
 class TextResponse(BaseModel):
     seq_id: int = Field(description="global sequence id for all text messages")
+    proxy_id: int
     chatting_id: int
     sender: str = Field(description="sender name", examples=["snek"])
     email: str = Field(description="sender email", examples=["test@snu.ac.kr"])

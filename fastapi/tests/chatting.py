@@ -165,14 +165,14 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_calculate(self):
         timestamp = datetime.now()
         curr_texts = [
-            Text(id=1, sender_id=1, msg="hello", timestamp=timestamp),
-            Text(id=1, sender_id=1, msg="hello",
+            Text(id=1, proxy_id=0, sender_id=1, msg="hello", timestamp=timestamp),
+            Text(id=1, proxy_id=1, sender_id=1, msg="hello",
                  timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, sender_id=1, msg="you",
+            Text(id=1, proxy_id=2, sender_id=1, msg="you",
                  timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, sender_id=1, msg="what",
+            Text(id=1, proxy_id=3, sender_id=1, msg="what",
                  timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, sender_id=1, msg="bye",
+            Text(id=1, proxy_id=4, sender_id=1, msg="bye",
                  timestamp=timestamp - timedelta(seconds=4)),
         ]
         recent_intimacy = Intimacy(
@@ -184,13 +184,13 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_get_frequency(self):
         timestamp = datetime.now()
         texts = [
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=8)),
         ]
         result = self.calculator.get_frequency(texts)
@@ -203,7 +203,7 @@ class TestIntimacyCalculator(unittest.TestCase):
         self.assertIsNone(self.calculator.get_frequency_delta([], []))
 
     def test_score_frequency(self):
-        text = Text(id=1, chatting_id=1, sender_id=1, msg="",
+        text = Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                     timestamp=datetime.now() - timedelta(seconds=1))
         self.assertEqual(self.calculator.score_frequency([text]), 10)
 
@@ -230,11 +230,11 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_frequency_delta(self):
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(self.calculator.score_frequency_delta(
@@ -245,7 +245,7 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_avg_length(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         result = self.calculator.score_avg_length(texts)
@@ -255,11 +255,11 @@ class TestIntimacyCalculator(unittest.TestCase):
         # Test case 1: Score average length delta of texts
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         result = self.calculator.score_avg_length_delta(prev_texts, curr_texts)
@@ -268,9 +268,9 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_get_turn(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now()),
         ]
         self.assertEqual(self.calculator.get_turn(texts, 1), 0.5)
@@ -281,11 +281,11 @@ class TestIntimacyCalculator(unittest.TestCase):
         # Test case 1: Get turn delta of texts
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(self.calculator.get_turn_delta(
@@ -296,9 +296,9 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_turn(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now()),
         ]
         result = self.calculator.score_turn(texts, 1)
@@ -307,11 +307,11 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_turn_delta(self):
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         result = self.calculator.score_turn_delta(prev_texts, curr_texts, 1)
@@ -417,6 +417,7 @@ class TestDb(unittest.TestCase):
                 .values(list(
                     {
                         "chatting_id": chatting.id,
+                        "proxy_id": 0,
                         "sender_id": self.initiator_id,
                         "msg": "hello",
                         "timestamp": timestamp + timedelta(milliseconds=i),

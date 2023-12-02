@@ -37,7 +37,7 @@ async def handle_message(user_id: int, msg, socket: WebSocket, manager: WebSocke
     msg = await parse_message(msg, socket)
     if msg is None:
         return
-    chatting_id, msg = msg
+    proxy_id, chatting_id, msg = msg
 
     for db in await run_in_threadpool(DbConnector.get_db):
         chatting = await run_in_threadpool(get_chatting, db, chatting_id)
@@ -51,7 +51,7 @@ async def handle_message(user_id: int, msg, socket: WebSocket, manager: WebSocke
             await socket.send_json({"type": "system", "body": {"msg": "please approve chatting first"}})
             return
 
-        text = await run_in_threadpool(create_text, db, user_id, chatting_id, msg)
+        text = await run_in_threadpool(create_text, db, proxy_id, user_id, chatting_id, msg)
         for recv_socket in await manager.get_sockets([chatting.initiator_id, chatting.responder_id]):
             try:
                 await recv_socket.send_json(text)
@@ -59,12 +59,12 @@ async def handle_message(user_id: int, msg, socket: WebSocket, manager: WebSocke
                 pass
 
 
-async def parse_message(msg, socket: WebSocket) -> Tuple[int, str] | None:
+async def parse_message(msg, socket: WebSocket) -> Tuple[int, int, str] | None:
     try:
         if msg["type"] != "message":
             await socket.send_json({"type": "system", "body": {"msg": "invalid message"}})
             return None
-        return int(msg["body"]["chatting_id"]), str(msg["body"]["msg"])
+        return int(msg["body"]["proxy_id"]), int(msg["body"]["chatting_id"]), str(msg["body"]["msg"])
     except (KeyError, ValueError, TypeError):
         await socket.send_json({"type": "system", "body": {"msg": "invalid message"}})
         return None
@@ -74,8 +74,9 @@ def get_chatting(db: DbSession, chatting_id: int) -> Chatting | None:
     return db.query(Chatting).where(Chatting.id == chatting_id).first()
 
 
-def create_text(db: DbSession, sender_id: int, chatting_id: int, msg: str) -> Any:
+def create_text(db: DbSession, proxy_id: int, sender_id: int, chatting_id: int, msg: str) -> Any:
     text = db.scalar(insert(Text).values({
+        "proxy_id": proxy_id,
         "chatting_id": chatting_id,
         "sender_id": sender_id,
         "msg": msg,
@@ -86,6 +87,7 @@ def create_text(db: DbSession, sender_id: int, chatting_id: int, msg: str) -> An
         "type": "message",
         "body": {
             "seq_id": text.id,
+            "proxy_id": text.proxy_id,
             "chatting_id": text.chatting_id,
             "sender": text.sender.profile.name,
             "email": text.sender.verification.email.email,
