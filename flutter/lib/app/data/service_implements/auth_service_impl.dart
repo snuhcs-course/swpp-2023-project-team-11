@@ -62,19 +62,19 @@ class AuthServiceImpl implements AuthService {
           "profile": {
             "name": user.name,
             "birth": user.profile.birth.toString().substring(0, 10),
-            "sex": user.profile.sex.toString(),
+            "sex": user.profile.sex.name,
             "major": user.profile.major,
             "admission_year": user.profile.admissionYear,
             "about_me": user.profile.aboutMe,
-            "mbti": user.profile.mbti.toString(),
+            "mbti": user.profile.mbti.name,
             "nation_code": user.profile.nationCode,
             "foods": user.profile.foodCategories.map((e) => e.name).toList(),
             "movies": user.profile.movieGenres.map((e) => e.name).toList(),
             "hobbies": user.profile.hobbies.map((e) => e.name).toList(),
             "locations": user.profile.locations.map((e) => e.name).toList(),
           },
-          "main_language": user.getMainLanguage.toString(),
-          "languages": user.getLanguages.map((e) => e.toString()).toList(),
+          "main_language": user.getMainLanguage.name,
+          "languages": user.getLanguages.map((e) => e.name).toList(),
         },
       );
 
