@@ -58,6 +58,7 @@ class ChatMessage extends StatelessWidget {
                 onDelete!();
               }
             },
+            behavior: HitTestBehavior.opaque,
             child: const Icon(
               Icons.delete_forever_sharp,
               size: 16,
