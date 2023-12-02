@@ -16,9 +16,10 @@ class SnekBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     items = [
       BottomNavigationBarItem(
-        icon: (currentIndex == 0)
-            ? Image.asset("assets/images/home_filled.png", height: 24)
-            : Image.asset("assets/images/home.png", height: 24),
+        icon: Icon(
+          Icons.people_rounded,
+          color: (currentIndex == 0) ? MyColor.orange_1 : Colors.black.withOpacity(0.4),
+        ),
         label: "0",
       ),
       BottomNavigationBarItem(
