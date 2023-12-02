@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,7 @@ import 'package:mobile_app/app/presentation/global_model_controller/chatting_roo
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
+import 'package:mobile_app/core/utils/loading_util.dart';
 import 'package:mobile_app/main.dart';
 
 class ChattingRoomListController extends SuperController<
@@ -35,16 +37,43 @@ class ChattingRoomListController extends SuperController<
 
   late bool isDeviceConnected = true;
 
-  late final StreamSubscription<InternetConnectionStatus> isDeviceConnectedSubscription;
+  late final StreamSubscription<InternetConnectionStatus>
+      isDeviceConnectedSubscription;
+
+  late Completer _internetOverlayCompleter;
 
   @override
   void onInit() async {
     super.onInit();
     isDeviceConnected = await InternetConnectionChecker().hasConnection;
     print("isDeviceConnected : $isDeviceConnected");
-    isDeviceConnectedSubscription = InternetConnectionChecker().onStatusChange.listen((InternetConnectionStatus status) async {
-      final newIsDeviceConnected =(status == InternetConnectionStatus.connected);
+    isDeviceConnectedSubscription = InternetConnectionChecker()
+        .onStatusChange
+        .listen((InternetConnectionStatus status) async {
+      final newIsDeviceConnected =
+          (status == InternetConnectionStatus.connected);
       print("newIsDeviceConnected : $newIsDeviceConnected");
+      if (!newIsDeviceConnected) {
+        _internetOverlayCompleter = Completer();
+        Get.showOverlay(
+          asyncFunction: () async {
+            await _internetOverlayCompleter.future;
+          },
+          loadingWidget: Material(
+            color: Colors.white70,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("인터넷 연결이 끊겼습니다"),
+                CupertinoActivityIndicator(),
+              ],
+            ),
+          )
+        );
+      } else {
+        _internetOverlayCompleter.complete();
+      }
       // 끊겼다가 다시 연결되는 경우
       if (newIsDeviceConnected && !isDeviceConnected) {
         print("// 끊겼다가 다시 연결되는 경우 -> refetch");
@@ -355,7 +384,6 @@ class ChattingRoomListController extends SuperController<
     print("------- on Resumed ---------");
     await reFetchAllChatsForEachValidRooms();
     await ChattingServiceImpl().reConnect();
-
   }
 
   @override
