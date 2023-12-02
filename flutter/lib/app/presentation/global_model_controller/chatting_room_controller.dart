@@ -69,13 +69,14 @@ class ValidChattingRoomController extends GetxController {
       if (target < 0) {
         continue;
       }
-      return chatVmList[i].sequenceId;
+      return i;
     }
     return chatVmList.length;
   }
 
-  void reFetchChatsFromResume() {
-    _fetchAllChatUseCase.call(
+  Future<void> reFetchChatsFromResume() async {
+    print("----------- reFetchChatsFromResume ---------");
+    await _fetchAllChatUseCase.call(
       chattingRoomId: chattingRoom.id.toString(),
       sequenceId: chatVmList[_getLatestChatIndex()].sequenceId,
       whenSuccess: (chats) {
@@ -94,7 +95,6 @@ class ValidChattingRoomController extends GetxController {
     _fetchAllChatUseCase.call(
       chattingRoomId: chattingRoom.id.toString(),
       whenSuccess: (chats) {
-        print("fetch all");
         if (chats.isNotEmpty)
           sp.setString(chattingRoom.id.toString(),
               json.encode(chats.last)); // 여기서 업데이트 하는데 왜 그럴까요 !!!
