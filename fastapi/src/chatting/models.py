@@ -26,6 +26,7 @@ class Text(Base):
     __tablename__ = "text"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    proxy_id: Mapped[int] = Column(Integer, nullable=False)
     chatting_id: Mapped[int] = Column(ForeignKey("chatting.id"), nullable=False)
     sender_id: Mapped[int] = Column(ForeignKey("users.user_id"), nullable=False)
     msg: Mapped[str] = Column(String, nullable=False)

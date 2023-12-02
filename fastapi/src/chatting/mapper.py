@@ -26,6 +26,7 @@ def from_chatting(chatting: Chatting, user_id: str) -> ChattingResponse:
 def from_text(text: Text) -> TextResponse:
     return TextResponse(
         seq_id=text.id,
+        proxy_id=text.proxy_id,
         chatting_id=text.chatting_id,
         sender=text.sender.profile.name,
         email=text.sender.verification.email.email,
