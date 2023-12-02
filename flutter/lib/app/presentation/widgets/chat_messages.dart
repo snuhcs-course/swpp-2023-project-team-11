@@ -51,7 +51,7 @@ class ChatMessage extends StatelessWidget {
             size: 16,
             color: MyColor.purple,
           ).paddingOnly(right: 6, top: 12),
-        if (needsDelete)
+        if (tempProxy && needsDelete)
           GestureDetector(
             onTap: () {
               if (onDelete != null) {

@@ -55,6 +55,7 @@ class RoomScreenController extends GetxController {
       chatText: chattingCon.text,
       chattingRoomId: chattingRoom.id.toString(),
     );
+    // 프록시를 위한 코드
     Get.find<ValidChattingRoomController>(
       tag: chattingRoom.id.toString(),
     ).addChat(
@@ -66,7 +67,7 @@ class RoomScreenController extends GetxController {
         message: chattingCon.text,
         sentAt: DateTime.now(),
       ),
-      true,
+      proxyMode: true,
     );
     chattingCon.text = "";
   }
