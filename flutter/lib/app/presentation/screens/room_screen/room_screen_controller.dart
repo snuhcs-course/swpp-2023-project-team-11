@@ -5,6 +5,7 @@ import 'package:mobile_app/app/domain/models/chatting_room.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_controller.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
+import 'package:mobile_app/core/utils/proxy_id_generator.dart';
 import 'package:mobile_app/routes/named_routes.dart';
 
 class RoomScreenController extends GetxController {
@@ -51,9 +52,11 @@ class RoomScreenController extends GetxController {
   }
 
   void onSendButtonTap() {
+    final proxyId = ProxyIdGenerator.getByNowTime();
     _sendChatUseCase.call(
       chatText: chattingCon.text,
       chattingRoomId: chattingRoom.id.toString(),
+      proxyId: proxyId,
     );
     // 프록시를 위한 코드
     Get.find<ValidChattingRoomController>(
@@ -66,6 +69,7 @@ class RoomScreenController extends GetxController {
         senderEmail: userEmail,
         message: chattingCon.text,
         sentAt: DateTime.now(),
+        proxyId: proxyId,
       ),
       proxyMode: true,
     );

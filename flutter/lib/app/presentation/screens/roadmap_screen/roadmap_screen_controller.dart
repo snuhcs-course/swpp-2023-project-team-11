@@ -8,6 +8,7 @@ import 'package:mobile_app/app/domain/use_cases/fetch_topics_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/core/constants/system_strings.dart';
+import 'package:mobile_app/core/utils/proxy_id_generator.dart';
 
 class RoadmapScreenController extends GetxController
     with StateMixin<List<Topic>> {
@@ -69,10 +70,11 @@ class RoadmapScreenController extends GetxController
 
   void onSelectCompleteButtonTap() {
     Topic topic = selectedTopic.value!;
-
+    final proxyId = ProxyIdGenerator.getByNowTime();
     _sendChatUseCase.call(
       chatText: "${roadmap_prefix}${jsonEncode(topic)}",
       chattingRoomId: chattingRoom.id.toString(),
+      proxyId: proxyId,
     );
 
     Get.delete(tag: chattingRoom.id.toString());

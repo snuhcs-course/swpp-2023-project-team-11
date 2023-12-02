@@ -13,6 +13,7 @@ Chat _$ChatFromJson(Map<String, dynamic> json) => Chat(
       senderEmail: json['email'] as String,
       message: json['msg'] as String,
       sentAt: DateTime.parse(json['timestamp'] as String),
+      proxyId: json['proxy_id'] as int,
     );
 
 Map<String, dynamic> _$ChatToJson(Chat instance) => <String, dynamic>{
@@ -22,4 +23,5 @@ Map<String, dynamic> _$ChatToJson(Chat instance) => <String, dynamic>{
       'email': instance.senderEmail,
       'msg': instance.message,
       'timestamp': instance.sentAt.toIso8601String(),
+      'proxy_id': instance.proxyId,
     };

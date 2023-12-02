@@ -15,6 +15,7 @@ class Chat {
   final String message;
   @JsonKey(name: "timestamp")
   final DateTime sentAt;
+  final int proxyId;
 
   
   factory Chat.fromJson(Map<String, dynamic> json) => _$ChatFromJson(json);
@@ -29,5 +30,6 @@ class Chat {
     required this.senderEmail,
     required this.message,
     required this.sentAt,
+    required this.proxyId,
   });
 }

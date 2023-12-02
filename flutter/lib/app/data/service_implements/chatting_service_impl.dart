@@ -61,6 +61,12 @@ class ChattingServiceImpl implements ChattingService {
         },
       ),
     );
+    print(jsonEncode(
+      {
+        "type": "system",
+        "body": {"session_key": sessionKey}
+      },
+    ));
     chatLogger.i("socket channel authentication send done");
     cachedSubscription = subscription;
     return subscription;
@@ -106,14 +112,16 @@ class ChattingServiceImpl implements ChattingService {
 
   @override
   Future<void> sendChat(
-      {required String chatText, required String chattingRoomId}) async {
+      {required String chatText, required String chattingRoomId, required String proxyId,}) async {
     final bodyForSendingChat = {
       "type": "message",
       "body": {
         "chatting_id": chattingRoomId,
         "msg": chatText,
+        "proxy_id" : proxyId
       },
     };
+    print(jsonEncode(bodyForSendingChat));
     chatLogger.i("send chat on socketChannel : $bodyForSendingChat");
     chatSocketChannel!.sink.add(jsonEncode(bodyForSendingChat));
   }

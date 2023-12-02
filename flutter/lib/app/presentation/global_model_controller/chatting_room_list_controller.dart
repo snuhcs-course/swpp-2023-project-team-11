@@ -47,6 +47,7 @@ class ChattingRoomListController extends SuperController<
     super.onInit();
     isDeviceConnected = await InternetConnectionChecker().hasConnection;
     print("isDeviceConnected : $isDeviceConnected");
+    _internetOverlayCompleter = Completer();
     isDeviceConnectedSubscription = InternetConnectionChecker()
         .onStatusChange
         .listen((InternetConnectionStatus status) async {
