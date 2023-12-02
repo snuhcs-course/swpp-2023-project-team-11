@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:logger/logger.dart';
 import 'package:mobile_app/app/data/dio_instance.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/result.dart';
@@ -15,40 +16,50 @@ class ChattingServiceImpl implements ChattingService {
   static String? cachedSessionKey;
   static StreamSubscription? cachedSubscription;
   static void Function(dynamic)? cachedOnData;
+  final chatLogger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      lineLength: 4,
+    )
+  );
 
   @override
   StreamSubscription initChatConnection({
     required String sessionKey,
     required void Function(Chat chat) onMessageChatReceive,
   }) {
+    chatLogger.i("init chat connection");
     cachedSessionKey = sessionKey;
     chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
+    // 소켓의 listener에 넣을 콜백을 미리 정의 및 cache
     cachedOnData = (event) {
       final decoded = jsonDecode(event);
-
-      print("data layer : socket received $decoded");
       if (decoded["type"] == "system") {
-        print("system message : ${decoded["body"]}");
+        chatLogger.i("system text received : ${decoded["body"]}");
       }
       if (decoded["type"] == "message") {
-        print("message type received");
+        chatLogger.i("message text received : ${decoded["body"]}");
         final body = decoded["body"];
         final chat = Chat.fromJson(body);
         onMessageChatReceive(chat);
       }
     };
-    final subscription = chatSocketChannel!.stream.listen(cachedOnData, onError: (e, s) {
-      print("socket error");
+    final subscription =
+        chatSocketChannel!.stream.listen(cachedOnData, onError: (e, s) {
+      chatLogger.e("socket channel subscription error!");
     }, onDone: () {
-      print("socket done");
-      print(DateTime.now());
-      print("------------");
+      chatLogger.w("socket channel subscription done!");
     });
-    chatSocketChannel!.sink.add(jsonEncode({
-      "type": "system",
-      "body": {"session_key": sessionKey}
-    }));
-    print(sessionKey);
+    // first authentication for 채팅 소켓
+    chatSocketChannel!.sink.add(
+      jsonEncode(
+        {
+          "type": "system",
+          "body": {"session_key": sessionKey}
+        },
+      ),
+    );
+    chatLogger.i("socket channel authentication send done");
     cachedSubscription = subscription;
     return subscription;
   }
@@ -92,28 +103,34 @@ class ChattingServiceImpl implements ChattingService {
   }
 
   @override
-  Future<void> sendChat({required String chatText, required String chattingRoomId}) async {
-    chatSocketChannel!.sink.add(jsonEncode(
-      {
-        "type": "message",
-        "body": {
-          "chatting_id": chattingRoomId,
-          "msg": chatText,
-        },
+  Future<void> sendChat(
+      {required String chatText, required String chattingRoomId}) async {
+    final bodyForSendingChat = {
+      "type": "message",
+      "body": {
+        "chatting_id": chattingRoomId,
+        "msg": chatText,
       },
-    ));
+    };
+    chatLogger.i("send chat on socketChannel : $bodyForSendingChat");
+    chatSocketChannel!.sink.add(jsonEncode(bodyForSendingChat));
   }
 
   Future<void> reConnect() async {
+    chatLogger.i("try socket channel reconnect");
     if (cachedSubscription != null) {
-      chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
+
       cachedSubscription!.pause();
       await cachedSubscription!.cancel();
+      chatLogger.i("prior subscription cancel fin");
+      chatSocketChannel =
+          WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
       cachedSubscription = chatSocketChannel!.stream.listen(cachedOnData);
       chatSocketChannel!.sink.add(jsonEncode({
         "type": "system",
         "body": {"session_key": cachedSessionKey}
       }));
+      chatLogger.i("new subscription setting fin");
     }
   }
 

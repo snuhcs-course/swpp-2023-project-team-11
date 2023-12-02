@@ -45,6 +45,7 @@ dependencies:
   web_socket_channel: ^2.4.0
   fluttertoast: ^8.2.2
   shared_preferences: ^2.2.2
+  logger: ^2.0.2+1
 
 dev_dependencies:
   flutter_test:
