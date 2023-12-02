@@ -37,13 +37,19 @@ class ValidChattingRoomController extends GetxController {
         }
       });
     } else {
-      // proxyMode가 아닐 때, 즉 소켓에서 추가가 됐을 때 무조건 proxy상태인 애가 있을거임
-      final target = chatVmList.lastWhere((chatVm) =>
+      // proxyMode가 아닐 때, 즉 소켓에서 왔을 때
+      final alreadyAddedProxyTarget = chatVmList.firstWhereOrNull((chatVm) =>
           chatVm.text == chat.message &&
-          chatVm.senderType == receivedChatSenderType);
+              chatVm.temp &&
+          chatVm.senderType == receivedChatSenderType );
+      if (alreadyAddedProxyTarget!=null) {
+        alreadyAddedProxyTarget.updateTemp(sequenceId: chat.seqId, temp: false);
+        chatVmList.refresh();
+      } else {
+        chatVmList.add(ChatVM.fromChat(chat));
+      }
 
-      target.updateTemp(sequenceId: chat.seqId, temp: false);
-      chatVmList.refresh();
+
     }
     if (Get.currentRoute == "/main/room") {
       Future.delayed(const Duration(milliseconds: 100)).then(

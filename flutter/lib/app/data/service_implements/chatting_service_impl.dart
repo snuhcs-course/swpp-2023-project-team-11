@@ -19,7 +19,8 @@ class ChattingServiceImpl implements ChattingService {
   final chatLogger = Logger(
     printer: PrettyPrinter(
       methodCount: 0,
-      lineLength: 4,
+      lineLength: 10,
+      printTime: true,
     )
   );
 
@@ -49,6 +50,7 @@ class ChattingServiceImpl implements ChattingService {
       chatLogger.e("socket channel subscription error!");
     }, onDone: () {
       chatLogger.w("socket channel subscription done!");
+      reConnect();
     });
     // first authentication for 채팅 소켓
     chatSocketChannel!.sink.add(
