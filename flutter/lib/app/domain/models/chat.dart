@@ -15,6 +15,7 @@ class Chat {
   final String message;
   @JsonKey(name: "timestamp")
   final DateTime sentAt;
+  @JsonKey(defaultValue: 0)
   final int proxyId;
 
   
