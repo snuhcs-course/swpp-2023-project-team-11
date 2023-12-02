@@ -188,6 +188,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": -1,
                     "msg": ""
                 }
@@ -203,6 +204,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": self.valid_chatting_id,
                     "msg": ""
                 }
@@ -218,6 +220,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": self.terminated_chatting_id,
                     "msg": ""
                 }
@@ -233,6 +236,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": self.pending_chatting_id,
                     "msg": ""
                 }
@@ -248,6 +252,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": self.pending_chatting_id,
                     "msg": ""
                 }
@@ -263,6 +268,7 @@ class TestService(unittest.IsolatedAsyncioTestCase):
             {
                 "type": "message",
                 "body": {
+                    "proxy_id": 0,
                     "chatting_id": self.valid_chatting_id,
                     "msg": ""
                 }
@@ -272,9 +278,9 @@ class TestService(unittest.IsolatedAsyncioTestCase):
         self.recv_socket.send_json.assert_called()
 
     async def test_parse_message(self):
-        output = await parse_message({"body": {"chatting_id": 0, "msg": ""}}, self.socket)
+        output = await parse_message({"body": {"proxy_id": 0, "chatting_id": 0, "msg": ""}}, self.socket)
         self.assertIsNone(output)
-        output = await parse_message({"type": "foo", "body": {"chatting_id": 0, "msg": ""}}, self.socket)
+        output = await parse_message({"type": "foo", "body": {"proxy_id": 0, "chatting_id": 0, "msg": ""}}, self.socket)
         self.assertIsNone(output)
         output = await parse_message({"type": "message"}, self.socket)
         self.assertIsNone(output)
@@ -284,10 +290,21 @@ class TestService(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(output)
         output = await parse_message({"type": "message", "body": {"chatting_id": 0}}, self.socket)
         self.assertIsNone(output)
+        output = await parse_message({"type": "message", "body": {"proxy_id": 0}}, self.socket)
+        self.assertIsNone(output)
         output = await parse_message({"type": "message", "body": {"msg": ""}}, self.socket)
         self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": {"chatting_id": "a", "msg": ""}}, self.socket)
+        output = await parse_message({"type": "message", "body": {"chatting_id": 0, "proxy_id": 0}}, self.socket)
         self.assertIsNone(output)
-        chatting_id, msg = await parse_message({"type": "message", "body": {"chatting_id": 0, "msg": ""}}, self.socket)
+        output = await parse_message({"type": "message", "body": {"proxy_id": 0, "msg": ""}}, self.socket)
+        self.assertIsNone(output)
+        output = await parse_message({"type": "message", "body": {"chatting_id": 0, "msg": ""}}, self.socket)
+        self.assertIsNone(output)
+        output = await parse_message({"type": "message", "body": {"proxy_id": 0, "chatting_id": "a", "msg": ""}}, self.socket)
+        self.assertIsNone(output)
+        output = await parse_message({"type": "message", "body": {"proxy_id": "a", "chatting_id": 0, "msg": ""}}, self.socket)
+        self.assertIsNone(output)
+        proxy_id, chatting_id, msg = await parse_message({"type": "message", "body": {"proxy_id": 0, "chatting_id": 0, "msg": ""}}, self.socket)
+        self.assertEqual(proxy_id, 0)
         self.assertEqual(chatting_id, 0)
         self.assertEqual(msg, "")
