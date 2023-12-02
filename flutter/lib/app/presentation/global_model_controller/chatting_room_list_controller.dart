@@ -56,22 +56,22 @@ class ChattingRoomListController extends SuperController<
       print("newIsDeviceConnected : $newIsDeviceConnected");
       if (!newIsDeviceConnected) {
         _internetOverlayCompleter = Completer();
-        Get.showOverlay(
-          asyncFunction: () async {
-            await _internetOverlayCompleter.future;
-          },
-          loadingWidget: Material(
-            color: Colors.white70,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("인터넷 연결이 끊겼습니다"),
-                CupertinoActivityIndicator(),
-              ],
-            ),
-          )
-        );
+        // Get.showOverlay(
+        //   asyncFunction: () async {
+        //     await _internetOverlayCompleter.future;
+        //   },
+        //   loadingWidget: Material(
+        //     color: Colors.white70,
+        //     child: Column(
+        //       mainAxisSize: MainAxisSize.min,
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: [
+        //         Text("인터넷 연결이 끊겼습니다"),
+        //         CupertinoActivityIndicator(),
+        //       ],
+        //     ),
+        //   )
+        // );
       } else {
         _internetOverlayCompleter.complete();
       }
@@ -383,8 +383,8 @@ class ChattingRoomListController extends SuperController<
   @override
   void onResumed() async {
     print("------- on Resumed ---------");
-    await reFetchAllChatsForEachValidRooms();
     await ChattingServiceImpl().reConnect();
+    await reFetchAllChatsForEachValidRooms();
   }
 
   @override

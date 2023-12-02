@@ -38,10 +38,11 @@ class ValidChattingRoomController extends GetxController {
       });
     } else {
       // proxyMode가 아닐 때, 즉 소켓에서 왔을 때
-      final alreadyAddedProxyTarget = chatVmList.firstWhereOrNull((chatVm) =>
-          chatVm.text == chat.message &&
-              chatVm.temp &&
-          chatVm.senderType == receivedChatSenderType );
+      // final alreadyAddedProxyTarget = chatVmList.firstWhereOrNull((chatVm) =>
+      //     chatVm.text == chat.message &&
+      //         chatVm.temp &&
+      //     chatVm.senderType == receivedChatSenderType );
+      final alreadyAddedProxyTarget = chatVmList.firstWhereOrNull((vm) => chat.proxyId == vm.proxyId);
       if (alreadyAddedProxyTarget!=null) {
         alreadyAddedProxyTarget.updateTemp(sequenceId: chat.seqId, temp: false);
         chatVmList.refresh();
@@ -121,6 +122,7 @@ class ChatVM {
   final String text;
   final DateTime createdAt;
   int sequenceId;
+  final int proxyId;
   bool temp;
   bool needsDelete;
 
@@ -129,6 +131,7 @@ class ChatVM {
     required this.text,
     required this.createdAt,
     required this.sequenceId,
+    required this.proxyId,
     this.temp = false,
     this.needsDelete = false,
   });
@@ -140,6 +143,7 @@ class ChatVM {
       text: chat.message,
       createdAt: chat.sentAt,
       sequenceId: chat.seqId,
+      proxyId: chat.proxyId,
       temp: temp,
     );
   }
@@ -154,6 +158,7 @@ class ChatVM {
     String? text,
     DateTime? createdAt,
     int? sequenceId,
+    int? proxyId,
     bool? temp,
   }) {
     return ChatVM._(
@@ -162,6 +167,7 @@ class ChatVM {
       createdAt: createdAt ?? this.createdAt,
       sequenceId: sequenceId ?? this.sequenceId,
       temp: temp ?? this.temp,
+      proxyId: proxyId ?? this.proxyId,
     );
   }
 }
