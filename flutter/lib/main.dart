@@ -7,6 +7,7 @@ import 'package:mobile_app/routes/get_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'routes/named_routes.dart';
+import "package:internet_connection_checker/internet_connection_checker.dart";
 
 late SharedPreferences sp;
 

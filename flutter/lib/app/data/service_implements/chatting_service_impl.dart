@@ -121,9 +121,10 @@ class ChattingServiceImpl implements ChattingService {
   Future<void> reConnect() async {
     chatLogger.i("try socket channel reconnect");
     if (cachedSubscription != null) {
-
-      cachedSubscription!.pause();
       await cachedSubscription!.cancel();
+      await chatSocketChannel!.sink.close();
+      cachedSubscription = null;
+
       chatLogger.i("prior subscription cancel fin");
       chatSocketChannel =
           WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));

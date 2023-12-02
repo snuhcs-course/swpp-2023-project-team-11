@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
@@ -31,6 +32,27 @@ class ChattingRoomListController extends SuperController<
   List<ChattingRoom> _requestedRooms = [];
 
   int get numRequestedRooms => _requestedRooms.length;
+
+  late bool isDeviceConnected = true;
+
+  late final StreamSubscription<InternetConnectionStatus> isDeviceConnectedSubscription;
+
+  @override
+  void onInit() async {
+    super.onInit();
+    isDeviceConnected = await InternetConnectionChecker().hasConnection;
+    print("isDeviceConnected : $isDeviceConnected");
+    isDeviceConnectedSubscription = InternetConnectionChecker().onStatusChange.listen((InternetConnectionStatus status) async {
+      final newIsDeviceConnected =(status == InternetConnectionStatus.connected);
+      print("newIsDeviceConnected : $newIsDeviceConnected");
+      // 끊겼다가 다시 연결되는 경우
+      if (newIsDeviceConnected && !isDeviceConnected) {
+        print("// 끊겼다가 다시 연결되는 경우 -> refetch");
+        reFetchAllChatsForEachValidRooms();
+      }
+      isDeviceConnected = newIsDeviceConnected;
+    });
+  }
 
   @override
   Future<void> onReady() async {
@@ -308,6 +330,12 @@ class ChattingRoomListController extends SuperController<
         _updateIntimacyUseCase = updateIntimacyUseCase;
 
   @override
+  void onClose() {
+    super.onClose();
+    isDeviceConnectedSubscription.cancel();
+  }
+
+  @override
   void onDetached() {
     print("onDetached");
   }
@@ -324,6 +352,7 @@ class ChattingRoomListController extends SuperController<
 
   @override
   void onResumed() async {
+    print("------- on Resumed ---------");
     await reFetchAllChatsForEachValidRooms();
     await ChattingServiceImpl().reConnect();
 

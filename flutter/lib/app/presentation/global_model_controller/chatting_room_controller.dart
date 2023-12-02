@@ -64,7 +64,7 @@ class ValidChattingRoomController extends GetxController {
   }
 
   int _getLatestChatIndex() {
-    for (int i = chatVmList.length - 1; i >= 0; i--) {
+    for (int i = chatVmList.length-1; i >= 0; i--) {
       final target = chatVmList[i].sequenceId;
       if (target < 0) {
         continue;
@@ -76,12 +76,16 @@ class ValidChattingRoomController extends GetxController {
 
   Future<void> reFetchChatsFromResume() async {
     print("----------- reFetchChatsFromResume ---------");
+    final lastChatIndex = _getLatestChatIndex();
+    print(chatVmList.length);
+    print(lastChatIndex);
     await _fetchAllChatUseCase.call(
       chattingRoomId: chattingRoom.id.toString(),
-      sequenceId: chatVmList[_getLatestChatIndex()].sequenceId,
+      sequenceId: chatVmList[lastChatIndex].sequenceId,
       whenSuccess: (chats) {
+        print("reFetchChatsFromResume --------- 추가된 챗들 개수: ${chats.length}");
         chatVmList.insertAll(
-          _getLatestChatIndex(),
+          lastChatIndex +1,
           chats.map((e) => ChatVM.fromChat(e)),
         );
       },
