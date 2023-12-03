@@ -21,8 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     with op.batch_alter_table("text") as alter_table_text_op:
         alter_table_text_op.add_column(
-            sa.Column("proxy_id", sa.Integer(), server_default=sa.literal(0))
+            sa.Column("proxy_id", sa.BigInteger(), server_default=sa.literal(0), nullable=False)
         )
+        alter_table_text_op.alter_column("proxy_id", server_default=None)
 
 
 def downgrade() -> None:
