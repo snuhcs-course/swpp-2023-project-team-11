@@ -33,7 +33,7 @@ class ChattingRoomListController extends SuperController<
 
   int get numRequestedRooms => _requestedRooms.length;
 
-  late bool isDeviceConnected = true;
+  bool _isDeviceConnected = true;
 
   late final StreamSubscription<InternetConnectionStatus>
       isDeviceConnectedSubscription;
@@ -43,8 +43,8 @@ class ChattingRoomListController extends SuperController<
   @override
   void onInit() async {
     super.onInit();
-    isDeviceConnected = await InternetConnectionChecker().hasConnection;
-    print("isDeviceConnected : $isDeviceConnected");
+    _isDeviceConnected = await InternetConnectionChecker().hasConnection;
+    print("isDeviceConnected : $_isDeviceConnected");
     _internetOverlayCompleter = Completer();
     isDeviceConnectedSubscription = InternetConnectionChecker()
         .onStatusChange
@@ -74,11 +74,11 @@ class ChattingRoomListController extends SuperController<
         _internetOverlayCompleter.complete();
       }
       // 끊겼다가 다시 연결되는 경우
-      if (newIsDeviceConnected && !isDeviceConnected) {
+      if (newIsDeviceConnected && !_isDeviceConnected) {
         print("// 끊겼다가 다시 연결되는 경우 -> refetch");
         reFetchAllChatsForEachValidRooms();
       }
-      isDeviceConnected = newIsDeviceConnected;
+      _isDeviceConnected = newIsDeviceConnected;
     });
   }
 
@@ -381,12 +381,23 @@ class ChattingRoomListController extends SuperController<
   @override
   void onResumed() async {
     print("------- on Resumed ---------");
-    await ChattingServiceImpl().reConnect();
-    await reFetchAllChatsForEachValidRooms();
+    if (_isDeviceBackground) {
+      print("------- on Resumed from background---------");
+      print("now isConnected : $_isDeviceConnected");
+      _isDeviceBackground = false;
+      if (_isDeviceConnected) {
+        await ChattingServiceImpl().reConnect();
+        await reFetchAllChatsForEachValidRooms();
+      }
+    }
   }
+
+  bool _isDeviceBackground = false;
+
 
   @override
   void onHidden() {
-    // TODO: implement onHidden
+    print("onHidden");
+    _isDeviceBackground = true;
   }
 }
