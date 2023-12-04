@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -21,7 +20,6 @@ import 'package:mobile_app/app/presentation/global_model_controller/chatting_roo
 import 'package:mobile_app/app/presentation/global_model_controller/user_controller.dart';
 import 'package:mobile_app/core/constants/system_strings.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
-import 'package:mobile_app/core/utils/loading_util.dart';
 import 'package:mobile_app/main.dart';
 
 class ChattingRoomListController extends SuperController<
@@ -124,7 +122,7 @@ class ChattingRoomListController extends SuperController<
           await reloadRooms();
           Fluttertoast.showToast(
               msg: chat.senderName + "님과의 첫 채팅이 도착했어요!".tr,
-              toastLength: Toast.LENGTH_LONG,
+              toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.TOP,
               timeInSecForIosWeb: 1,
               backgroundColor: MyColor.orange_1,
