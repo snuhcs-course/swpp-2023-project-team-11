@@ -17,12 +17,11 @@ class ChattingServiceImpl implements ChattingService {
   static StreamSubscription? cachedSubscription;
   static void Function(dynamic)? cachedOnData;
   final chatLogger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      lineLength: 10,
-      printTime: true,
-    )
-  );
+      printer: PrettyPrinter(
+    methodCount: 0,
+    lineLength: 10,
+    printTime: true,
+  ));
 
   @override
   StreamSubscription initChatConnection({
@@ -50,7 +49,7 @@ class ChattingServiceImpl implements ChattingService {
       chatLogger.e("socket channel subscription error!");
     }, onDone: () {
       chatLogger.w("socket channel subscription done!");
-      reConnect();
+      reConnect(); // 여기서 리커넥트를 바로 하기? 성공 또는 실패
     });
     // first authentication for 채팅 소켓
     chatSocketChannel!.sink.add(
@@ -111,14 +110,17 @@ class ChattingServiceImpl implements ChattingService {
   }
 
   @override
-  Future<void> sendChat(
-      {required String chatText, required String chattingRoomId, required String proxyId,}) async {
+  Future<void> sendChat({
+    required String chatText,
+    required String chattingRoomId,
+    required String proxyId,
+  }) async {
     final bodyForSendingChat = {
       "type": "message",
       "body": {
         "chatting_id": chattingRoomId,
         "msg": chatText,
-        "proxy_id" : proxyId
+        "proxy_id": proxyId
       },
     };
     print(jsonEncode(bodyForSendingChat));
@@ -127,22 +129,52 @@ class ChattingServiceImpl implements ChattingService {
   }
 
   Future<void> reConnect() async {
+    // 성공 또는 실패
     chatLogger.i("try socket channel reconnect");
     if (cachedSubscription != null) {
-      await cachedSubscription!.cancel();
-      await chatSocketChannel!.sink.close();
+      chatLogger.i("cached Subscription is not null");
+      cachedSubscription!.cancel();
+      chatLogger.i("cached Subscription cancelled");
+    }
+    if (chatSocketChannel != null) {
+      chatLogger.i("chatSocketChannel is not null");
+      chatSocketChannel!.sink.close(); // 네트워크 연결 없이도 성공할 수 있나요? await 빼봤어요
+      chatLogger.i("chat socket channel sink closed");
       cachedSubscription = null;
-
       chatLogger.i("prior subscription cancel fin");
-      chatSocketChannel =
-          WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
-      cachedSubscription = chatSocketChannel!.stream.listen(cachedOnData);
+    }
+
+    chatLogger.i("setting up new socket channel...");
+    chatSocketChannel =
+        WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl)); // 성공 또는 실패
+
+    chatSocketChannel!.ready.then((_) {
+      // connection successful
+      cachedSubscription =
+          chatSocketChannel!.stream.listen(cachedOnData, onError: (e, s) {
+        chatLogger.e("socket channel subscription error!");
+      }, onDone: () {
+        chatLogger.w("socket channel subscription done!");
+        reConnect(); // 여기서 리커넥트를 바로 하기? 성공 또는 실패
+      }, cancelOnError: true);
+    }).onError((error, stackTrace) {
+      chatLogger.w("Couldn't establish connection");
+      // chatSocketChannel = null; // 여기서 널로 만들어도 될까요 // chatSOcketChannel, cachedsubscription 둘 다 null인 상태
+      Future.delayed(Duration(seconds: 3)).then((value) {
+        chatLogger.w("Retrying...");
+        reConnect();
+      });
+    });
+
+    // cachedSubscription = chatSocketChannel!.stream.listen(cachedOnData);
+    if (chatSocketChannel != null) {
       chatSocketChannel!.sink.add(jsonEncode({
         "type": "system",
         "body": {"session_key": cachedSessionKey}
       }));
-      chatLogger.i("new subscription setting fin");
     }
+
+    chatLogger.i("new subscription setting fin");
   }
 
   @override
