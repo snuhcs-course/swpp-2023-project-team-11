@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import AsyncGenerator, Generator, Any
 
@@ -40,4 +41,5 @@ class DbConnector:
         try:
             yield db
         finally:
-            await db.close()
+            task = asyncio.create_task(db.close())
+            await asyncio.shield(task)
