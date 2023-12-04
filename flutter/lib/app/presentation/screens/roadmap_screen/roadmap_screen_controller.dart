@@ -77,7 +77,7 @@ class RoadmapScreenController extends GetxController
       proxyId: proxyId,
     );
 
-    Get.delete(tag: chattingRoom.id.toString());
+    // Get.delete(tag: chattingRoom.id.toString());
     Get.back();
   }
 
