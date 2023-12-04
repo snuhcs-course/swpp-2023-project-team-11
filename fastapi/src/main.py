@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     await DbConnector.async_engine.dispose()
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(chatting_router)
 app.include_router(user_router)
