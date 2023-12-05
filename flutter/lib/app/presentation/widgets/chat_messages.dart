@@ -98,7 +98,8 @@ class ChatMessage extends StatelessWidget {
                   // ex) "ROADMAP_MESSAGE!Discuss worst movies or dramas"
                   // ex) "ROADMAP_MESSAGE!사회 이슈에 대한 토론" - 영어 한국어 둘 다 와야하는데
                   // - 어차피 유저 설정에 따라서 로드맵 추천으로 나오는 언어가 바뀌는게 나을것같아서 필요할 듯
-                  "${text}",
+                  text,
+                  key: ValueKey("topic"),
                   style: const TextStyle(
                     fontSize: 16,
                     color: MyColor.orange_1,

@@ -25,7 +25,7 @@ class RoomScreen extends GetView<RoomScreenController> {
         additionalAction: IconButton(
           icon: Image.asset("assets/images/sneki_holding_here.png"),
           onPressed: controller.onSnekiTap,
-
+          key: const ValueKey("roadMap"),
         ),
         ),
         backgroundColor: MyColor.purple,

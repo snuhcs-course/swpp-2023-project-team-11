@@ -128,6 +128,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
   Container _buildTopicContainer(List<Topic> topics, int index) =>
       Container(
           width: double.infinity,
+          key: ValueKey(index),
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
           decoration: BoxDecoration(
               color: (controller.selectedTopicExists &&

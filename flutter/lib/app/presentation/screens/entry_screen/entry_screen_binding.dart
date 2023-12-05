@@ -13,10 +13,7 @@ class EntryScreenBinding implements Bindings {
     Get.put(
       EntryScreenController(
         signInUseCase: SignInUseCase(
-            authService: AuthServiceImpl(),
-            userRepository: UserRepositoryImpl()),
-        automaticSignInUseCase: AutomaticSignInUseCase(
-          authService: Get.find<DependencyManager>().authService,
+          authService: AuthServiceImpl(),
           userRepository: UserRepositoryImpl(),
         ),
       ),

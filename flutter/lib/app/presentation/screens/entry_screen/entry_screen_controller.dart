@@ -16,7 +16,6 @@ import 'package:mobile_app/routes/named_routes.dart';
 
 class EntryScreenController extends GetxController {
   final SignInUseCase _signInUseCase;
-  final AutomaticSignInUseCase _automaticSignInUseCase;
   final TextEditingController emailCon = TextEditingController();
   final TextEditingController passwordCon = TextEditingController();
 
@@ -27,8 +26,7 @@ class EntryScreenController extends GetxController {
     super.onReady();
     await Future.delayed(const Duration(milliseconds: 200));
     FlutterNativeSplash.remove();
-    _automaticSignInUseCase.call(onFail: (){}, onSuccess: (User user){onSignInSuccess(user);});
-    if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en') && MyLanguageUtil.isKr) MyLanguageUtil.toggle();
+    if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en')) MyLanguageUtil.toggle();
   }
 
   void onSignUpButtonTap() {
@@ -77,6 +75,5 @@ class EntryScreenController extends GetxController {
 
   EntryScreenController({
     required SignInUseCase signInUseCase,
-    required AutomaticSignInUseCase automaticSignInUseCase,
-  }) : _signInUseCase = signInUseCase, _automaticSignInUseCase = automaticSignInUseCase;
+  }) : _signInUseCase = signInUseCase;
 }
