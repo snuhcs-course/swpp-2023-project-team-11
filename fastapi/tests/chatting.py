@@ -165,7 +165,8 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_calculate(self):
         timestamp = datetime.now()
         curr_texts = [
-            Text(id=1, proxy_id=0, sender_id=1, msg="hello", timestamp=timestamp),
+            Text(id=1, proxy_id=0, sender_id=1,
+                 msg="hello", timestamp=timestamp),
             Text(id=1, proxy_id=1, sender_id=1, msg="hello",
                  timestamp=timestamp - timedelta(seconds=1)),
             Text(id=1, proxy_id=2, sender_id=1, msg="you",
@@ -381,7 +382,7 @@ class TestDb(unittest.TestCase):
             db, self.initiator_id, False)), 1)
         self.assertEqual(len(get_all_chattings(
             db, self.responder_id, False)), 1)
-       
+
         with self.assertRaises(ChattingNotExistException):
             get_chatting_by_id(db, -1)
 
@@ -450,6 +451,12 @@ class TestDb(unittest.TestCase):
         self.assertEqual(texts[1].id, seq_ids[2])
 
     @inject_db
+    def test_create_text(self, db: DbSession):
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
+        text = create_text(db, chatting.id, self.initiator_id, 0, "hello")
+        self.assertEqual(text.proxy_id, 0)
+
+    @inject_db
     def test_get_intimacy(self, db: DbSession):
         chatting = create_chatting(db, self.initiator_id, self.responder_id)
         timestamp = datetime.now()
@@ -506,7 +513,7 @@ class TestDb(unittest.TestCase):
                     {"topic_kor": "좋아용", "topic_eng": "I'm so good", "tag": "A"},
                     {"topic_kor": "화나요!!", "topic_eng": "I'm so mad", "tag": "B"},
                     {"topic_kor": "사랑해", "topic_eng": "I love you", "tag": "B"},
-                    {"topic_kor": "슬퍼요...","topic_eng": "I'm so sad", "tag": "C"},
+                    {"topic_kor": "슬퍼요...", "topic_eng": "I'm so sad", "tag": "C"},
                     {"topic_kor": "행복해요~!~!", "topic_eng": "I'm so happy", "tag": "C"},
                     {"topic_kor": "곧 종강이다~!", "topic_eng": "Jong-Gang", "tag": "C"}
                 ]
@@ -528,7 +535,8 @@ class TestDb(unittest.TestCase):
             self.assertIn(topic.topic_eng, ["I love you", "I'm so mad"])
         for topic in topics_c:
             self.assertIn(topic.topic_kor, ["슬퍼요...", "행복해요~!~!", "곧 종강이다~!"])
-            self.assertIn(topic.topic_eng, ["I'm so sad", "I'm so happy", "Jong-Gang"])
+            self.assertIn(topic.topic_eng, [
+                          "I'm so sad", "I'm so happy", "Jong-Gang"])
 
         # if it contains invalid tag or limit = 0
         self.assertEqual(len(get_topics(db, "D", 2)), 0)
@@ -545,7 +553,6 @@ class TestDb(unittest.TestCase):
         elif test_list[0].topic_eng == "I love you":
             self.assertEqual(test_list[1].topic_kor, "화나요!!")
             self.assertEqual(test_list[1].topic_eng, "I'm so mad")
-
 
         # if requested more than number of topics
         self.assertEqual(len(get_topics(db, 'C', 3)), 3)
