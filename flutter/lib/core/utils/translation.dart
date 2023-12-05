@@ -50,9 +50,15 @@ class MyTranslation extends Translations {
       '학과 선택' : "Select major",
       '단과대학 선택' : "Select dept",
       '공과대학' : "Engineering",
+      '자유전공학부': 'CLS',
+      '치의학대학원': 'Dentistry',
+      '자연과학대학': 'Natural Sciences',
       '컴퓨터공학부' : "CSE",
       '기계공학부' : "ME",
       '전기정보공학부' : "ECE",
+      '치의학과': "DENT",
+      '수리과학부': "MATH",
+      '통계학과' : "STAT",
       "mbti 선택" : "Select mbti",
       "잘 모르겠어요" : "I dunno",
 
@@ -118,9 +124,9 @@ class MyTranslation extends Translations {
       '다른 친구들 더 확인하기': "Go check out other friends",
       " 채팅" : " Chatting",
       "새로운 채팅 요청":"New chat requests",
-      "아직 아무도 친구가 되지 않았어요!": "There are no friends yet!",
-      "친구 신청을 보내고" : "Send chat requests,",
-      "새로운 친구를 만들어보세요" : "and make new friends!",
+      "지금은 진행 중인 채팅이 없어요": "There are currently\n no ongoing chats!",
+      "채팅 신청을 보내고" : "Send chat requests,",
+      "새로운 친구를 만들어 보아요!" : "and make new friends!",
       "친구 둘러보기" : "Go check out friends",
       "종료된 채팅방입니다": "The chatroom has terminated",
       "분 전" : "m ago",
@@ -160,7 +166,8 @@ class MyTranslation extends Translations {
       "네트워크 연결이 불안정해 프로필을 수정하지 못했어요. 재연결 후 다시 시도해주세요" : "Couldn't edit the profile due to network issues. Please try again later",
       "사용 언어" : "Speaks",
       "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!": "Chat request accepted. Go check it out!",
-      '채팅 요청 수락하기' : "Accept chat request"
+      '채팅 요청 수락하기' : "Accept chat request",
+
 
     },
     "kr" : {

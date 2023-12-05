@@ -74,13 +74,7 @@ class MakeProfileScreen extends GetView<MakeProfileScreenController> {
                 textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                 verticalPadding: 15,
               ),
-              const SizedBox(height: 8),
-              Text("프로필은 나중에도 수정이 가능하니 부담 갖지 말고 적어주세요!".tr,
-                  style: TextStyle(
-                      color: const Color(0xff2d3a45).withOpacity(0.64),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 13)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               if (controller.isForeign) Text("주로 사용하는 언어".tr,
                   style: TextStyle(
                       color: Color(0xff2d3a45),

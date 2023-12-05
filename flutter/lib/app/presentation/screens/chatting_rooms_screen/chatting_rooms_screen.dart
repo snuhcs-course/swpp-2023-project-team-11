@@ -77,18 +77,19 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            "아직 아무도 친구가 되지 않았어요!".tr,
+            "지금은 진행 중인 채팅이 없어요".tr,
+            textAlign: TextAlign.center,
             style: TextStyle(color: MyColor.purple, fontWeight: FontWeight.w600, fontSize: 18),
           ),
           const SizedBox(
             height: 10,
           ),
-          Text("친구 신청을 보내고".tr,
+          Text("채팅 신청을 보내고".tr,
               style: TextStyle(
                   color: const Color(0xff2d3a45).withOpacity(0.64),
                   fontWeight: FontWeight.w400,
                   fontSize: 14)),
-          Text("새로운 친구를 만들어보세요".tr,
+          Text("새로운 친구를 만들어 보아요!".tr,
               style: TextStyle(
                   color: const Color(0xff2d3a45).withOpacity(0.64),
                   fontWeight: FontWeight.w400,
@@ -96,14 +97,17 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
           const SizedBox(
             height: 36,
           ),
-          SmallButton(onPressed: () => {}, text: "친구 둘러보기".tr)
+          // SmallButton(onPressed: (){
+          //
+          // }, text: "친구 둘러보기".tr)
         ],
       ),
     );
   }
 
   Widget _buildChatroomList(List<ChattingRoom> chattingRooms) {
-    return ListView.separated(
+    if (chattingRooms.every((single_chatroom) => single_chatroom.isTerminated)) return _buildEmptyChatRoomResponse();
+    else return ListView.separated(
         padding: const EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         itemBuilder: (context, index) {
@@ -156,19 +160,19 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                           const SizedBox(width: 8),
                           (chatroom.isApproved && !chatroom.isTerminated)
                               ? Text(
-                                  controller.checkSp(chatroom.id)
-                                      ? "${controller.timeToDisplay(chatroom)}"
-                                      : "${chatroom.createdAt.toLocal().year} / ${chatroom.createdAt.toLocal().month} / ${chatroom.createdAt.toLocal().day}",
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: MyColor.purple))
+                              controller.checkSp(chatroom.id)
+                                  ? "${controller.timeToDisplay(chatroom)}"
+                                  : "${chatroom.createdAt.toLocal().year} / ${chatroom.createdAt.toLocal().month} / ${chatroom.createdAt.toLocal().day}",
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: MyColor.purple))
                               : Text(
-                                  "${chatroom.createdAt.toLocal().year} / ${chatroom.createdAt.toLocal().month} / ${chatroom.createdAt.toLocal().day}",
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: MyColor.purple))
+                              "${chatroom.createdAt.toLocal().year} / ${chatroom.createdAt.toLocal().month} / ${chatroom.createdAt.toLocal().day}",
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: MyColor.purple))
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -176,12 +180,12 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                         chatroom.isTerminated
                             ? "종료된 채팅방입니다".tr
                             : (chatroom.isApproved
-                                ? (controller.checkSp(chatroom.id)
-                                    ? (controller.latestChatMessage(chatroom.id).characters.take(20).toString() +
-                                        ((controller.latestChatMessage(chatroom.id).characters.length > 20)
-                                            ? "..." : ""))
-                                    : "채팅을 시작해봐요!".tr)
-                                : "아직 상대가 수락하지 않았습니다".tr),
+                            ? (controller.checkSp(chatroom.id)
+                            ? (controller.latestChatMessage(chatroom.id).characters.take(20).toString() +
+                            ((controller.latestChatMessage(chatroom.id).characters.length > 20)
+                                ? "..." : ""))
+                            : "채팅을 시작해봐요!".tr)
+                            : "아직 상대가 수락하지 않았습니다".tr),
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,

@@ -154,7 +154,7 @@ class ChattingServiceImpl implements ChattingService {
           chatSocketChannel!.stream.listen(cachedOnData, onError: (e, s) {
         chatLogger.e("socket channel subscription error!");
       }, onDone: () {
-        chatLogger.w("socket channel subscription done!");
+        chatLogger.w("socket channel subscription done!!");
         reConnect(); // 여기서 리커넥트를 바로 하기? 성공 또는 실패
       }, cancelOnError: true);
     }).onError((error, stackTrace) {

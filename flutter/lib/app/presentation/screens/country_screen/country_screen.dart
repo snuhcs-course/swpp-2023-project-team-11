@@ -74,7 +74,7 @@ class CountryScreen extends GetView<CountryScreenController> {
         const SizedBox(height: 12),
         if (controller.countryNotHere.value) MainTextFormField(
             textEditingController: controller.temporaryTextEditingController,
-            hintText: "Your country code")
+            hintText: "Your country code: ex) 358 for Finland")
         else const SizedBox(height: 40)
       ],
     );
@@ -82,86 +82,86 @@ class CountryScreen extends GetView<CountryScreenController> {
 
   Widget _buildCountryList() {
     return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                for(var country in controller.countries1) Align(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (country.values.first == controller.tempCountryCode.value) {
-                        controller.tempCountryCode.value = "0";
-                      } else {
-                        controller.tempCountryCode.value = country.values.first;
-                        controller.countryNotHere.value = false;
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
-                              .orange_1 : Colors.black.withOpacity(0.1),
-                              width: 1)),
-                      padding: const EdgeInsets.all(6),
-                      margin: const EdgeInsets.all(4),
-                      child: Text(
-                        country.keys.first,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: country.values.first == controller.tempCountryCode.value
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: country.values.first == controller.tempCountryCode.value ? MyColor.orange_1 : MyColor
-                              .textBaseColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            Row(
-              children: [
-                for(var country in controller.countries2) Align(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (country.values.first == controller.tempCountryCode.value) {
-                        controller.tempCountryCode.value = "0";
-                      } else {
-                        controller.tempCountryCode.value = country.values.first;
-                        controller.countryNotHere.value = false;
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
-                              .orange_1 : Colors.black.withOpacity(0.1),
-                              width: 1)),
-                      padding: const EdgeInsets.all(6),
-                      margin: const EdgeInsets.all(4),
-                      child: Text(
-                        country.keys.first,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: country.values.first == controller.tempCountryCode.value
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: country.values.first == controller.tempCountryCode.value ? MyColor.orange_1 : MyColor
-                              .textBaseColor,
-                        ),
+      scrollDirection: Axis.horizontal,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              for(var country in controller.countries1) Align(
+                child: GestureDetector(
+                  onTap: () {
+                    if (country.values.first == controller.tempCountryCode.value) {
+                      controller.tempCountryCode.value = "0";
+                    } else {
+                      controller.tempCountryCode.value = country.values.first;
+                      controller.countryNotHere.value = false;
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
+                            .orange_1 : Colors.black.withOpacity(0.1),
+                            width: 1)),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
+                    child: Text(
+                      country.keys.first,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: country.values.first == controller.tempCountryCode.value
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: country.values.first == controller.tempCountryCode.value ? MyColor.orange_1 : MyColor
+                            .textBaseColor,
                       ),
                     ),
                   ),
                 ),
-                Center(child: ExtraSmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in this list")),
-              ],
-            ),
-          ],
-        ),
-      );
+              )
+            ],
+          ),
+          Row(
+            children: [
+              for(var country in controller.countries2) Align(
+                child: GestureDetector(
+                  onTap: () {
+                    if (country.values.first == controller.tempCountryCode.value) {
+                      controller.tempCountryCode.value = "0";
+                    } else {
+                      controller.tempCountryCode.value = country.values.first;
+                      controller.countryNotHere.value = false;
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: country.values.first == controller.tempCountryCode.value ? MyColor
+                            .orange_1 : Colors.black.withOpacity(0.1),
+                            width: 1)),
+                    padding: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(4),
+                    child: Text(
+                      country.keys.first,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: country.values.first == controller.tempCountryCode.value
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: country.values.first == controller.tempCountryCode.value ? MyColor.orange_1 : MyColor
+                            .textBaseColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Center(child: ExtraSmallButton(onPressed: controller.onCountryNotHereButttontap, text: "My country is not in this list")),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOptionContainer({required BuildContext context,
