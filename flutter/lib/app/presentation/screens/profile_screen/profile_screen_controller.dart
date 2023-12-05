@@ -106,17 +106,24 @@ class ProfileScreenController extends GetxController {
 
     languagesToAdd.clear();
     languagesToRemove.clear();
-
-    print("language edit complete");
     languagesEditMode.value = false;
   }
 
   void languagesEditManager(Language languageOfInterest) {
     if (languagesToAdd.contains(languageOfInterest)) {
+      if (languagesToAdd.length == 1 && languagesToRemove.length == userController.userLanguages.length){
+        // leave at least one language
+        return;
+      }
       languagesToAdd.remove(languageOfInterest);
     } else if (languagesToRemove.contains(languageOfInterest)) {
       languagesToRemove.remove(languageOfInterest);
     } else if (userController.userLanguages.contains(languageOfInterest)) {
+      // remove the language from existing list = removing one
+      if (languagesToAdd.isEmpty && languagesToRemove.length + 1 == userController.userLanguages.length){
+        // leave at least one language
+        return;
+      }
       languagesToRemove.add(languageOfInterest);
     } else {
       languagesToAdd.add(languageOfInterest);
@@ -336,9 +343,13 @@ class ProfileScreenController extends GetxController {
     List userList = userProfileList(item)!;
     RxBool editMode = editModeBool(item)!;
 
-    if (userList.contains(item)) toRemove.add(item);
-    toAdd.remove(item);
-    current.remove(item);
+    if(current.length > 1) {
+      if (userList.contains(item)) toRemove.add(item);
+      toAdd.remove(item);
+      current.remove(item);
+    }
+
+
   }
 
   void onLogOutSuccess() {
