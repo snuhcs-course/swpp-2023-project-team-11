@@ -14,11 +14,6 @@ class EmailScreen extends GetView<EmailScreenController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          controller.certSuccess(true);
-        },
-      ),
       backgroundColor: Colors.white,
       appBar: const SimpleAppBar(),
       body: Padding(
