@@ -159,6 +159,8 @@ class MyTranslation extends Translations {
       "선택 완료": "Selection complete",
       "네트워크 연결이 불안정해 프로필을 수정하지 못했어요. 재연결 후 다시 시도해주세요" : "Couldn't edit the profile due to network issues. Please try again later",
       "사용 언어" : "Speaks",
+      "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!": "Chat request accepted. Go check it out!",
+      '채팅 요청 수락하기' : "Accept chat request"
 
     },
     "kr" : {
