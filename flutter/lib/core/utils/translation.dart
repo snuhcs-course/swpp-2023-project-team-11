@@ -158,7 +158,7 @@ class MyTranslation extends Translations {
       "언어변경" : "한글",
       "선택 완료": "Selection complete",
       "네트워크 연결이 불안정해 프로필을 수정하지 못했어요. 재연결 후 다시 시도해주세요" : "Couldn't edit the profile due to network issues. Please try again later",
-      "사용 언어" : "Can speak"
+      "사용 언어" : "Speaks",
 
     },
     "kr" : {

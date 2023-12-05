@@ -28,7 +28,7 @@ class EntryScreenController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 200));
     FlutterNativeSplash.remove();
     _automaticSignInUseCase.call(onFail: (){}, onSuccess: (User user){onSignInSuccess(user);});
-    if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en')) MyLanguageUtil.toggle();
+    if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en') && MyLanguageUtil.isKr) MyLanguageUtil.toggle();
   }
 
   void onSignUpButtonTap() {
