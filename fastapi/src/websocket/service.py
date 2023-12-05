@@ -7,7 +7,7 @@ from src.websocket.exceptions import *
 
 
 async def receive_authentication(socket: WebSocket) -> str:
-    """Raises `WebSocketDisconnect`, `InvalidMessageException`."""
+    """Raises `RuntimeError`, `WebSocketDisconnect`, `InvalidMessageException`."""
 
     try:
         auth = await socket.receive_json()
@@ -19,7 +19,7 @@ async def receive_authentication(socket: WebSocket) -> str:
 
 
 async def receive_msg(socket: WebSocket) -> Tuple[int, int, str]:
-    """Raises `WebSocketDisconnect`, `InvalidMessageException`."""
+    """Raises `RuntimeError`, `WebSocketDisconnect`, `InvalidMessageException`."""
 
     try:
         msg = await socket.receive_json()
@@ -31,7 +31,7 @@ async def receive_msg(socket: WebSocket) -> Tuple[int, int, str]:
 
 
 async def send_msg(socket: WebSocket, seq_id: int, proxy_id: int, chatting_id: int, sender: str, email: str, msg: str, timestamp: datetime):
-    """Raises `WebSocketDisconnect`."""
+    """Raises `RuntimeError`, `WebSocketDisconnect`."""
 
     await socket.send_json({
         "type": "message",
@@ -48,6 +48,6 @@ async def send_msg(socket: WebSocket, seq_id: int, proxy_id: int, chatting_id: i
 
 
 async def send_system_msg(socket: WebSocket, msg: str):
-    """Raises `WebSocketDisconnect`."""
+    """Raises `RuntimeError`, `WebSocketDisconnect`."""
 
     await socket.send_json({"type": "system", "body": {"msg": msg}})

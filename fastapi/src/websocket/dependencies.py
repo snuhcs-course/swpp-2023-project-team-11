@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from asyncio import Lock
 from typing import Dict, Set, Tuple, List
@@ -43,6 +44,19 @@ class CachedGetUser(GetUser):
         return self.__name_email[user_id]
 
 
+class WebSocketHandle:
+    def __init__(self, manager: WebSocketManager, socket: WebSocket, user_id: int):
+        self.__manager = manager
+        self.__socket = socket
+        self.__user_id = user_id
+
+    async def __aenter__(self):
+        await self.__manager.add(self.__socket, self.__user_id)
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.__manager.remove(self.__socket, self.__user_id)
+
+
 class WebSocketManager:
     def __init__(self, get_user: GetUser):
         self.__sockets: Dict[int, Set[WebSocket]] = dict()
@@ -78,7 +92,7 @@ class WebSocketManager:
         for socket in await self.get_sockets((chatting.initiator_id, chatting.responder_id)):
             try:
                 await service.send_msg(socket, text.id, text.proxy_id, text.chatting_id, sender, email, text.msg, text.timestamp)
-            except WebSocketDisconnect:
+            except (RuntimeError, WebSocketDisconnect):
                 pass
 
 
