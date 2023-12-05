@@ -5,6 +5,7 @@ from typing import Dict, Set, Tuple, List
 
 from fastapi import WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
+from websockets.exceptions import ConnectionClosedError
 
 from src.chatting.models import Chatting, Text
 from src.user.models import EmailVerification, Email, Profile
@@ -92,7 +93,7 @@ class WebSocketManager:
         for socket in await self.get_sockets((chatting.initiator_id, chatting.responder_id)):
             try:
                 await service.send_msg(socket, text.id, text.proxy_id, text.chatting_id, sender, email, text.msg, text.timestamp)
-            except (RuntimeError, WebSocketDisconnect):
+            except (RuntimeError, WebSocketDisconnect, ConnectionClosedError):
                 pass
 
 

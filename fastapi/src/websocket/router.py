@@ -1,4 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from websockets.exceptions import ConnectionClosedError
 
 from src.auth.exceptions import InvalidSessionException
 from src.auth.service import async_get_session_by_key
@@ -28,7 +29,7 @@ async def websocket(socket: WebSocket, manager: WebSocketManager = Depends(get_s
         # Failed to authenticate, so close and terminate this coroutine.
         await socket.close(reason=exc.detail)
         return
-    except (RuntimeError, WebSocketDisconnect):
+    except (RuntimeError, WebSocketDisconnect, ConnectionClosedError):
         return
 
     async with WebSocketHandle(manager, socket, user_id):
@@ -46,5 +47,5 @@ async def websocket(socket: WebSocket, manager: WebSocketManager = Depends(get_s
                 except (InvalidMessageException, ChattingNotExistException) as exc:
                     # Invalid socket message. Stop handling and send system message.
                     await service.send_system_msg(socket, exc.detail)
-        except (RuntimeError, WebSocketDisconnect):
+        except (RuntimeError, WebSocketDisconnect, ConnectionClosedError):
             return
