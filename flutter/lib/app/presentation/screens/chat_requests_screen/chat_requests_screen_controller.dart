@@ -32,8 +32,8 @@ class ChatRequestsScreenController extends GetxController {
         Get.back();
         await onAcceptButtonTap(chattingRoom);
         Fluttertoast.showToast(
-            msg: "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!",
-            toastLength: Toast.LENGTH_LONG,
+            msg: "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!".tr,
+            toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             backgroundColor: MyColor.orange_1,

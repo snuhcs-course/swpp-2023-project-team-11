@@ -11,7 +11,7 @@ class AutomaticSignInUseCase {
     required void Function() onFail,
     required void Function(User user) onSuccess,
   }) async {
-
+    print("call automatic");
     final storedSessionKey = await _authService.getSessionKey;
     if (storedSessionKey == null) {
       print("Automatic signin fail. Try signing in");

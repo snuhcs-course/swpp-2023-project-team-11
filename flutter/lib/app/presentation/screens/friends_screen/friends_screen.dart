@@ -126,7 +126,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                             fontWeight: FontWeight.w400,
                             color: const Color(0xff2d3a45).withOpacity(0.8))),
                     const SizedBox(height: 2),
-                    Text("${"희망 언어".tr}: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
+                    Text("${user.getNationCode!=82? "사용 언어".tr : "희망 언어".tr}: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,

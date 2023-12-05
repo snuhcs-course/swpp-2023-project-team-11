@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_detail_column.dart';
@@ -34,7 +35,7 @@ class UserInfoDetailBottomSheet extends StatelessWidget {
             const SizedBox(height: 24),
             MainButton(
               mainButtonType: MainButtonType.key,
-              text: '채팅 요청 수락하기',
+              text: '채팅 요청 수락하기'.tr,
               onPressed: onAcceptButtonTap,
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom / 2),

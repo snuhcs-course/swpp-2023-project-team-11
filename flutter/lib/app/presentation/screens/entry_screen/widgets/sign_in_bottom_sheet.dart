@@ -45,6 +45,7 @@ class SignInBottomSheet extends StatelessWidget {
               textEditingController: emailCon,
               hintText: "이메일 입력".tr,
               titleText: "학교 이메일 (university email)".tr,
+              key: const Key("emailForm"),
             ),
             const SizedBox(height: 16),
             MainTextFormField(
@@ -52,6 +53,7 @@ class SignInBottomSheet extends StatelessWidget {
               hintText: "비밀번호 입력".tr,
               titleText: "비밀번호 (password)".tr,
               obscureText: true,
+              key: const Key("passwordForm"),
             ),
             const SizedBox(height: 7),
             Obx(() {
@@ -66,6 +68,7 @@ class SignInBottomSheet extends StatelessWidget {
               mainButtonType: MainButtonType.key,
               text: '로그인'.tr,
               onPressed: onSignInRequested,
+              key: const Key("finalLogin"),
             ),
             const SizedBox(height: 16),
             Row(

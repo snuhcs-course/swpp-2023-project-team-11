@@ -149,12 +149,18 @@ class MyTranslation extends Translations {
       "추천": "Suggestion",
       "해당 유저와는 이미 채팅이 진행되고 있어요" : "An ongoing chat already exists with this user",
       "방금 전" : "Just now",
-      'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어때요?: ' : "Sneki's recommendation just arrived! Why don't you talk about the following topic: ",
+      'Sneki의 추천이 도착했어요!' : "Sneki's recommendation just arrived!",
+      '다음 주제에 대해 이야기해보는거 어때요:  ' : "Why don't you talk about the following topic: ",
       "친밀도 산출을 위해 조금만 더 채팅해주세요" : "Please chat a little more",
       "현재 친밀도: ": "Current intimacy: ",
       "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!",
       "탭을 해 태그를 추가/삭제해봐요" : "Tap to add/remove tags",
-      "언어변경" : "한글"
+      "언어변경" : "한글",
+      "선택 완료": "Selection complete",
+      "네트워크 연결이 불안정해 프로필을 수정하지 못했어요. 재연결 후 다시 시도해주세요" : "Couldn't edit the profile due to network issues. Please try again later",
+      "사용 언어" : "Speaks",
+      "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!": "Chat request accepted. Go check it out!",
+      '채팅 요청 수락하기' : "Accept chat request"
 
     },
     "kr" : {

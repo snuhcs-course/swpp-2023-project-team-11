@@ -10,13 +10,9 @@ class SplashScreen extends GetView<SplashScreenController> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Text('splash')
+      body: Center(child: Text('splash'))
     );
   }
 }
 
-// GetPage(
-//   name: ,
-//   page: () => const SplashScreen(),
-//   binding: SplashScreenBinding(),
-// )
+

@@ -24,7 +24,7 @@ abstract class ChattingService {
   /// - chatType (string 바꿔서)
   /// <response>
   ///
-  Future<void> sendChat({required String chatText, required String chattingRoomId});
+  Future<void> sendChat({required String chatText, required String chattingRoomId, required String proxyId,});
 
   StreamSubscription initChatConnection({required String sessionKey, required void Function(Chat chat) onMessageChatReceive,});
 

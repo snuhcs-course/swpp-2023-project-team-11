@@ -25,7 +25,7 @@ class RoomScreen extends GetView<RoomScreenController> {
         additionalAction: IconButton(
           icon: Image.asset("assets/images/sneki_holding_here.png"),
           onPressed: controller.onSnekiTap,
-
+          key: const ValueKey("roadMap"),
         ),
         ),
         backgroundColor: MyColor.purple,
@@ -39,7 +39,7 @@ class RoomScreen extends GetView<RoomScreenController> {
           child: Obx(
                 () => ListView.separated(
               controller: controller.scrollCon,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
               itemBuilder: (context, index) {
                 final chatVm = controller.validChattingRoomController.chatVmList[index];
                 late final ChatVM priorChatVm;
@@ -63,20 +63,23 @@ class RoomScreen extends GetView<RoomScreenController> {
                     sameSenderWithBeforeMessage: index==0?false : priorChatVm.senderType == SenderType.sneki,
                   ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
                 } else{
-                  return ChatMessage(
-                    text: chatVm.text,
-                    senderType: chatVm.senderType,
-                    key: ValueKey(chatVm.sequenceId),
-                    tempProxy: chatVm.temp,
-                    needsDelete: chatVm.needsDelete,
-                    onDelete: () {
-                      print(chatVm.sequenceId);
-                      print("try delete");
-                      controller.onChatDeleteButtonTap(chatVm.sequenceId);
-                    },
-                    senderEmail: controller.opponentEmail,
-                    sameSenderWithBeforeMessage: index==0?false : (!priorChatVm.text.startsWith(roadmap_prefix)) && (priorChatVm.senderType == chatVm.senderType),
-                  ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0);
+                  return Padding(
+                    padding: EdgeInsets.only(left: chatVm.senderType == SenderType.me ? 0: 16, right: chatVm.senderType == SenderType.me ? 16: 0),
+                    child: ChatMessage(
+                      text: chatVm.text,
+                      senderType: chatVm.senderType,
+                      key: ValueKey(chatVm.sequenceId),
+                      tempProxy: chatVm.temp,
+                      needsDelete: chatVm.needsDelete,
+                      onDelete: () {
+                        print(chatVm.sequenceId);
+                        print("try delete");
+                        controller.onChatDeleteButtonTap(chatVm.sequenceId);
+                      },
+                      senderEmail: controller.opponentEmail,
+                      sameSenderWithBeforeMessage: index==0?false : (!priorChatVm.text.startsWith(roadmap_prefix)) && (priorChatVm.senderType == chatVm.senderType),
+                    ).paddingOnly(bottom: controller.validChattingRoomController.chatVmList.length-1 ==index?120:0),
+                  );
                 }
               },
               separatorBuilder: (context, index) {

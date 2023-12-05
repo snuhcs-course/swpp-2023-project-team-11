@@ -122,9 +122,11 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
       return GestureDetector(
         onTap: () {
           controller.onChattingRoomTap(chatroom);
+          print(chatroom.isApproved&&!chatroom.isTerminated);
         },
         behavior: HitTestBehavior.opaque,
         child: Padding(
+          key: chatroom.isApproved&&!chatroom.isTerminated? const ValueKey("validRoom"):null,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,

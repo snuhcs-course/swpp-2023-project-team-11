@@ -14,6 +14,6 @@ class StringParserUtil {
         jsonDecode(text.replaceFirst(roadmap_prefix, "")));
 
     String topic_string = MyLanguageUtil.isKr ? topic.topic_kor : topic.topic_eng;
-    return "${'Sneki의 추천이 도착했어요! 다음 주제에 대해 이야기해보는거 어때요?: '.tr}${topic_string}";
+    return "${topic_string}";
   }
 }

@@ -45,9 +45,13 @@ dependencies:
   web_socket_channel: ^2.4.0
   fluttertoast: ^8.2.2
   shared_preferences: ^2.2.2
+  logger: ^2.0.2+1
+  internet_connection_checker: ^1.0.0+1
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -57,6 +61,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   build_runner: ^2.4.6
+  mockito: ^5.4.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

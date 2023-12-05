@@ -8,6 +8,7 @@ import 'package:mobile_app/app/domain/use_cases/fetch_topics_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/send_chat_use_case.dart';
 import 'package:mobile_app/app/domain/use_cases/update_intimacy_use_case.dart';
 import 'package:mobile_app/core/constants/system_strings.dart';
+import 'package:mobile_app/core/utils/proxy_id_generator.dart';
 
 class RoadmapScreenController extends GetxController
     with StateMixin<List<Topic>> {
@@ -17,8 +18,13 @@ class RoadmapScreenController extends GetxController
   final ScrollController scrollController = ScrollController();
   final ChattingRoom chattingRoom = Get.arguments as ChattingRoom;
 
+  bool get selectedTopicExists => selectedTopic.value != null;
+
+  final Rx<Topic?> selectedTopic = Rx<Topic?>(null);
+
   void onNewRecommendationTap() {
     change(null, status: RxStatus.loading());
+    selectedTopic.value = null;
     _fetchTopicsUseCase(
         chattingRoomId: chattingRoom.id,
         whenSuccess: (topics) {
@@ -34,11 +40,11 @@ class RoadmapScreenController extends GetxController
   }
 
   void onSuggestionBubbleTap(Topic topic) {
-    // send the roadmap topic as a chat
-    _sendChatUseCase.call(
-      chatText: "${roadmap_prefix}${jsonEncode(topic)}",
-      chattingRoomId: chattingRoom.id.toString(),
-    );
+    // set the topic as selectedTopic
+    if ((selectedTopic.value != null) && (selectedTopic.value!.topic_eng == topic.topic_eng)) selectedTopic.value = null;
+    else selectedTopic.value = topic;
+
+
 
     // validchattingroom controller에 안넣어도 괜찮을까요!? .. proxy를 로드맵은 꺼둔 상태
     // put the sent chat into validchattingroom controller
@@ -60,9 +66,19 @@ class RoadmapScreenController extends GetxController
     //   true,
     // );
 
-    Get.delete(tag: chattingRoom.id.toString());
-    Get.back();
+  }
 
+  void onSelectCompleteButtonTap() {
+    Topic topic = selectedTopic.value!;
+    final proxyId = ProxyIdGenerator.getByNowTime();
+    _sendChatUseCase.call(
+      chatText: "${roadmap_prefix}${jsonEncode(topic)}",
+      chattingRoomId: chattingRoom.id.toString(),
+      proxyId: proxyId,
+    );
+
+    // Get.delete(tag: chattingRoom.id.toString());
+    Get.back();
   }
 
   @override

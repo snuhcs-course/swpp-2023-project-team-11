@@ -77,7 +77,7 @@ class ChattingRoomsScreenController extends GetxController{
     } else if(!chattingRoom.isApproved){
       Fluttertoast.showToast(
           msg: "수락되지 않은 채팅방입니다".tr,
-          toastLength: Toast.LENGTH_LONG,
+          toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
           backgroundColor: MyColor.orange_1,
@@ -87,7 +87,7 @@ class ChattingRoomsScreenController extends GetxController{
     } else{
       Fluttertoast.showToast(
           msg: "더 이상 사용하지 않는 채팅방입니다".tr,
-          toastLength: Toast.LENGTH_LONG,
+          toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
           backgroundColor: MyColor.orange_1,

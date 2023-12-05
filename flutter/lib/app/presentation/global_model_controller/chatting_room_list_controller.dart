@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mobile_app/app/data/service_implements/chatting_service_impl.dart';
 import 'package:mobile_app/app/domain/models/chat.dart';
 import 'package:mobile_app/app/domain/models/chatting_room.dart';
@@ -31,6 +32,55 @@ class ChattingRoomListController extends SuperController<
   List<ChattingRoom> _requestedRooms = [];
 
   int get numRequestedRooms => _requestedRooms.length;
+
+  bool _isDeviceConnected = true;
+
+  late final StreamSubscription<InternetConnectionStatus>
+      isDeviceConnectedSubscription;
+
+  late Completer _internetOverlayCompleter;
+
+  @override
+  void onInit() async {
+    super.onInit();
+    _isDeviceConnected = await InternetConnectionChecker().hasConnection;
+    print("isDeviceConnected : $_isDeviceConnected");
+    _internetOverlayCompleter = Completer();
+    isDeviceConnectedSubscription = InternetConnectionChecker()
+        .onStatusChange
+        .listen((InternetConnectionStatus status) async {
+      final newIsDeviceConnected =
+          (status == InternetConnectionStatus.connected);
+      print("newIsDeviceConnected : $newIsDeviceConnected");
+      if (!newIsDeviceConnected) {
+        _internetOverlayCompleter = Completer();
+        // Get.showOverlay(
+        //   asyncFunction: () async {
+        //     await _internetOverlayCompleter.future;
+        //   },
+        //   loadingWidget: Material(
+        //     color: Colors.white70,
+        //     child: Column(
+        //       mainAxisSize: MainAxisSize.min,
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: [
+        //         Text("인터넷 연결이 끊겼습니다"),
+        //         CupertinoActivityIndicator(),
+        //       ],
+        //     ),
+        //   )
+        // );
+      } else {
+        _internetOverlayCompleter.complete();
+      }
+      // 끊겼다가 다시 연결되는 경우
+      if (newIsDeviceConnected && !_isDeviceConnected) {
+        print("// 끊겼다가 다시 연결되는 경우 -> refetch");
+        reFetchAllChatsForEachValidRooms();
+      }
+      _isDeviceConnected = newIsDeviceConnected;
+    });
+  }
 
   @override
   Future<void> onReady() async {
@@ -62,24 +112,22 @@ class ChattingRoomListController extends SuperController<
   }
 
   Future<void> _openChatConnection() async {
-    print("use case 호출해서 session 열기");
     _centerChatStreamSubscription = await _openChatConnectionUseCase.call(
       onReceiveChat: (chat) async {
-        print("receive");
         // for each chat, find the chatroom (should be a valid one) and put the chat in that chatroom
-        final bool validRoomForChatExists =
-            _validRooms.where((element) => element.id == chat.chattingRoomId).isNotEmpty;
+        final bool validRoomForChatExists = _validRooms
+            .where((element) => element.id == chat.chattingRoomId)
+            .isNotEmpty;
         if (!validRoomForChatExists) {
           await reloadRooms();
           Fluttertoast.showToast(
               msg: chat.senderName + "님과의 첫 채팅이 도착했어요!".tr,
-              toastLength: Toast.LENGTH_LONG,
+              toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.TOP,
               timeInSecForIosWeb: 1,
               backgroundColor: MyColor.orange_1,
               textColor: Colors.white,
-              fontSize: 15.0
-          );
+              fontSize: 15.0);
           return;
         }
 
@@ -88,19 +136,28 @@ class ChattingRoomListController extends SuperController<
         );
         targetRoomController.addChat(chat);
 
-      if (checkIntimacyUpdateCondition(chat)){
-        sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
-        _updateIntimacyUseCase.call(chattingRoomId: chat.chattingRoomId, whenSuccess: (Intimacy intimacy){
-          sp.setDouble("${chat.chattingRoomId}/${lastUpdatedIntimacyValue}", intimacy.intimacy);
-          print("updated sp intimacy value");
-        }, whenFail: (){});
-      }
+        if (checkIntimacyUpdateCondition(chat)) {
+          sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate",
+              DateTime.timestamp().toString());
+          _updateIntimacyUseCase.call(
+              chattingRoomId: chat.chattingRoomId,
+              whenSuccess: (Intimacy intimacy) {
+                sp.setDouble(
+                    "${chat.chattingRoomId}/${lastUpdatedIntimacyValue}",
+                    intimacy.intimacy);
+              },
+              whenFail: () {});
+        }
 
         sp.setString(chat.chattingRoomId.toString(), json.encode(chat));
         // need to change : 이렇게 하니까 순서는 안 바뀌긴 하네요 !!!
         change(
           (
-            roomForMain: [..._validRooms, ..._requestingRooms, ..._terminatedRooms],
+            roomForMain: [
+              ..._validRooms,
+              ..._requestingRooms,
+              ..._terminatedRooms
+            ],
             roomForRequested: [..._requestedRooms]
           ),
           status: RxStatus.success(),
@@ -108,8 +165,8 @@ class ChattingRoomListController extends SuperController<
         // need to check number of chat. To be used for updating intimacy
 
         if (checkIntimacyUpdateCondition(chat)) {
-          sp.setString(
-              "${chat.chattingRoomId}/lastIntimacyUpdate", DateTime.timestamp().toString());
+          sp.setString("${chat.chattingRoomId}/lastIntimacyUpdate",
+              DateTime.timestamp().toString());
           _updateIntimacyUseCase.call(
               chattingRoomId: chat.chattingRoomId,
               whenSuccess: (Intimacy intimacy) {},
@@ -126,9 +183,9 @@ class ChattingRoomListController extends SuperController<
     sp.setInt("${chat.chattingRoomId}/numChat", numChat + 1);
     DateTime lastIntimacyUpdateTimeStamp =
         sp.containsKey("${chat.chattingRoomId}/lastIntimacyUpdate")
-            ? DateTime.parse(sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!)
+            ? DateTime.parse(
+                sp.getString("${chat.chattingRoomId}/lastIntimacyUpdate")!)
             : DateTime.timestamp();
-    print(lastIntimacyUpdateTimeStamp);
 
     // return true when this is 1st, 21st, ... chat to the chatroom after listening
     // return true when this chat is more than 2 minutes later than the last update
@@ -159,27 +216,26 @@ class ChattingRoomListController extends SuperController<
       // sort the valid rooms according to their datetime of most recent chat
       validRooms.sort((ChattingRoom room1, ChattingRoom room2) {
         if (!checkSp(room1.id) || !checkSp(room2.id)) {
-          print("not in sp yet!");
           return 0;
         }
-        DateTime dateTime1 = Chat.fromJson(json.decode(sp.getString(room1.id.toString())!)).sentAt;
-        DateTime dateTime2 = Chat.fromJson(json.decode(sp.getString(room2.id.toString())!)).sentAt;
+        DateTime dateTime1 =
+            Chat.fromJson(json.decode(sp.getString(room1.id.toString())!))
+                .sentAt;
+        DateTime dateTime2 =
+            Chat.fromJson(json.decode(sp.getString(room2.id.toString())!))
+                .sentAt;
         return dateTime2.compareTo(dateTime1);
       });
       _validRooms = validRooms;
-      print("valid room, ${_validRooms.length}개");
     }
     if (requestingRooms != null) {
       _requestingRooms = requestingRooms;
-      print("requestingRooms, ${_requestingRooms.length}개");
     }
     if (terminatedRooms != null) {
       _terminatedRooms = terminatedRooms;
-      print("terminatedRooms, ${_terminatedRooms.length}개");
     }
     if (requestedRooms != null) {
       _requestedRooms = requestedRooms;
-      print("requestedRooms, ${_requestedRooms.length}개");
     }
     change(
       (
@@ -190,8 +246,8 @@ class ChattingRoomListController extends SuperController<
     );
   }
 
-  void _injectDependencyForAddedValidRooms(List<ChattingRoom> newValidChattingRooms) {
-    print('inject');
+  void _injectDependencyForAddedValidRooms(
+      List<ChattingRoom> newValidChattingRooms) {
     // add a controller for a chatroom if it is not already present (the chatroom should be a valid one)
     for (final newChattingRoom in newValidChattingRooms) {
       Get.put<ValidChattingRoomController>(
@@ -204,13 +260,15 @@ class ChattingRoomListController extends SuperController<
     }
   }
 
-  void _removeDependencyForRemovedValidRooms(List<ChattingRoom> newValidChattingRooms) {
+  void _removeDependencyForRemovedValidRooms(
+      List<ChattingRoom> newValidChattingRooms) {
     // after fetching chatrooms, if it is different from original list of chatrooms, it means we need to remove some.
     for (final priorChattingRoom in _validRooms) {
-      final priorOneExistsInNewOnes =
-          newValidChattingRooms.any((element) => element.id == priorChattingRoom.id);
+      final priorOneExistsInNewOnes = newValidChattingRooms
+          .any((element) => element.id == priorChattingRoom.id);
       if (!priorOneExistsInNewOnes) {
-        Get.delete<ValidChattingRoomController>(tag: priorChattingRoom.id.toString(), force: true);
+        Get.delete<ValidChattingRoomController>(
+            tag: priorChattingRoom.id.toString(), force: true);
       }
     }
   }
@@ -219,8 +277,8 @@ class ChattingRoomListController extends SuperController<
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
       email: Get.find<UserController>().userEmail,
-      whenSuccess: (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
-        print("fetch 채팅룸 성공 in reloadRooms");
+      whenSuccess:
+          (validRooms, terminatedRooms, requestingRooms, requestedRooms) {
         _updateRoomsOnlyForNewOnes(
           validRooms: validRooms,
           terminatedRooms: terminatedRooms,
@@ -228,9 +286,7 @@ class ChattingRoomListController extends SuperController<
           requestedRooms: requestedRooms,
         );
       },
-      whenFail: () {
-        print("채팅룸 불러오기 실패...");
-      },
+      whenFail: () {},
     );
   }
 
@@ -238,13 +294,10 @@ class ChattingRoomListController extends SuperController<
     await _acceptChattingRequestUseCase.call(
       chattingRoomId: chattingRoom.id,
       whenSuccess: (chattingRoom) {
-        print("accept success");
         // TODO 이거 refetch 안하고 최적화 하려면 로컬 메모리에서 처리
         _updateRoomsOnlyForNewOnes(validRooms: [chattingRoom, ..._validRooms]);
       },
-      whenFail: () {
-        print("accept 실패");
-      },
+      whenFail: () {},
     );
     await reloadRooms();
   }
@@ -253,12 +306,9 @@ class ChattingRoomListController extends SuperController<
     await _leaveChattingRoomUseCase.call(
       chattingRoomId: chattingRoom.id,
       whenSuccess: (chattingRoom) {
-        print("Successfully terminated the chatroom");
         _updateRoomsOnlyForNewOnes();
       },
-      whenFail: () {
-        print("terminate 실패");
-      },
+      whenFail: () {},
     );
     await reloadRooms();
   }
@@ -268,8 +318,18 @@ class ChattingRoomListController extends SuperController<
     _disconnectChattingChannelUseCase.call();
     _centerChatStreamSubscription = null;
     for (var chatRoom in _validRooms) {
-      Get.delete<ValidChattingRoomController>(tag: chatRoom.id.toString(), force: true);
+      Get.delete<ValidChattingRoomController>(
+          tag: chatRoom.id.toString(), force: true);
     }
+  }
+
+  Future<void> reFetchAllChatsForEachValidRooms() async {
+    final futures = _validRooms.map(
+      (room) async =>
+          await Get.find<ValidChattingRoomController>(tag: room.id.toString())
+              .reFetchChatsFromResume(),
+    );
+    await Future.wait(futures);
   }
 
   final AcceptChattingRequestUseCase _acceptChattingRequestUseCase;
@@ -285,7 +345,8 @@ class ChattingRoomListController extends SuperController<
       required AcceptChattingRequestUseCase acceptChattingRequestUseCase,
       required OpenChatConnectionUseCase openChatConnectionUseCase,
       required FetchAllChatUseCase fetchAllChatUseCase,
-      required DisconnectChattingChannelUseCase disconnectChattingChannelUseCase,
+      required DisconnectChattingChannelUseCase
+          disconnectChattingChannelUseCase,
       required LeaveChattingRoomUseCase leaveChattingRoomUseCase,
       required UpdateIntimacyUseCase updateIntimacyUseCase})
       : _fetchChattingRoomsUseCase = fetchChattingRoomsUseCase,
@@ -295,6 +356,12 @@ class ChattingRoomListController extends SuperController<
         _disconnectChattingChannelUseCase = disconnectChattingChannelUseCase,
         _leaveChattingRoomUseCase = leaveChattingRoomUseCase,
         _updateIntimacyUseCase = updateIntimacyUseCase;
+
+  @override
+  void onClose() {
+    super.onClose();
+    isDeviceConnectedSubscription.cancel();
+  }
 
   @override
   void onDetached() {
@@ -313,13 +380,24 @@ class ChattingRoomListController extends SuperController<
 
   @override
   void onResumed() async {
-    print("onResumed");
-    print("stream paused : ${_centerChatStreamSubscription?.isPaused}");
-    await ChattingServiceImpl().reConnect();
+    print("------- on Resumed ---------");
+    if (_isDeviceBackground) {
+      print("------- on Resumed from background---------");
+      print("now isConnected : $_isDeviceConnected");
+      _isDeviceBackground = false;
+      if (_isDeviceConnected) {
+        await ChattingServiceImpl().reConnect();
+        await reFetchAllChatsForEachValidRooms();
+      }
+    }
   }
+
+  bool _isDeviceBackground = false;
+
 
   @override
   void onHidden() {
-    // TODO: implement onHidden
+    print("onHidden");
+    _isDeviceBackground = true;
   }
 }
