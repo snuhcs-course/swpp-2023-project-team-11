@@ -17,15 +17,18 @@ class FriendsScreenController extends GetxController with StateMixin<List<User>>
   }) : _fetchUsersUseCase = fetchUsersUseCase;
 
   void onRefresh() async{
-    print("on refresh of user list");
     change(null, status: RxStatus.loading());
     _fetchUsersUseCase.basedOnLogic(whenSuccess: (List<User> users) {
-      print("user number 1: ${users[0].name}!");
       change(users, status: RxStatus.success());
     }, whenFail: () => {print("friend fetch 실패")});
 
     // if failed,use refreshFailed()
-    refreshController.refreshCompleted();
+    try {
+      refreshController.refreshCompleted();
+    } catch(e) {
+
+    }
+
   }
 
   @override

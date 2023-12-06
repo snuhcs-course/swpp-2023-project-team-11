@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/app/presentation/widgets/buttons.dart';
 import 'package:mobile_app/app/presentation/widgets/profile_pic_provider.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -8,7 +9,6 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../domain/models/user.dart';
 import '../../widgets/app_bars.dart';
 import 'friends_screen_controller.dart';
-
 
 class FriendsScreen extends GetView<FriendsScreenController> {
   const FriendsScreen({Key? key}) : super(key: key);
@@ -24,27 +24,57 @@ class FriendsScreen extends GetView<FriendsScreenController> {
           height: 52,
         ),
       ),
-      body: controller.obx(
-              (state) {
-            if (state!.isEmpty) {
-              return Center(child: Text("현재 검색되는 유저가 존재하지 않습니다".tr));
-            }
-            return SmartRefresher(
-                enablePullDown: true,
-                header: const WaterDropHeader(),
-                controller: controller.refreshController,
-                onRefresh: controller.onRefresh,
-                child: _buildUserList(state));
-          },
+      body: controller.obx((state) {
+        if (state!.isEmpty) {
+          return _buildEmptyFriendsContainer();
+        }
+        return SmartRefresher(
+          enablePullDown: true,
+          header: const WaterDropHeader(),
+          controller: controller.refreshController,
+          onRefresh: controller.onRefresh,
+          child: _buildUserList(state),
+        );
+      },
           onLoading: const Center(
-            child: CircularProgressIndicator(color: MyColor.orange_1,),)
+            child: CircularProgressIndicator(
+              color: MyColor.orange_1,
+            ),
+          )),
+    );
+  }
+
+  Widget _buildEmptyFriendsContainer() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "현재 검색되는 유저가 존재하지 않습니다".tr,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: MyColor.purple,
+                fontWeight: FontWeight.w600,
+                fontSize: 18),
+          ),
+          const SizedBox(
+            height: 26,
+          ),
+          SmallButton(
+            onPressed: () {
+              controller.onRefresh();
+            },
+            text: "새로고침".tr,
+          )
+        ],
       ),
     );
   }
 
   Widget _buildUserList(List<User> users) {
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 100),
+        padding: const EdgeInsets.only(bottom: 100),
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, index) {
@@ -71,9 +101,9 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 child: SizedBox.fromSize(
                     size: const Size.fromRadius(60),
                     child: Image(image: ProfilePic.call(user.email))
-                  // ProfilePic().call(user.email)
-                  // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
-                ),
+                    // ProfilePic().call(user.email)
+                    // Image.asset('assets/images/snek_profile_img_${controller.random.nextInt(5) + 1}.webp'),
+                    ),
               ),
               Obx(() {
                 return Positioned(
@@ -84,8 +114,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                       if (controller.heartedUser.value.contains(user)) {
                         controller.heartedUser.value.remove(user);
                         controller.heartedUser.refresh();
-                      }
-                      else {
+                      } else {
                         controller.heartedUser.value.add(user);
                         controller.heartedUser.refresh();
                       }
@@ -100,7 +129,7 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                           : Icons.favorite_outline,
                       color: controller.heartedUser.value.contains(user)
                           ? Colors.redAccent.withOpacity(0.8)
-                      : Colors.black.withOpacity(0.4),
+                          : Colors.black.withOpacity(0.4),
                     ),
                   ),
                 );
@@ -113,25 +142,32 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(user.name,
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff2d3a45))),
-                    const SizedBox(height: 4),
-                    Text((user.profile.aboutMe.length>20)? "${user.profile.aboutMe.substring(0, 20)}..." : user.profile.aboutMe,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xff2d3a45).withOpacity(0.8))),
-                    const SizedBox(height: 2),
-                    Text("${user.getNationCode!=82? "사용 언어".tr : "희망 언어".tr}: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4)?'...':''}",
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xff2d3a45).withOpacity(0.8))),
-                  ]),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(user.name,
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xff2d3a45))),
+                        const SizedBox(height: 4),
+                        Text(
+                            (user.profile.aboutMe.length > 20)
+                                ? "${user.profile.aboutMe.substring(0, 20)}..."
+                                : user.profile.aboutMe,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color:
+                                    const Color(0xff2d3a45).withOpacity(0.8))),
+                        const SizedBox(height: 2),
+                        Text(
+                            "${user.getNationCode != 82 ? "사용 언어".tr : "희망 언어".tr}: ${user.getLanguages.take(4).map((languageName) => languageName.name.capitalize).join(", ")}${(user.getLanguages.length > 4) ? '...' : ''}",
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color:
+                                    const Color(0xff2d3a45).withOpacity(0.8))),
+                      ]),
                   const SizedBox(height: 4),
                   Wrap(
                     children: [
@@ -143,7 +179,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
                       const SizedBox(
                         width: 6,
                       ),
-                      if (user.profile.mbti != Mbti.UNKNOWN) _buildUserInfoBubble("${user.profile.mbti}")
+                      if (user.profile.mbti != Mbti.UNKNOWN)
+                        _buildUserInfoBubble("${user.profile.mbti}")
                     ],
                   )
                 ],
@@ -159,8 +196,8 @@ class FriendsScreen extends GetView<FriendsScreenController> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Container(
-        decoration:
-        BoxDecoration(color: const Color(0xffF8F1FB),
+        decoration: BoxDecoration(
+            color: const Color(0xffF8F1FB),
             borderRadius: BorderRadius.circular(10)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
