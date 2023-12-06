@@ -167,7 +167,8 @@ class MyTranslation extends Translations {
       "사용 언어" : "Speaks",
       "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!": "Chat request accepted. Go check it out!",
       '채팅 요청 수락하기' : "Accept chat request",
-      "새로고침" : "Reload!"
+      "새로고침" : "Reload!",
+      "이미 해당 유저로부터의 요청이 존재합니다" : "Request of this user already exists"
     },
     "kr" : {
       "enum" : "@value",

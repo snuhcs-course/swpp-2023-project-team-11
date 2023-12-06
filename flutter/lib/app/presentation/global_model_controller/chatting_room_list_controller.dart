@@ -31,6 +31,10 @@ class ChattingRoomListController extends SuperController<
   List<ChattingRoom> _terminatedRooms = [];
   List<ChattingRoom> _requestedRooms = [];
 
+  bool checkChatRequestAlreadyExists({required String counterPartEmail}) {
+    return _requestedRooms.firstWhereOrNull((element) => element.initiator.email ==counterPartEmail)!=null;
+  }
+
   int get numRequestedRooms => _requestedRooms.length;
 
   bool _isDeviceConnected = true;

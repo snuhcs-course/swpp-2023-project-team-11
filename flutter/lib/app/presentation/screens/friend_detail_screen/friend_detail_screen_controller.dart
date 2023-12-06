@@ -112,15 +112,31 @@ class FriendDetailScreenController extends GetxController {
         counterPartEmail: user.email,
         whenSuccess: _whenRequestSuccess,
         whenFail: () {
-          Fluttertoast.showToast(
-            msg: "해당 유저와는 이미 채팅이 진행되고 있어요".tr,
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: MyColor.purple,
-              textColor: Colors.white,
-              fontSize: 15.0
-          );
+          final alreadyExistRequest = Get.find<ChattingRoomListController>().checkChatRequestAlreadyExists(counterPartEmail: user.email);
+          print(alreadyExistRequest);
+          if (alreadyExistRequest){
+            Fluttertoast.showToast(
+                msg: "이미 해당 유저로부터의 요청이 존재합니다".tr,
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: MyColor.purple,
+                textColor: Colors.white,
+                fontSize: 15.0
+            );
+          } else {
+            Fluttertoast.showToast(
+                msg: "해당 유저와는 이미 채팅이 진행되고 있어요".tr,
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: MyColor.purple,
+                textColor: Colors.white,
+                fontSize: 15.0
+            );
+          }
+
+
           print("채팅방 생성 실패...");
         },
       );
