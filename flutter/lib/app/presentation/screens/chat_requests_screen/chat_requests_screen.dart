@@ -21,6 +21,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           "채팅 요청".tr,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
+        additionalAction: IconButton(onPressed: () { controller.onReload(); }, icon: Icon(Icons.refresh),),
       ),
       body: controller.chattingRoomListController.obx(
         (state) {
