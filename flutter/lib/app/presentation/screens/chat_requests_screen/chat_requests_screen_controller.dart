@@ -22,7 +22,12 @@ class ChatRequestsScreenController extends GetxController {
     LoadingUtil.withLoadingOverlay(asyncFunction: () async  {
       await chattingRoomListController.acceptChattingRequest(chattingRoom);
     });
+  }
 
+  Future<void> onRemoveButtonTAp(ChattingRoom chattingRoom) async {
+    LoadingUtil.withLoadingOverlay(asyncFunction: () async  {
+      await chattingRoomListController.leaveChattingRoom(chattingRoom);
+    });
   }
 
   void onProfileTap(User you, ChattingRoom chattingRoom) {

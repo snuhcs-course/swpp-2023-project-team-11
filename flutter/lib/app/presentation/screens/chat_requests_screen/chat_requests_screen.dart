@@ -121,6 +121,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                 },
                 onSelected: (value) {
                   if (value == 0) {
+                    controller.onRemoveButtonTAp(chatroom);
                   } else if (value == 1) {
                     controller.onAcceptButtonTap(chatroom);
                   }
