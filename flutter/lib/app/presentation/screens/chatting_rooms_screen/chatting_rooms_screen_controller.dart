@@ -64,10 +64,14 @@ class ChattingRoomsScreenController extends GetxController{
 
   void onRefresh() async{
     await chattingRoomListController.reloadRooms();
-    newChatRequestExists.value = (chattingRoomListController.numRequestedRooms != 0);
-
+    newChatRequestExists((chattingRoomListController.numRequestedRooms != 0));
     // if failed, use refreshFailed()
-    refreshController.refreshCompleted();
+    try {
+      refreshController.refreshCompleted();
+    } catch(e) {
+      print("do nothing");
+    }
+
   }
 
   void onChattingRoomTap(ChattingRoom chattingRoom) {

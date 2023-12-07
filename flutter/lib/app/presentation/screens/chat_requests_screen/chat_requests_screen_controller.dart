@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/domain/models/user.dart';
 import 'package:mobile_app/app/presentation/global_model_controller/chatting_room_list_controller.dart';
 import 'package:mobile_app/app/presentation/screens/chat_requests_screen/widgets/user_info_detail_bottom_sheet.dart';
+import 'package:mobile_app/app/presentation/screens/chatting_rooms_screen/chatting_rooms_screen_controller.dart';
 import 'package:mobile_app/app/presentation/screens/main_screen/main_indexed_screen_controller.dart';
 import 'package:mobile_app/core/themes/color_theme.dart';
 import 'package:mobile_app/core/utils/loading_util.dart';
@@ -21,7 +22,12 @@ class ChatRequestsScreenController extends GetxController {
     LoadingUtil.withLoadingOverlay(asyncFunction: () async  {
       await chattingRoomListController.acceptChattingRequest(chattingRoom);
     });
+  }
 
+  Future<void> onRemoveButtonTAp(ChattingRoom chattingRoom) async {
+    LoadingUtil.withLoadingOverlay(asyncFunction: () async  {
+      await chattingRoomListController.leaveChattingRoom(chattingRoom);
+    });
   }
 
   void onProfileTap(User you, ChattingRoom chattingRoom) {
@@ -42,7 +48,10 @@ class ChatRequestsScreenController extends GetxController {
       },
       user: you,
     ));
+  }
 
+  void onReload() {
+    Get.find<ChattingRoomsScreenController>().onRefresh();
   }
 
   void onBrowseFriendsButtonTap() {

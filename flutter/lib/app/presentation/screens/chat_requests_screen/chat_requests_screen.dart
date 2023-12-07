@@ -21,6 +21,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
           "채팅 요청".tr,
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xff2d3a45)),
         ),
+        additionalAction: IconButton(onPressed: () { controller.onReload(); }, icon: Icon(Icons.refresh),),
       ),
       body: controller.chattingRoomListController.obx(
         (state) {
@@ -120,6 +121,7 @@ class ChatRequestsScreen extends GetView<ChatRequestsScreenController> {
                 },
                 onSelected: (value) {
                   if (value == 0) {
+                    controller.onRemoveButtonTAp(chatroom);
                   } else if (value == 1) {
                     controller.onAcceptButtonTap(chatroom);
                   }
