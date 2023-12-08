@@ -157,8 +157,8 @@ class MyTranslation extends Translations {
       "방금 전" : "Just now",
       'Sneki의 추천이 도착했어요!' : "Sneki's recommendation just arrived!",
       '다음 주제에 대해 이야기해보는거 어때요:  ' : "Why don't you talk about the following topic: ",
-      "친밀도 산출을 위해 조금만 더 채팅해주세요" : "Please chat a little more",
-      "현재 친밀도: ": "Current intimacy: ",
+      "진행도 산출을 위해 조금만 더 채팅해주세요" : "Please chat a little more",
+      "현재 언어교환 진행도: ": "Current progress: ",
       "님과의 첫 채팅이 도착했어요!": "'s first chat has arrived!",
       "탭을 해 태그를 추가/삭제해봐요" : "Tap to add/remove tags",
       "언어변경" : "한글",
@@ -168,7 +168,8 @@ class MyTranslation extends Translations {
       "채팅 요청이 수락되었어요. 채팅 목록에서 확인할 수 있어요!": "Chat request accepted. Go check it out!",
       '채팅 요청 수락하기' : "Accept chat request",
       "새로고침" : "Reload!",
-      "이미 해당 유저로부터의 요청이 존재합니다" : "Request of this user already exists"
+      "이미 해당 유저로부터의 요청이 존재합니다" : "Request from this user already exists",
+      "이미 인증을 성공했어요" : "Email auth already done",
     },
     "kr" : {
       "enum" : "@value",

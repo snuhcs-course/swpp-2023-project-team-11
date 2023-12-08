@@ -38,7 +38,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "현재 친밀도: ".tr, style: TextStyle(color: Colors.white,
+                        "현재 언어교환 진행도: ".tr, style: TextStyle(color: Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 16),
                       ),
@@ -49,7 +49,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
                         child: _buildIntimacyDisplay(sp.getDouble(
                             "${controller.chattingRoom
                                 .id}/${lastUpdatedIntimacyValue}")!),
-                      ) : Text("친밀도 산출을 위해 조금만 더 채팅해주세요".tr, style: TextStyle(
+                      ) : Text("진행도 산출을 위해 조금만 더 채팅해주세요".tr, style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 16))
@@ -76,7 +76,7 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
   }
 
   Widget _buildIntimacyDisplay(double intimacyValue) {
-    int fullHearts = intimacyValue < 40 ? 1 : intimacyValue < 70 ? 2 : 3;
+    int fullHearts = intimacyValue < 60 ? 1 : intimacyValue < 80 ? 2 : 3;
     // double fraction = rating - fullHearts;
     int emptyHearts = 3 - fullHearts;
 

@@ -122,19 +122,26 @@ class EmailScreen extends GetView<EmailScreenController> {
             ),
           ),
           Obx(() {
-            if (controller.warningType == 2) {
+            if (!controller.certSuccess.value && controller.warningType == 2) {
               return Text("잘못된 코드에요. 다시 한번 확인해주세요!".tr,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Color(0xff9f75d1),
                       fontSize: 14,
                       fontWeight: FontWeight.w400));
-            } else {
+            } else if (controller.certSuccess.value && controller.warningType == 2) {
+              return Text("이미 인증을 성공했어요".tr,
+                  style: const TextStyle(
+                      color: Color(0xff9f75d1),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400));
+            }
+            else {
               return const Text("");
             }
           }),
           if (controller.certSuccess.value)
             Text("성공적으로 인증되었어요!".tr,
-                style: TextStyle(
+                style: const TextStyle(
                     color: MyColor.purple,
                     fontWeight: FontWeight.w600,
                     fontSize: 14))
