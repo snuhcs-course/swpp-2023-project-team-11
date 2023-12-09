@@ -1,0 +1,3 @@
+FROM postgres:latest
+
+ENTRYPOINT psql -c "with initiator as (select id from profile where name = $INITIATOR), responder as (select id from profile where name = $RESPONDER), chat as (insert into chatting values (default, (select id from initiator), (select id from responder), true, false, current_timestamp) returning id) insert into user_intimacy (user_id, chatting_id, intimacy, timestamp) select U.id, C.id, 36.5, current_timestamp from (select * from initiator union select * from responder) U, chat C" postgresql://$POSTGRES_USER:$POSTRGRES_PASSWORD@$SNEK_POSTGRES_HOST/$POSTGRES_DB
