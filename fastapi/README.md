@@ -23,11 +23,34 @@ source venv/bin/activate
 ## How to Test
 
 ```sh
-SNEK_POSTGRES_DB={DBNAME} SNEK_POSTGRES_USER={USER} SNEK_POSTGRES_PW={PW} python -m unittest test
+SNEK_POSTGRES_DB={DBNAME} SNEK_POSTGRES_USER={USER} SNEK_POSTGRES_PW={PW} python -m unittest tests/*.py
+# To test with coverage, install coverage dependency.
+pip install coverage
+coverage run -m unittest --verbose tests/*.py
+coverage report
 ```
 
 ## How to Run
 
 ```sh
 SNEK_POSTGRES_DB={DBNAME} SNEK_POSTGRES_USER={USER} SNEK_POSTGRES_PW={PW} uvicorn src.main:app --reload
+```
+
+## How to Deploy
+
+Requires docker on the environment.
+Setup required environments in `deploy.conf`.
+
+```sh
+sudo chmod 744 ops/deploy.sh
+ops/deploy.sh
+```
+
+## How to Cleanup
+
+Requires docker on the environment.
+
+```sh
+sudo chmod 744 ops/cleanup.sh
+ops/cleanup.sh
 ```
