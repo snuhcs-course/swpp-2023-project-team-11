@@ -5,10 +5,7 @@ import 'package:mobile_app/app/domain/result.dart';
 import 'dart:math';
 
 class UserRepositoryMock implements UserRepository {
-  @override
-  Future<User> readUserBySessionId() {
-    throw UnimplementedError();
-  }
+
 
   List<User> generateRandomUsers(int count) {
     final List<User> users = [];
@@ -17,13 +14,14 @@ class UserRepositoryMock implements UserRepository {
     for (var i = 0; i < count; i++) {
       if (random.nextBool()) {
         users.add(KoreanUser(
-          id: 'KoreanUserID$i',
           name: 'KoreanUserName$i',
-          userType: UserType.korean,
+          type: UserType.korean,
+          mainLanguage: Language.korean,
           email: 'korean.user$i@example.com',
           wantedLanguages: [Language.values[i % Language.values.length]],
           profile: Profile(
             birth: DateTime(1990, 1, 1),
+            nationCode: i,
             sex: Sex.values[i % Sex.values.length],
             major: 'KoreanMajor$i',
             admissionYear: 2010 + i,
@@ -38,14 +36,13 @@ class UserRepositoryMock implements UserRepository {
         ));
       } else {
         users.add(ForeignUser(
-          id: 'ForeignUserID$i',
           name: 'ForeignUserName$i',
-          userType: UserType.foreign,
+          type: UserType.foreign,
           email: 'foreign.user$i@example.com',
-          nationCode: i,
           mainLanguage: Language.values[i % Language.values.length],
           subLanguages: [Language.values[(i + 1) % Language.values.length]],
           profile: Profile(
+            nationCode: i,
             birth: DateTime(1995, 1, 1),
             sex: Sex.values[i % Sex.values.length],
             major: 'ForeignMajor$i',
@@ -68,9 +65,21 @@ class UserRepositoryMock implements UserRepository {
   @override
   Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic() async{
 
-    List<User> users = await Future.delayed(Duration(seconds: 2)).then((value) => generateRandomUsers(6));
+    List<User> users = await Future.delayed(const Duration(seconds: 2)).then((value) => generateRandomUsers(6));
 
     return Result.success(users);
+  }
+
+  @override
+  Future<Result<User, DefaultIssue>> readUserBySessionId() {
+    // TODO: implement readUserBySessionId
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<int, DefaultIssue>> editUserProfile({required Map<String, dynamic> createData, required Map<String, dynamic> deleteData}) {
+    // TODO: implement editUserProfile
+    throw UnimplementedError();
   }
 
 }

@@ -6,6 +6,9 @@ class MainTextFormField extends StatelessWidget {
   final String? titleText;
   final TextStyle? textStyle;
   final double? verticalPadding;
+  final bool obscureText;
+
+  final FocusNode? focusNode;
 
   const MainTextFormField({
     super.key,
@@ -14,6 +17,8 @@ class MainTextFormField extends StatelessWidget {
     this.titleText,
     this.textStyle,
     this.verticalPadding,
+    this.obscureText = false,
+    this.focusNode,
   });
 
   @override
@@ -48,6 +53,8 @@ class MainTextFormField extends StatelessWidget {
     return TextFormField(
       controller: textEditingController,
       style: textStyle,
+      obscureText: obscureText,
+      focusNode: focusNode,
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 12,vertical: verticalPadding??10),
         filled: true,
@@ -58,7 +65,7 @@ class MainTextFormField extends StatelessWidget {
         focusedBorder: border,
         disabledBorder: border,
         hintText: hintText,
-        hintStyle: textStyle?.copyWith(color: Color(0xff2d2a45).withOpacity(0.64)),
+        hintStyle: textStyle?.copyWith(color: const Color(0xff2d2a45).withOpacity(0.64)),
       ),
     );
   }

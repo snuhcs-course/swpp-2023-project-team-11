@@ -10,7 +10,7 @@ abstract class UserRepository {
   ///
   /// <response>
   /// User 를 리턴한다.
-  Future<User> readUserBySessionId();
+  Future<Result<User, DefaultIssue>> readUserBySessionId();
 
   /// API : 현재 헤더에 자동으로 담겨있는 세션을 바탕으로 유저목록을 불러온다
   /// 혹시 리퀘스트에서 유저 Profile 정보를 담는 것이 쿼리상 효율을 올려주신다면 포함하겠습니다
@@ -23,5 +23,8 @@ abstract class UserRepository {
   /// User의 목록을 리턴한다. 몇개 리스폰스할지는 알아서 정해주세요
   /// 추후에, refetch시에는 어떻게 하고 이런 Pagination 관련해서 논의가 필요할 수도 있겠네요
   Future<Result<List<User>, DefaultIssue>> readUsersBasedOnLogic();
+
+  Future<Result<int, DefaultIssue>> editUserProfile(
+      {required Map<String, dynamic> createData, required Map<String, dynamic> deleteData});
 }
 

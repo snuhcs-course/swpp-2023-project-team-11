@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/app/presentation/widgets/buttons.dart';
-import 'package:mobile_app/routes/named_routes.dart';
+import 'package:mobile_app/core/utils/translation.dart';
 
 // ignore: unused_import
 import 'entry_screen_controller.dart';
@@ -14,8 +14,15 @@ class EntryScreen extends GetView<EntryScreenController> {
     return Scaffold(
       backgroundColor: const Color(0xfff2e2f3),
       floatingActionButton: FloatingActionButton(
+        child: Text(
+          "언어변경".tr,
+          style: TextStyle(
+            color: Colors.black38,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         onPressed: () {
-          Get.offAllNamed(Routes.MAIN);
+          MyLanguageUtil.toggle();
         },
       ),
       body: Column(
@@ -39,16 +46,17 @@ class EntryScreen extends GetView<EntryScreenController> {
             width: 140,
             height: 112,
           ),
-          const SizedBox(height: 8),
-          const Text(
-            "일이삼사오육칠팔구십이삼사",
-            style: TextStyle(fontSize: 16, color: const Color(0xff9f75d1)),
+          const SizedBox(height: 2),
+          Text(
+            "간식보다 재밌는 언어교환".tr,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: Color(0xff9f75d1)),
           ),
           const Text(
             "SNEK",
             style: TextStyle(
               fontSize: 30,
-              color: const Color(0xffff733d),
+              color: Color(0xffff733d),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -74,13 +82,13 @@ class EntryScreen extends GetView<EntryScreenController> {
         children: [
           MainButton(
             mainButtonType: MainButtonType.light,
-            text: '로그인',
+            text: "로그인".tr,
             onPressed: controller.onSignInButtonTap,
           ),
           const SizedBox(height: 16),
           MainButton(
             mainButtonType: MainButtonType.key,
-            text: '회원가입',
+            text: '회원가입'.tr,
             onPressed: controller.onSignUpButtonTap,
           ),
         ],
@@ -98,7 +106,7 @@ class EntryScreen extends GetView<EntryScreenController> {
       child: Container(
         width: double.maxFinite,
         height: 52,
-        padding: EdgeInsets.fromLTRB(24, 0, 24, 0),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: color,
@@ -106,7 +114,7 @@ class EntryScreen extends GetView<EntryScreenController> {
         alignment: Alignment.center,
         child: Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
           ),
         ),

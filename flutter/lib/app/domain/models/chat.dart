@@ -1,46 +1,36 @@
-abstract class Chat {
-  final ChatType messageType;
-  final String id;
-  final String senderId;
-  final String text;
+import 'package:json_annotation/json_annotation.dart';
+
+part 'chat.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class Chat {
+  final int seqId;
+  @JsonKey(name: "chatting_id")
+  final int chattingRoomId;
+  @JsonKey(name: "sender")
+  final String senderName;
+  @JsonKey(name: "email")
+  final String senderEmail;
+  @JsonKey(name: "msg")
+  final String message;
+  @JsonKey(name: "timestamp")
   final DateTime sentAt;
+  @JsonKey(defaultValue: 0)
+  final int proxyId;
+
+  
+  factory Chat.fromJson(Map<String, dynamic> json) => _$ChatFromJson(json);
+  
+  Map<String, dynamic> toJson() => _$ChatToJson(this);
+
 
   const Chat({
-    required this.messageType,
-    required this.id,
-    required this.senderId,
-    required this.text,
+    required this.seqId,
+    required this.chattingRoomId,
+    required this.senderName,
+    required this.senderEmail,
+    required this.message,
     required this.sentAt,
+    required this.proxyId,
   });
-
-  factory Chat.normal({
-    required ChatType messageType,
-    required String id,
-    required String text,
-    required String senderId,
-    required DateTime sentAt,
-  }) {
-    return NormalChat._(
-      messageType: ChatType.normal,
-      id: id,
-      text: text,
-      senderId: senderId,
-      sentAt: sentAt,
-    );
-  }
-}
-
-class NormalChat extends Chat {
-  NormalChat._({
-    required super.messageType,
-    required super.id,
-    required super.text,
-    required super.senderId,
-    required super.sentAt,
-  });
-}
-
-
-enum ChatType {
-  normal,
 }
