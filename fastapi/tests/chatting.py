@@ -35,7 +35,7 @@ class TestPapago(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.factory = PapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
-        cls.korean_detection_factory = KoreanDetetionPapagoServiceFactory(
+        cls.korean_detection_factory = KoreanDetectionPapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
         cls.response = Mock()
         cls.response.json = Mock(
@@ -101,7 +101,7 @@ class TestHandler(unittest.TestCase):
         self.unknown.json = lambda: {}
 
     def test_handler(self):
-        factory = KoreanDetetionPapagoServiceFactory(
+        factory = KoreanDetectionPapagoServiceFactory(
             PAPAGO_CLIENT_ID, PAPAGO_CLIENT_SECRET)
         handler = factory.create_handler()
         self.assertIsInstance(handler, KoreanDetectionPapagoHandler)
@@ -165,32 +165,33 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_calculate(self):
         timestamp = datetime.now()
         curr_texts = [
-            Text(id=1, sender_id=1, msg="hello", timestamp=timestamp),
-            Text(id=1, sender_id=1, msg="hello",
+            Text(id=1, proxy_id=0, sender_id=1,
+                 msg="hello", timestamp=timestamp),
+            Text(id=1, proxy_id=1, sender_id=1, msg="hello",
                  timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, sender_id=1, msg="you",
+            Text(id=1, proxy_id=2, sender_id=1, msg="you",
                  timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, sender_id=1, msg="what",
+            Text(id=1, proxy_id=3, sender_id=1, msg="what",
                  timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, sender_id=1, msg="bye",
+            Text(id=1, proxy_id=4, sender_id=1, msg="bye",
                  timestamp=timestamp - timedelta(seconds=4)),
         ]
         recent_intimacy = Intimacy(
             id=1, user_id=1, chatting_id=1, intimacy=DEFAULT_INTIMACY, timestamp=timestamp)
         intimacy = self.calculator.calculate(
             1, curr_texts, [], recent_intimacy)
-        self.assertEqual(intimacy, 37.49933326082)
+        self.assertEqual(intimacy, 37.25207554680268)
 
     def test_get_frequency(self):
         timestamp = datetime.now()
         texts = [
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=1)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=2)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=3)),
-            Text(id=1, chatting_id=1, sender_id=1, msg="",
+            Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                  timestamp=timestamp - timedelta(seconds=8)),
         ]
         result = self.calculator.get_frequency(texts)
@@ -203,7 +204,7 @@ class TestIntimacyCalculator(unittest.TestCase):
         self.assertIsNone(self.calculator.get_frequency_delta([], []))
 
     def test_score_frequency(self):
-        text = Text(id=1, chatting_id=1, sender_id=1, msg="",
+        text = Text(id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="",
                     timestamp=datetime.now() - timedelta(seconds=1))
         self.assertEqual(self.calculator.score_frequency([text]), 10)
 
@@ -230,11 +231,11 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_frequency_delta(self):
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(self.calculator.score_frequency_delta(
@@ -245,7 +246,7 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_avg_length(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         result = self.calculator.score_avg_length(texts)
@@ -255,11 +256,11 @@ class TestIntimacyCalculator(unittest.TestCase):
         # Test case 1: Score average length delta of texts
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         result = self.calculator.score_avg_length_delta(prev_texts, curr_texts)
@@ -268,9 +269,9 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_get_turn(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now()),
         ]
         self.assertEqual(self.calculator.get_turn(texts, 1), 0.5)
@@ -281,11 +282,11 @@ class TestIntimacyCalculator(unittest.TestCase):
         # Test case 1: Get turn delta of texts
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         self.assertEqual(self.calculator.get_turn_delta(
@@ -296,9 +297,9 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_turn(self):
         texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             ),
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now()),
         ]
         result = self.calculator.score_turn(texts, 1)
@@ -307,11 +308,11 @@ class TestIntimacyCalculator(unittest.TestCase):
     def test_score_turn_delta(self):
         prev_texts = [
             Text(
-                id=1, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
+                id=1, proxy_id=0, chatting_id=1, sender_id=1, msg="Hello", timestamp=datetime.now()
             )
         ]
         curr_texts = [
-            Text(id=2, chatting_id=1, sender_id=2,
+            Text(id=2, proxy_id=0, chatting_id=1, sender_id=2,
                  msg="Hi", timestamp=datetime.now())
         ]
         result = self.calculator.score_turn_delta(prev_texts, curr_texts, 1)
@@ -381,6 +382,7 @@ class TestDb(unittest.TestCase):
             db, self.initiator_id, False)), 1)
         self.assertEqual(len(get_all_chattings(
             db, self.responder_id, False)), 1)
+
         with self.assertRaises(ChattingNotExistException):
             get_chatting_by_id(db, -1)
 
@@ -416,6 +418,7 @@ class TestDb(unittest.TestCase):
                 .values(list(
                     {
                         "chatting_id": chatting.id,
+                        "proxy_id": 0,
                         "sender_id": self.initiator_id,
                         "msg": "hello",
                         "timestamp": timestamp + timedelta(milliseconds=i),
@@ -446,6 +449,12 @@ class TestDb(unittest.TestCase):
         self.assertEqual(len(texts), 2)
         self.assertEqual(texts[0].id, seq_ids[3])
         self.assertEqual(texts[1].id, seq_ids[2])
+
+    @inject_db
+    def test_create_text(self, db: DbSession):
+        chatting = create_chatting(db, self.initiator_id, self.responder_id)
+        text = create_text(db, chatting.id, self.initiator_id, 0, "hello")
+        self.assertEqual(text.proxy_id, 0)
 
     @inject_db
     def test_get_intimacy(self, db: DbSession):
@@ -501,36 +510,54 @@ class TestDb(unittest.TestCase):
         db.execute(
             insert(Topic).values(
                 [
-                    {"topic": "I'm so good", "tag": "A", "is_korean": False},
-                    {"topic": "I'm so mad", "tag": "B", "is_korean": False},
-                    {"topic": "I'm so sad", "tag": "C", "is_korean": False},
-                    {"topic": "I'm so happy", "tag": "C", "is_korean": False},
-                    {"topic": "곧 종강이다~!", "tag": "C", "is_korean": True}
+                    {"topic_kor": "좋아용", "topic_eng": "I'm so good", "tag": "A"},
+                    {"topic_kor": "화나요!!", "topic_eng": "I'm so mad", "tag": "B"},
+                    {"topic_kor": "사랑해", "topic_eng": "I love you", "tag": "B"},
+                    {"topic_kor": "슬퍼요...", "topic_eng": "I'm so sad", "tag": "C"},
+                    {"topic_kor": "행복해요~!~!", "topic_eng": "I'm so happy", "tag": "C"},
+                    {"topic_kor": "곧 종강이다~!", "topic_eng": "Jong-Gang", "tag": "C"}
                 ]
             )
         )
         db.commit()
-        self.assertIn(get_topics(db, 'C', 1, False)[0].topic, [
-                      "I'm so sad", "I'm so happy"])
-        self.assertEqual(get_topics(db, 'C', 1, True)[0].topic, "곧 종강이다~!")
-        self.assertEqual(len(get_topics(db, 'A', 1, True)), 0)
-        self.assertEqual(len(get_topics(db, 'B', 1, True)), 0)
 
-        self.assertEqual(get_topics(db, 'B', 1, False)[0].topic, "I'm so mad")
-        self.assertEqual(get_topics(db, 'A', 1, False)[0].topic, "I'm so good")
-        # get_topics 함수의 return 값이 random 정렬 되었는지 확인
-        test_list = get_topics(db, 'C', 2, False)
-        self.assertNotEqual(test_list[0].topic, test_list[1].topic)
+        topics_a = get_topics(db, "A", 1)
+        topics_b = get_topics(db, "B", 2)
+        topics_c = get_topics(db, "C", 5)
+
+        # if get_topics get correct topics by tag
+
+        for topic in topics_a:
+            self.assertEqual(topic.topic_kor, "좋아용")
+            self.assertEqual(topic.topic_eng, "I'm so good")
+        for topic in topics_b:
+            self.assertIn(topic.topic_kor, ["사랑해", "화나요!!"])
+            self.assertIn(topic.topic_eng, ["I love you", "I'm so mad"])
+        for topic in topics_c:
+            self.assertIn(topic.topic_kor, ["슬퍼요...", "행복해요~!~!", "곧 종강이다~!"])
+            self.assertIn(topic.topic_eng, [
+                          "I'm so sad", "I'm so happy", "Jong-Gang"])
+
+        # if it contains invalid tag or limit = 0
+        self.assertEqual(len(get_topics(db, "D", 2)), 0)
+        self.assertEqual(len(get_topics(db, "C", 0)), 0)
+
+        # # get_topics 함수의 return 값이 random 정렬 되었는지 확인
+        test_list = get_topics(db, 'B', 2)
+        self.assertNotEqual(test_list[0].topic_kor, test_list[1].topic_kor)
+        self.assertNotEqual(test_list[0].topic_eng, test_list[1].topic_eng)
         self.assertEqual(len(test_list), 2)
-        if test_list[0] == "I'm so sad":
-            self.assertEqual(test_list[1].topic, "I'm so happy")
-        elif test_list[0] == "I'm so happy":
-            self.assertEqual(test_list[1].topic, "I'm so sad")
+        if test_list[0].topic_eng == "I'm so mad":
+            self.assertEqual(test_list[1].topic_kor, "사랑해")
+            self.assertEqual(test_list[1].topic_eng, "I love you")
+        elif test_list[0].topic_eng == "I love you":
+            self.assertEqual(test_list[1].topic_kor, "화나요!!")
+            self.assertEqual(test_list[1].topic_eng, "I'm so mad")
 
-        # topic 개수보다 많은 개수를 요청할 경우
-        self.assertEqual(len(get_topics(db, 'C', 3, False)), 2)
-        self.assertEqual(len(get_topics(db, 'C', 4, False)), 2)
-        self.assertEqual(len(get_topics(db, 'B', 5, False)), 1)
+        # if requested more than number of topics
+        self.assertEqual(len(get_topics(db, 'C', 3)), 3)
+        self.assertEqual(len(get_topics(db, 'C', 4)), 3)
+        self.assertEqual(len(get_topics(db, 'B', 5)), 2)
 
 
 if __name__ == "__main__":

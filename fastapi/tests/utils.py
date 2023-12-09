@@ -65,6 +65,10 @@ def inject_db(func):
     return wrapper
 
 
+async def coroutine(return_value):
+    return return_value
+
+
 class InjectMock:
     param: str
 

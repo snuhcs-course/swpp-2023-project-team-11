@@ -17,11 +17,14 @@ class ChattingResponse(BaseModel):
     is_approved: bool = Field(
         description="whether chatting is approved by responder")
     is_terminated: bool = Field(description="whether chatting is terminated")
+    recent_intimacy: float = Field(
+        description="recent intimacy value", examples=[41.37262])
     created_at: datetime
 
 
 class TextResponse(BaseModel):
     seq_id: int = Field(description="global sequence id for all text messages")
+    proxy_id: int
     chatting_id: int
     sender: str = Field(description="sender name", examples=["snek"])
     email: str = Field(description="sender email", examples=["test@snu.ac.kr"])
@@ -37,5 +40,6 @@ class IntimacyResponse(BaseModel):
 
 
 class TopicResponse(BaseModel):
-    topic: str = Field(examples=["좋아하는 책에 대한 이야기"])
+    topic_kor: str = Field(examples=["좋아하는 책에 대한 이야기"])
+    topic_eng: str = Field(examples=["Talk about your favorite book"])
     tag: str = Field(examples=["C"])

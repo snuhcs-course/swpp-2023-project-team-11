@@ -2,8 +2,10 @@ import base64
 from datetime import datetime
 import hmac
 import hashlib
-from sqlalchemy import delete, insert
+
+from sqlalchemy import select, delete, insert
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session as DbSession
 
 from src.auth.exceptions import InvalidSessionException
@@ -12,11 +14,26 @@ from src.constants import HASH_SECRET
 from src.exceptions import InternalServerError
 
 
+class AuthQuery:
+    @staticmethod
+    def get_session_by_key(session_key: str):
+        return select(Session).filter(Session.session_key == session_key)
+
+
 def get_session_by_key(db: DbSession, session_key: str) -> Session:
     """Raises `InvalidSessionException`"""
 
-    session = db.query(Session).filter(
-        Session.session_key == session_key).first()
+    session = db.scalar(AuthQuery.get_session_by_key(session_key))
+    if session is None:
+        raise InvalidSessionException()
+
+    return session
+
+
+async def async_get_session_by_key(db: AsyncSession, session_key: str) -> Session:
+    """Raises `InvalidSessionException`"""
+
+    session = await db.scalar(AuthQuery.get_session_by_key(session_key))
     if session is None:
         raise InvalidSessionException()
 

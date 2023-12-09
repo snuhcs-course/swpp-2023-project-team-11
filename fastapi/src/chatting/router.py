@@ -8,6 +8,7 @@ from src.auth.exceptions import InvalidSessionException
 from src.chatting import service
 from src.chatting.dependencies import *
 from src.chatting.exceptions import *
+from src.chatting.intimacy.calculator import *
 from src.chatting.mapper import *
 from src.chatting.schemas import *
 from src.database import DbConnector
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/chatting", tags=["chatting"])
 def get_all_chattings(is_approved: bool = Query(description="get approved chattings or non-approve-chattings"),
                       limit: int | None = None, user_id: int = Depends(check_session),
                       db: DbSession = Depends(DbConnector.get_db)) -> List[ChattingResponse]:
-    return list(from_chatting(chatting) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
+    return list(from_chatting(chatting, user_id) for chatting in service.get_all_chattings(db, user_id, is_approved, limit))
 
 
 @router.post(
@@ -44,7 +45,7 @@ def create_chatting(responder_id: int = Depends(check_counterpart), user_id: int
                     db: DbSession = Depends(DbConnector.get_db)) -> ChattingResponse:
     chatting = service.create_chatting(db, user_id, responder_id)
     db.commit()
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.put(
@@ -62,7 +63,7 @@ def update_chatting(chatting_id: int, user_id: int = Depends(check_session),
     service.create_intimacy(db, [user_id, chatting.initiator_id], chatting.id)
     db.commit()
 
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.delete(
@@ -79,7 +80,7 @@ def delete_chatting(chatting_id: int, user_id: int = Depends(check_session),
     chatting = service.terminate_chatting(db, user_id, chatting_id)
     db.commit()
 
-    return from_chatting(chatting)
+    return from_chatting(chatting, user_id)
 
 
 @router.get(
@@ -113,7 +114,7 @@ def get_all_texts(seq_id: int = Query(-1, description="if specified, returns the
     .build()
 )
 def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
-                    calculator: service.IntimacyCalculator = Depends(
+                    calculator: IntimacyCalculator = Depends(
                         get_intimacy_calculator),
                     db: DbSession = Depends(DbConnector.get_db)) -> IntimacyResponse:
     recent_intimacy, is_default = service.get_intimacy(
@@ -153,7 +154,6 @@ def create_intimacy(chatting_id: int, user_id: int = Depends(check_session),
     .add(InvalidSessionException())
     .build()
 )
-
 def get_topic_recommendation(
         chatting_id: int,
         limit: int = Query(
@@ -162,20 +162,6 @@ def get_topic_recommendation(
         db: DbSession = Depends(DbConnector.get_db)) -> List[TopicResponse]:
     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
     tag = service.intimacy_tag(intimacy)
-    is_korean = service.is_korean_by_user_id(db, user_id)
-    topics = service.get_topics(db, tag, limit, is_korean)
+    topics = service.get_topics(db, tag, limit)
 
     return list(from_topic(topic) for topic in topics)
-
-# # TODO get intimacy endpoint 두 개 다 없애고 get chatting에 Intimacy 추가해서 보내기
-# @router.get("/intimacy", response_model=IntimacyResponse)
-# def get_intimacy(chatting_id: int, session: Session = Depends(get_session),
-#                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_recent_intimacy(db, user_id, chatting_id)
-#     return from_intimacy(intimacy)
-
-# @router.get("/intimacy/all", response_model=List[IntimacyResponse])
-# def get_all_intimacy(chatting_id: int, session: Session = Depends(get_session),
-#                  db: DbSession = Depends(DbConnector.get_db)):
-#     intimacy = service.get_all_intimacies(db, user_id, chatting_id, None, None)
-#     return list(from_intimacy(intimacy) for intimacy in intimacy)

@@ -1,293 +1,231 @@
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
-from src.auth.models import Session
-from src.database import DbConnector
 from src.websocket.dependencies import *
 from src.websocket.service import *
 from tests.utils import *
 
 
+class TestGetUser(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.name = 'name'
+        self.email = 'email'
+
+        profile = Mock(name='profile')
+        profile.name = self.name
+
+        email = Mock(name='email')
+        email.email = self.email
+
+        verification = Mock(name='verification')
+        verification.awaitable_attrs.email = coroutine(email)
+
+        self.user1 = Mock(name='user')
+        self.user1.awaitable_attrs.profile = coroutine(profile)
+        self.user1.awaitable_attrs.verification = coroutine(verification)
+
+        self.db: AsyncSession = Mock()
+        self.db.scalar = AsyncMock()
+
+    async def test_base(self):
+        profile = Mock(name='profile')
+        profile.name = self.email
+        email = Mock(name='email')
+        email.email = self.name
+        verification = Mock(name='verification')
+        verification.awaitable_attrs.email = coroutine(email)
+
+        self.user2 = Mock(name='user')
+        self.user2.awaitable_attrs.profile = coroutine(profile)
+        self.user2.awaitable_attrs.verification = coroutine(verification)
+        self.db.scalar.side_effect = [self.user1, self.user2]
+        get_user = BaseGetUser()
+
+        name, email = await get_user.get_name_and_email(self.db, 3)
+        self.assertEqual(name, self.name)
+        self.assertEqual(email, self.email)
+
+        name, email = await get_user.get_name_and_email(self.db, 1)
+        self.assertEqual(name, self.email)
+        self.assertEqual(email, self.name)
+
+    async def test_cache(self):
+        self.db.scalar.return_value = self.user1
+        get_user = CachedGetUser(BaseGetUser())
+
+        name, email = await get_user.get_name_and_email(self.db, 3)
+        self.assertEqual(name, self.name)
+        self.assertEqual(email, self.email)
+
+        name, email = await get_user.get_name_and_email(self.db, 3)
+        self.assertEqual(name, self.name)
+        self.assertEqual(email, self.email)
+
+
 class TestWebSocketManager(unittest.IsolatedAsyncioTestCase):
-    manager = get_socket_manager()
-    user_id = 1
-    session_key1 = 'h'
-    session_key2 = 'y'
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.name = 'name'
+        cls.email = 'email'
 
     def setUp(self) -> None:
-        self.socket1 = AsyncMock()
-        self.socket2 = AsyncMock()
-        self.socket3 = AsyncMock()
+        get_user = Mock()
+        get_user.get_name_and_email = AsyncMock(
+            return_value=(self.name, self.email))
 
-    async def test_add_socket(self):
-        await self.manager.add_socket(self.user_id, self.session_key1, self.socket1)
-        self.socket1.close.assert_not_called()
-        self.assertEqual({self.socket1}, set(await self.manager.get_sockets([self.user_id])))
+        self.manager = WebSocketManager(get_user)
+        self.socket1: WebSocket = AsyncMock()
+        self.socket2: WebSocket = AsyncMock()
+        self.socket3: WebSocket = AsyncMock()
+        self.socket4: WebSocket = AsyncMock()
 
-        await self.manager.add_socket(self.user_id, self.session_key2, self.socket2)
-        self.socket1.close.assert_not_called()
-        self.assertEqual({self.socket1, self.socket2}, set(await self.manager.get_sockets([self.user_id])))
+    async def test_sockets(self):
+        await self.manager.add(self.socket1, 3)
+        await self.manager.add(self.socket1, 3)
+        await self.manager.add(self.socket2, 1)
+        await self.manager.add(self.socket3, 1)
+        sockets_3 = await self.manager.get_sockets((3, 0))
+        sockets_1 = await self.manager.get_sockets((1, 0))
+        self.assertEqual(len(sockets_3), 1)
+        self.assertEqual(len(sockets_1), 2)
+        self.assertIn(self.socket1, sockets_3)
+        self.assertIn(self.socket2, sockets_1)
+        self.assertIn(self.socket3, sockets_1)
 
-        await self.manager.add_socket(self.user_id, self.session_key1, self.socket3)
-        self.socket1.close.assert_called()
-        self.assertEqual({self.socket2, self.socket3}, set(await self.manager.get_sockets([self.user_id])))
+        await self.manager.remove(self.socket1, 1)
+        sockets_3 = await self.manager.get_sockets((3, 0))
+        sockets_1 = await self.manager.get_sockets((1, 0))
+        self.assertEqual(len(sockets_3), 1)
+        self.assertEqual(len(sockets_1), 2)
+        self.assertIn(self.socket1, sockets_3)
+        self.assertIn(self.socket2, sockets_1)
+        self.assertIn(self.socket3, sockets_1)
 
-    async def test_remove_socket(self):
-        await self.manager.add_socket(self.user_id, self.session_key1, self.socket1)
-        await self.manager.add_socket(self.user_id, self.session_key2, self.socket2)
-        
-        await self.manager.remove_socket(self.user_id, self.session_key2, self.socket3)
-        self.assertEqual({self.socket1, self.socket2}, set(await self.manager.get_sockets([self.user_id])))
+        await self.manager.remove(self.socket1, 3)
+        await self.manager.remove(self.socket1, 3)
+        sockets_3 = await self.manager.get_sockets((3, 0))
+        sockets_1 = await self.manager.get_sockets((1, 0))
+        self.assertEqual(len(sockets_3), 0)
+        self.assertEqual(len(sockets_1), 2)
+        self.assertIn(self.socket2, sockets_1)
+        self.assertIn(self.socket3, sockets_1)
 
-        await self.manager.remove_socket(self.user_id, self.session_key2, self.socket2)
-        self.assertEqual({self.socket1}, set(await self.manager.get_sockets([self.user_id])))
+    async def test_handle(self):
+        await self.manager.add(self.socket1, 1)
+        await self.manager.add(self.socket2, 2)
+        await self.manager.add(self.socket3, 2)
+        await self.manager.add(self.socket4, 3)
 
-        await self.manager.remove_socket(self.user_id, self.session_key2, self.socket2)
-        self.assertEqual({self.socket1}, set(await self.manager.get_sockets([self.user_id])))
+        chatting = Chatting(id=1, initiator_id=1, responder_id=2,
+                            is_approved=True, is_terminated=False, created_at=datetime.now())
+        text = Text(id=1, proxy_id=1, chatting_id=1, sender_id=1,
+                    msg='hello', timestamp=datetime.now())
+
+        await self.manager.handle(Mock('db'), 1, chatting, text)
+
+        self.socket1.send_json.assert_awaited()
+        self.socket2.send_json.assert_awaited()
+        self.socket3.send_json.assert_awaited()
+        self.socket4.send_json.assert_not_awaited()
 
 
 class TestService(unittest.IsolatedAsyncioTestCase):
-    email = "test@snu.ac.kr"
-    session_key = "session_key"
+    def setUp(self) -> None:
+        self.socket: WebSocket = Mock()
+        self.socket.receive_json = AsyncMock()
+        self.key = "key"
+        self.proxy_id = 0
+        self.chatting_id = -1
+        self.msg = "msg"
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        Base.metadata.create_all(bind=DbConnector.engine)
-        for db in DbConnector.get_db():
-            cls.profile_id = setup_user(db, cls.email)
-            db.execute(insert(Session).values({
-                "session_key": cls.session_key,
-                "user_id": cls.profile_id,
-            }))
-            db.commit()
+    async def test_receive_authentication(self):
+        self.socket.receive_json.side_effect = [
+            {"type": "system", "body": {"session_key": self.key}},
+            {"body": {"session_key": self.key}},
+            {"type": "foo", "body": {"session_key": self.key}},
+            {"type": "system"},
+            {"type": "system", "body": 3},
+            {"type": "system", "body": {}},
+        ]
 
-    @classmethod
-    @inject_db
-    def tearDownClass(cls, db: DbSession) -> None:
-        teardown_user(db)
-        db.commit()
+        session_key = await receive_authentication(self.socket)
+        self.assertEqual(session_key, self.key)
+        # Missing Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_authentication(self.socket)
+        # Wrong Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_authentication(self.socket)
+        # Missing Body
+        with self.assertRaises(InvalidMessageException):
+            await receive_authentication(self.socket)
+        # Invalid Body Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_authentication(self.socket)
+        # Missing Session Key
+        with self.assertRaises(InvalidMessageException):
+            await receive_authentication(self.socket)
 
-    @inject_db
-    def setUp(self, db: DbSession) -> None:
-        self.valid_chatting_id = db.scalar(insert(Chatting).values({
-            "initiator_id": self.profile_id,
-            "responder_id": self.profile_id,
-            "is_approved": True,
-            "created_at": datetime.now(),
-        }).returning(Chatting.id))
-        self.pending_chatting_id = db.scalar(insert(Chatting).values({
-            "initiator_id": self.profile_id,
-            "responder_id": self.profile_id,
-            "created_at": datetime.now(),
-        }).returning(Chatting.id))
-        self.terminated_chatting_id = db.scalar(insert(Chatting).values({
-            "initiator_id": self.profile_id,
-            "responder_id": self.profile_id,
-            "is_terminated": True,
-            "created_at": datetime.now(),
-        }).returning(Chatting.id))
-        db.commit()
+    async def test_receive_msg(self):
+        self.socket.receive_json.side_effect = [
+            {"body": {"proxy_id": 0, "chatting_id": 0, "msg": ""}},
+            {"type": "foo", "body": {"proxy_id": 0, "chatting_id": 0, "msg": ""}},
+            {"type": "message"},
+            {"type": "message", "body": 3},
+            {"type": "message", "body": {}},
+            {"type": "message", "body": {"chatting_id": 0}},
+            {"type": "message", "body": {"proxy_id": 0}},
+            {"type": "message", "body": {"msg": ""}},
+            {"type": "message", "body": {"chatting_id": 0, "proxy_id": 0}},
+            {"type": "message", "body": {"proxy_id": 0, "msg": ""}},
+            {"type": "message", "body": {"chatting_id": 0, "msg": ""}},
+            {"type": "message", "body": {"proxy_id": 0, "chatting_id": "a", "msg": ""}},
+            {"type": "message", "body": {"proxy_id": "a", "chatting_id": 0, "msg": ""}},
+            {"type": "message", "body": {"proxy_id": self.proxy_id,
+                                         "chatting_id": self.chatting_id, "msg": self.msg}},
+        ]
 
-    async def asyncSetUp(self) -> None:
-        self.socket = AsyncMock()
-        self.recv_socket = AsyncMock()
-        self.manager = WebSocketManager()
-        await self.manager.add_socket(self.profile_id, self.session_key, self.recv_socket)
+        # Missing Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Wrong Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Invalid Body Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Missing Body Items
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Invalid ID Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
+        # Invalid ID Type
+        with self.assertRaises(InvalidMessageException):
+            await receive_msg(self.socket)
 
-    def tearDown(self) -> None:
-        for db in DbConnector.get_db():
-            db.execute(delete(Text))
-            db.execute(delete(Chatting))
-            db.commit()
-
-    async def test_authenticate_socket_valid_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "system",
-            "body": {
-                "session_key": self.session_key,
-            }
-        })
-
-        session_key = (await authenticate_socket(self.socket))[1]
-        self.assertEqual(session_key, self.session_key)
-    
-    async def test_authenticate_socket_no_type_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "body": {
-                "session_key": self.session_key,
-            }
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_authenticate_socket_invalid_type_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "foo",
-            "body": {
-                "session_key": self.session_key,
-            }
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_authenticate_socket_no_body_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "system",
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_authenticate_socket_invalid_body_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "system",
-            "body": 3,
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_authenticate_socket_no_session_key_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "system",
-            "body": {},
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_authenticate_socket_invalid_session_key_msg(self):
-        self.socket.receive_json = AsyncMock(return_value={
-            "type": "system",
-            "body": {
-                "session_key": "",
-            },
-        })
-
-        self.socket.close.assert_not_called()
-        with self.assertRaises(WebSocketDisconnect):
-            await authenticate_socket(self.socket)
-        self.socket.close.assert_called()
-
-    async def test_handle_message_invalid_chatting_id(self):
-        self.socket.send_json.assert_not_called()
-        await handle_message(
-            self.profile_id,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": -1,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.send_json.assert_called()
-        self.recv_socket.close.assert_not_called()
-
-    async def test_handle_message_invalid_user_id(self):
-        self.socket.send_json.assert_not_called()
-        await handle_message(
-            -1,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": self.valid_chatting_id,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.send_json.assert_called()
-        self.recv_socket.close.assert_not_called()
-
-    async def test_handle_message_terminated(self):
-        self.socket.send_json.assert_not_called()
-        await handle_message(
-            self.profile_id,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": self.terminated_chatting_id,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.send_json.assert_called()
-        self.recv_socket.close.assert_not_called()
-
-    async def test_handle_message_pending(self):
-        self.socket.send_json.assert_not_called()
-        await handle_message(
-            self.profile_id,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": self.pending_chatting_id,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.send_json.assert_called()
-        self.recv_socket.close.assert_not_called()
-
-    async def test_handle_message_pending(self):
-        self.socket.send_json.assert_not_called()
-        await handle_message(
-            self.profile_id,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": self.pending_chatting_id,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.send_json.assert_called()
-        self.recv_socket.close.assert_not_called()
-
-    async def test_handle_message_success(self):
-        self.recv_socket.send_json.assert_not_called()
-        await handle_message(
-            self.profile_id,
-            {
-                "type": "message",
-                "body": {
-                    "chatting_id": self.valid_chatting_id,
-                    "msg": ""
-                }
-            },
-            self.socket, self.manager)
-        self.socket.close.assert_not_called()
-        self.recv_socket.send_json.assert_called()
-
-    async def test_parse_message(self):
-        output = await parse_message({"body": {"chatting_id": 0, "msg": ""}}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "foo", "body": {"chatting_id": 0, "msg": ""}}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message"}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": 3}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": {}}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": {"chatting_id": 0}}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": {"msg": ""}}, self.socket)
-        self.assertIsNone(output)
-        output = await parse_message({"type": "message", "body": {"chatting_id": "a", "msg": ""}}, self.socket)
-        self.assertIsNone(output)
-        chatting_id, msg = await parse_message({"type": "message", "body": {"chatting_id": 0, "msg": ""}}, self.socket)
-        self.assertEqual(chatting_id, 0)
-        self.assertEqual(msg, "")
+        chatting_id, proxy_id, msg = await receive_msg(self.socket)
+        self.assertEqual(chatting_id, self.chatting_id)
+        self.assertEqual(proxy_id, self.proxy_id)
+        self.assertEqual(msg, self.msg)

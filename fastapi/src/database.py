@@ -1,14 +1,15 @@
-from typing import AsyncGenerator, Generator, Any
-from sqlalchemy import Engine, create_engine
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.orm.decl_api import DeclarativeMeta
+import asyncio
 import os
+from typing import AsyncGenerator, Generator, Any
+
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 
 
 # Base Model Class
-Base: DeclarativeMeta = declarative_base()
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 class DbConnector:
@@ -24,7 +25,7 @@ class DbConnector:
     SessionLocal: sessionmaker[Session] = sessionmaker(
         autocommit=False, autoflush=False, bind=engine)
     AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
-        bind=async_engine, autoflush=False, autocommit=False)
+        bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
     @classmethod
     def get_db(cls) -> Generator[Session, Any, None]:
@@ -40,4 +41,5 @@ class DbConnector:
         try:
             yield db
         finally:
-            await db.close()
+            task = asyncio.create_task(db.close())
+            await asyncio.shield(task)

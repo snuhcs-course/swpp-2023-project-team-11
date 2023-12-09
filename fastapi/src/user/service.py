@@ -7,8 +7,9 @@ import numpy as np
 import pandas as pd
 import random
 from smtplib import SMTP_SSL
-from sqlalchemy import insert, select, alias, update
+from sqlalchemy import insert, select, alias, update, delete
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session as DbSession
 from typing import List, Tuple
 
@@ -17,6 +18,12 @@ from src.user.constants import *
 from src.user.exceptions import *
 from src.user.schemas import *
 from src.user.models import *
+
+
+class UserQuery:
+    @staticmethod
+    def get_user_by_id(user_id: int):
+        return select(User).where(User.user_id == user_id)
 
 
 def get_verification_code(db: DbSession, email: str) -> EmailCode:
@@ -74,19 +81,21 @@ def create_verification(db: DbSession, token: str, email: str, email_id: int):
 def get_user_by_id(db: DbSession, user_id: int) -> User:
     """Raises `InvalidUserException`"""
 
-    user = db.query(User).where(User.user_id == user_id).first()
+    user = db.scalar(UserQuery.get_user_by_id(user_id))
     if user is None:
         raise InvalidUserException()
 
     return user
 
 
-def is_korean_by_user_id(db: DbSession, user_id: int) -> bool:
-    user = get_user_by_id(db, user_id)
-    if user.profile.nation_code == 82:
-        return True
-    else:
-        return False
+async def async_get_user_by_id(db: AsyncSession, user_id: int) -> User:
+    """Raises `InvalidUserException`"""
+
+    user = await db.scalar(UserQuery.get_user_by_id(user_id))
+    if user is None:
+        raise InvalidUserException()
+
+    return user
 
 
 def get_user_by_email(db: DbSession, email: str) -> User:
@@ -123,8 +132,34 @@ def create_profile(db: DbSession, profile: ProfileData) -> int:
                      profile.hobbies, InvalidHobbyException)
     create_user_item(db, profile_id, user_location, "location_id",
                      Location, profile.locations, InvalidLocationException)
-    
+
     return profile_id
+
+
+def create_user_tag(db: DbSession, user_id: int, req: UpdateUserRequest):
+    keys = ["food", "movie", "hobby", "location", "lang"]
+    tables = [user_food, user_movie, user_hobby, user_location, user_lang]
+    models: List[Base] = [Food, Movie, Hobby, Location, Language]
+    items_list: List[List[str]] = [
+        req.food, req.movie, req.hobby, req.location, req.lang]
+    exceptions = [InvalidFoodException, InvalidMovieException,
+                  InvalidHobbyException, InvalidLocationException, InvalidLanguageException]
+    for key, table, model, items, exception in zip(keys, tables, models, items_list, exceptions):
+        column = f"{key}_id"
+        create_user_item(db, user_id, table, column, model, items, exception)
+
+
+def delete_user_tag(db: DbSession, user_id: int, req: UpdateUserRequest):
+    keys = ["food", "movie", "hobby", "location", "lang"]
+    tables = [user_food, user_movie, user_hobby, user_location, user_lang]
+    models: List[Base] = [Food, Movie, Hobby, Location, Language]
+    items_list: List[List[str]] = [
+        req.food, req.movie, req.hobby, req.location, req.lang]
+    exceptions = [InvalidFoodException, InvalidMovieException,
+                  InvalidHobbyException, InvalidLocationException, InvalidLanguageException]
+    for key, table, model, items, exception in zip(keys, tables, models, items_list, exceptions):
+        column = f"{key}_id"
+        delete_user_item(db, user_id, table, column, model, items, exception)
 
 
 def get_language_by_name(db: DbSession, name: str) -> int:
@@ -182,6 +217,16 @@ def create_user_item(db: DbSession, profile_id: int, table: Table, column: str, 
         }for item in items]))
     except IntegrityError:
         raise exception()
+
+
+def delete_user_item(db: DbSession, profile_id: int, table: Table, column: str, model: type[Base], items: List[str], exception: type[HTTPException]):
+    """Raises `@exception`"""
+
+    for item in items:
+        result = db.execute(delete(table).where(table.c.user_id == profile_id).where(
+            table.c[column] == select(model.id).where(model.name == item).scalar_subquery()))
+        if result.rowcount == 0:
+            raise exception()
 
 
 def sort_target_users(user: User, targets: List[User]) -> List[User]:
@@ -281,5 +326,3 @@ def send_code_via_email(email: str, code: int) -> None:
     with SMTP_SSL(MAIL_SERVER, MAIL_PORT) as smtp:
         smtp.login(MAIL_ADDRESS, MAIL_PASSWORD)
         smtp.send_message(msg)
-
-
