@@ -1,28 +1,15 @@
-# SNU-SWPP-Template
+# SNEK
 
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
+Language exchange platform, better than snacks!
 
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
-
-# [Your Application Name]
-
-[Short application description here]
-
-![Application Screenshot](path_to_screenshot.png)
+![Application Screenshot](https://github.com/snuhcs-course/swpp-2023-project-team-11/blob/2afc606b1006048fbaf8f48924fb5ded250ba29e/assets/total_Screenshot.png)
 
 ## Features
 
-- Feature 1: Brief description
-- Feature 2: Brief description
-- ...
+- Feature 1: Search potential language exchange partners
+- Feature 2: And start a language exchange session via chat!
 
-## Getting Started
+## Remarks
 
-### Prerequisites
+- This course has been meaningful 
 
-- Android Studio [version, e.g., 4.2.1]
-- Minimum Android SDK Version [e.g., 21]
-
-### Installation
-
-[Installation link here]
