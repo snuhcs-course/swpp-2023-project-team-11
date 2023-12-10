@@ -12,7 +12,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChattingServiceImpl implements ChattingService {
   static WebSocketChannel? chatSocketChannel;
-  static const _chatWebSocketUrl = "ws://3.35.9.226:8000/ws/connect";
   static String? cachedSessionKey;
   static StreamSubscription? cachedSubscription;
   static void Function(dynamic)? cachedOnData;
@@ -30,7 +29,7 @@ class ChattingServiceImpl implements ChattingService {
   }) {
     chatLogger.i("init chat connection");
     cachedSessionKey = sessionKey;
-    chatSocketChannel = WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl));
+    chatSocketChannel = WebSocketChannel.connect(Uri.parse(Environment.socketUrl));
     // 소켓의 listener에 넣을 콜백을 미리 정의 및 cache
     cachedOnData = (event) {
       final decoded = jsonDecode(event);
@@ -146,7 +145,7 @@ class ChattingServiceImpl implements ChattingService {
 
     chatLogger.i("setting up new socket channel...");
     chatSocketChannel =
-        WebSocketChannel.connect(Uri.parse(_chatWebSocketUrl)); // 성공 또는 실패
+        WebSocketChannel.connect(Uri.parse(Environment.socketUrl)); // 성공 또는 실패
 
     chatSocketChannel!.ready.then((_) {
       // connection successful

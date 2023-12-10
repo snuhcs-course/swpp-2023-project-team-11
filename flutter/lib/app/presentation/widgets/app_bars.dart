@@ -146,7 +146,6 @@ class FriendDetailAppBar extends StatelessWidget implements PreferredSizeWidget 
                   },
                   onSelected: (value) {
                     if (value == 0) {
-                      print("My account menu is selected.");
                       actionFunction!();
                     } else if (value ==1) {
                       MyLanguageUtil.toggle();

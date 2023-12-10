@@ -140,7 +140,6 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
       return GestureDetector(
         onTap: () {
           controller.onChattingRoomTap(chatroom);
-          print(chatroom.isApproved && !chatroom.isTerminated);
         },
         behavior: HitTestBehavior.opaque,
         child: Padding(
@@ -218,9 +217,6 @@ class ChattingRoomsScreen extends GetView<ChattingRoomsScreenController> {
                             fontWeight: FontWeight.w400,
                             color: const Color(0xff2d3a45).withOpacity(0.8)),
                       ),
-                      // ElevatedButton(onPressed: (){
-                      //   print("${controller.spC.getString(chatroom.id.toString())} is what i found from sp - decoding");
-                      // }, child: Icon(Icons.favorite))
                     ],
                   ),
                 ),

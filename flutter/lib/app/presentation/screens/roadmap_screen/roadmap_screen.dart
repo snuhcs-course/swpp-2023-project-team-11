@@ -33,8 +33,8 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
             children: [
               Center(
                 child: Container(
-                  height: 30,
-                  child: Row(
+                  height: 50,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -114,7 +114,6 @@ class RoadmapScreen extends GetView<RoadmapScreenController> {
             return GestureDetector(
                 child: _buildTopicContainer(topics, index),
                 onTap: () {
-                  print("pressed suggestion bubble");
                   controller.onSuggestionBubbleTap(topics[index]);
                 });
           });

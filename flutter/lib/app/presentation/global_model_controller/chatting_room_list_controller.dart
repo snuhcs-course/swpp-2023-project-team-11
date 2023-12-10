@@ -48,14 +48,12 @@ class ChattingRoomListController extends SuperController<
   void onInit() async {
     super.onInit();
     _isDeviceConnected = await InternetConnectionChecker().hasConnection;
-    print("isDeviceConnected : $_isDeviceConnected");
     _internetOverlayCompleter = Completer();
     isDeviceConnectedSubscription = InternetConnectionChecker()
         .onStatusChange
         .listen((InternetConnectionStatus status) async {
       final newIsDeviceConnected =
           (status == InternetConnectionStatus.connected);
-      print("newIsDeviceConnected : $newIsDeviceConnected");
       if (!newIsDeviceConnected) {
         _internetOverlayCompleter = Completer();
         // Get.showOverlay(
@@ -79,7 +77,6 @@ class ChattingRoomListController extends SuperController<
       }
       // 끊겼다가 다시 연결되는 경우
       if (newIsDeviceConnected && !_isDeviceConnected) {
-        print("// 끊겼다가 다시 연결되는 경우 -> refetch");
         reFetchAllChatsForEachValidRooms();
       }
       _isDeviceConnected = newIsDeviceConnected;
@@ -89,7 +86,6 @@ class ChattingRoomListController extends SuperController<
   @override
   Future<void> onReady() async {
     super.onReady();
-    print("onReady");
     change(null, status: RxStatus.loading());
     await _fetchChattingRoomsUseCase.all(
       email: Get.find<UserController>().userEmail,
@@ -110,7 +106,6 @@ class ChattingRoomListController extends SuperController<
         );
       },
       whenFail: () {
-        print("채팅룸 불러오기 실패...");
       },
     );
   }
@@ -384,10 +379,7 @@ class ChattingRoomListController extends SuperController<
 
   @override
   void onResumed() async {
-    print("------- on Resumed ---------");
     if (_isDeviceBackground) {
-      print("------- on Resumed from background---------");
-      print("now isConnected : $_isDeviceConnected");
       _isDeviceBackground = false;
       if (_isDeviceConnected) {
         await ChattingServiceImpl().reConnect();

@@ -18,15 +18,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import "main_test.mocks.dart";
 import 'test_main.dart';
 
-bool testInDocker = false;
+// 여기서 선택할 수 있습니다.
+// false를 변수에 입력하면 서버에서 테스트가 가능합니다.
+// 로컬에서 테스트하려면 fast api 폴더의 readme 및 ops 폴더 하위의 deploy.sh 스크립트를 참고하세요
+bool testInLocal = true;
 
 void main() async {
   // needs to change base url to local host or not
-  String validEmail = "integration1@snu.ac.kr";
+  String validEmail = "test1@snu.ac.kr";
   String validPwd = "password";
-  if(testInDocker) {
+
+  if(testInLocal) {
     Environment.setTestMode();
-    validEmail = "test1@snu.ac.kr";
+    validEmail = "integration1@snu.ac.kr";
     validPwd = "password";
   }
 
@@ -47,6 +51,7 @@ void main() async {
       final loginButton = find.text("로그인");
       expect(find.text('로그인'), findsOneWidget);
       expect(find.text('회원가입'), findsOneWidget);
+      _testDescription("로그인 및 회원가입 위젯 존재 확인");
 
       // try sign in by pre generated data
 
@@ -73,6 +78,9 @@ void main() async {
 
       // check now route is main
       expect(Get.currentRoute, "/main");
+
+      _testDescription("로그인 및 메인 진입");
+
       await tester.pump(const Duration(milliseconds: 1000));
       // move into second tap (chatting room list)
       await tester.tap(find.byKey(ValueKey(1)));
@@ -81,17 +89,19 @@ void main() async {
 
       // check there is at least 1 valid room
       expect(validRoomFind, findsAtLeast(1));
+      _testDescription("유효한 채팅방 존재 확인");
 
       // if valid rooms exist
       if (validRoomFind.found.isNotEmpty){
         final targetFind = validRoomFind.first;
         // tap valid room container
-        await tester.tap(targetFind);
+        await tester.tap(targetFind,warnIfMissed: false);
         await tester.pumpAndSettle();
         await tester.pump(const Duration(milliseconds: 1200));
 
         // check route is main/room
         expect(Get.currentRoute, "/main/room");
+        _testDescription("유효한 채팅방 진입");
         final listFinder = find.byType(Scrollable).last;
         await tester.drag(listFinder, Offset(0, -200));
         await tester.pump(const Duration(milliseconds: 500));
@@ -102,10 +112,12 @@ void main() async {
 
         // check route is main/room/roadmap
         expect(Get.currentRoute, "/main/room/roadmap");
+        _testDescription("로드맵 (추천 받기) 스크린 진입");
         // select topic
         final targetTopic = find.byKey(ValueKey(0));
         await tester.tap(targetTopic);
         await tester.pumpAndSettle(const Duration(milliseconds: 800));
+        _testDescription("주제 선택");
 
         // check topic widget exists
         expect(targetTopic, findsOneWidget);
@@ -122,9 +134,11 @@ void main() async {
         // submit selected topic by tapping button
 
         await tester.tap(find.text("선택 완료"));
+
         await tester.pumpAndSettle();
         // wait
         await tester.pump(const Duration(milliseconds: 1500));
+        _testDescription("주제 선택 및 제출");
 
         // find submitted topic
         final targetRoadmapTextWidgetFind = find.descendant(of: find.byType(ChatMessage), matching: find.byWidgetPredicate((widget) {
@@ -137,6 +151,7 @@ void main() async {
         await tester.scrollUntilVisible(targetRoadmapTextWidgetFind, 100,scrollable: listFinder);
         // check submitted topic exists in chatting room
         expect(targetRoadmapTextWidgetFind, findsAtLeast(1));
+        _testDescription("선택한 주제 채팅방 도착");
         await tester.pump(const Duration(milliseconds: 1000));
 
         // page back to main
@@ -144,6 +159,7 @@ void main() async {
         await tester.pumpAndSettle();
         // check here is main
         expect(Get.currentRoute, '/main');
+        _testDescription("메인 재진입");
       } else {
         print("no find valid rooms - skip roadmap checking");
       }
@@ -157,6 +173,7 @@ void main() async {
 
       // 로그아웃 완료
       expect(Get.currentRoute, "/entry");
+      _testDescription("로그아웃 완료");
       await tester.pump(const Duration(milliseconds: 1000));
 
     });
@@ -167,4 +184,10 @@ String _cleansingString(String value) {
   final uniCodes = value.runes.toList();
   uniCodes.removeWhere((element) => element==8205);
   return String.fromCharCodes(uniCodes);
+}
+
+void _testDescription(String value) {
+  print("---------------------");
+  print("test sucess : $value");
+  print("---------------------");
 }
