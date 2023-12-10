@@ -5,19 +5,19 @@ docker build -t snek:it-test -f ops/backend.Dockerfile .
 docker build -t snek:chatting -f ops/chatting.Dockerfile .
 
 # Run database
-docker run --name snek-db --rm -d -p 5432:5432 \
+docker run --name snek-db -d -p 5432:5432 \
     --add-host host.docker.internal:host-gateway \
     --env-file deploy.conf \
     postgres:latest
 
 # Run migrations
-docker run --name snek-migration --rm -d \
+docker run --name snek-migration -d \
     --add-host host.docker.internal:host-gateway \
     --env-file deploy.conf \
     snek:migration
 
 # Run service
-docker run --name snek-it-test --rm -d -p 8000:8000 \
+docker run --name snek-it-test -d -p 8000:8000 \
     --add-host host.docker.internal:host-gateway \
     --env-file deploy.conf \
     snek:it-test
@@ -88,7 +88,7 @@ curl -X 'POST' \
 echo ""
 
 # Create chatting
-docker run --name snek-chatting --rm -d \
+docker run --name snek-chatting -d \
     --add-host host.docker.internal:host-gateway \
     --env INITIATOR="'IT_KOR'" \
     --env RESPONDER="'IT_FOR'" \
