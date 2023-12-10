@@ -12,7 +12,7 @@ class UserRepositoryImpl implements UserRepository {
     const path = "/user/me";
     try{
       final response = await dio.get<Map<String, dynamic>>(
-        baseUrl + path
+          Environment.baseUrl + path
       );
       final data = response.data;
       if (data == null) throw Exception();
@@ -44,7 +44,7 @@ class UserRepositoryImpl implements UserRepository {
     // print(baseUrl + path);
     try{
       final response = await dio.get(
-          baseUrl + path
+          Environment.baseUrl + path
       );
       final data = response.data as List;
       // print("fetch$data");
@@ -82,7 +82,7 @@ class UserRepositoryImpl implements UserRepository {
     const path_delete = "/user/tag/delete";
 
     try{
-      final response = await dio.put(baseUrl + path_create, data: createData);
+      final response = await dio.put(Environment.baseUrl + path_create, data: createData);
       print("response edit: ${response.statusCode}");
 
     } on DioException catch(e) {
@@ -97,7 +97,7 @@ class UserRepositoryImpl implements UserRepository {
     }
 
     try{
-      final response = await dio.put(baseUrl + path_delete, data: deleteData);
+      final response = await dio.put(Environment.baseUrl + path_delete, data: deleteData);
       print("response edit: ${response.statusCode}");
     } on DioException catch(e) {
       // 이걸로 분기를 해서 대응해라

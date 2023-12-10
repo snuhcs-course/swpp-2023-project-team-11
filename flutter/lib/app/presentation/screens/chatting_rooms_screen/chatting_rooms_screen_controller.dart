@@ -33,13 +33,11 @@ class ChattingRoomsScreenController extends GetxController{
   
   String latestChatMessage(int chatRoomId){
     Chat chat = Chat.fromJson(json.decode(spC.getString(chatRoomId.toString())!));
-    // print("parsed result = ${chat}");
     return StringParserUtil.buildRoadmapText(chat.message);
   }
 
   DateTime timeOfLatestChatMessage(ChattingRoom chattingRoom){
     Chat chat = Chat.fromJson(json.decode(spC.getString(chattingRoom.id.toString())!));
-    // print("parsed result = ${chat}");
     return chat.sentAt;
   }
 
@@ -75,7 +73,6 @@ class ChattingRoomsScreenController extends GetxController{
   }
 
   void onChattingRoomTap(ChattingRoom chattingRoom) {
-    print("${chattingRoom.isApproved} and ${chattingRoom.isTerminated}");
     if (chattingRoom.isApproved && !chattingRoom.isTerminated) {
       Get.toNamed(Routes.Maker(nextRoute: Routes.ROOM), arguments: chattingRoom);
     } else if(!chattingRoom.isApproved){

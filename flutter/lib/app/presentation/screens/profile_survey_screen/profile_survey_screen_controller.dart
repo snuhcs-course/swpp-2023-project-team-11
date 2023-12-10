@@ -57,7 +57,6 @@ class ProfileSurveyScreenController extends GetxController {
 
     getQuestionBundleStream.listen((questionBundle) {
       final questionAdderStream = getIntervalQuestionStream(questionBundle);
-      print(questionBundle.getAnswerType);
       questionAdderStream.listen((questionText) {
         if (questionText != null) {
           chatTextList.add((questionText, SenderType.sneki));

@@ -15,7 +15,7 @@ class EmailServiceImpl implements EmailService{
     const path = '/user/email/code';
 
     try{
-      final response = await dio.post<String>(baseUrl + path, data: {"email": email});
+      final response = await dio.post<String>(Environment.baseUrl + path, data: {"email": email});
       final data = response.data;
       if (data == null) throw Exception();
       return Result.success(data);
@@ -35,7 +35,7 @@ class EmailServiceImpl implements EmailService{
     const path = "/user/email/verify";
 
     try{
-      final response = await dio.post<Map<String, dynamic>>(baseUrl + path, data: {"email": email, "code": emailCode});
+      final response = await dio.post<Map<String, dynamic>>(Environment.baseUrl + path, data: {"email": email, "code": emailCode});
       final data = response.data;
       if (data == null) throw Exception();
       // at this point, the code was correct and email token is returned.

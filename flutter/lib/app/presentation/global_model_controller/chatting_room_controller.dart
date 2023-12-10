@@ -76,15 +76,11 @@ class ValidChattingRoomController extends GetxController {
   }
 
   Future<void> reFetchChatsFromResume() async {
-    print("----------- reFetchChatsFromResume ---------");
     final lastChatIndex = _getLatestChatIndex();
-    print(chatVmList.length);
-    print(lastChatIndex);
     await _fetchAllChatUseCase.call(
       chattingRoomId: chattingRoom.id.toString(),
       sequenceId: chatVmList[lastChatIndex].sequenceId,
       whenSuccess: (chats) {
-        print("reFetchChatsFromResume --------- 추가된 챗들 개수: ${chats.length}");
         chatVmList.insertAll(
           lastChatIndex +1,
           chats.map((e) => ChatVM.fromChat(e)),

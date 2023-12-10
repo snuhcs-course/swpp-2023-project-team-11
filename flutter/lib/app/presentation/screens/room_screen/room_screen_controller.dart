@@ -98,7 +98,6 @@ class RoomScreenController extends GetxController {
       enableSendButton(chattingCon.text.isNotEmpty);
     });
     chattingFocusNode.addListener(() async {
-      print(chattingFocusNode.hasFocus);
       if (chattingFocusNode.hasFocus) {
         await Future.delayed(const Duration(milliseconds: 160));
         scrollDownToBottom(110);
@@ -126,7 +125,6 @@ class RoomScreenController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    print("hi-------hi-------hi-------hi-------");
     chattingCon.dispose();
     chattingFocusNode.dispose();
   }

@@ -16,7 +16,6 @@ class SplashScreenController extends GetxController {
 
   @override
   void onReady() {
-    print("splash on ready");
     if ((sp.containsKey(language_setting)) && (sp.getString(language_setting) == 'en') && MyLanguageUtil.isKr) MyLanguageUtil.toggle();
     _automaticSignInUseCase.call(
       onFail: () {
