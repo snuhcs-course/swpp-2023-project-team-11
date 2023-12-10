@@ -23,7 +23,7 @@ class AuthServiceImpl implements AuthService {
     const path = '/auth/sign_out';
     try {
       final response = await dio.delete(
-        baseUrl + path,
+        Environment.baseUrl + path,
       );
       final data = response.data;
       print(data);
@@ -54,7 +54,7 @@ class AuthServiceImpl implements AuthService {
     const path = '/user/sign_up';
     try  {
       final response = await dio.post<Map<String,dynamic>>(
-        baseUrl + path,
+        Environment.baseUrl + path,
         data: {
           "email": email,
           "token": emailToken,
@@ -125,7 +125,7 @@ class AuthServiceImpl implements AuthService {
     try {
 
       final response = await dio.post<Map<String, dynamic>>(
-          baseUrl + path,
+        Environment.baseUrl + path,
           data: {
             "username": email,
             "password": password,

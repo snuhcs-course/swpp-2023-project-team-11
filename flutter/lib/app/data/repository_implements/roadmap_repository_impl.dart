@@ -17,7 +17,7 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
 
     try {
       final response = await dio.get<String>(
-          baseUrl + path,
+          Environment.baseUrl + path,
           queryParameters: {"chatting_id": chattingRoomId, "limit": 3},
         options: Options(headers: {'accept': 'application/json'})
       );
@@ -50,7 +50,7 @@ class RoadmapRepositoryImpl implements RoadmapRepository {
     print(chattingRoomId);
 
     try {
-      final response = await dio.post<Map<String, dynamic>>(baseUrl + path,
+      final response = await dio.post<Map<String, dynamic>>(Environment.baseUrl + path,
           queryParameters: {"chatting_id": chattingRoomId});
       final data = response.data;
       if (data == null) throw Exception();

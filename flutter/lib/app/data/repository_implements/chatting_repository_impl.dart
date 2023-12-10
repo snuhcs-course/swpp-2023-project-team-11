@@ -11,7 +11,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try {
-      final response = await dio.get<List<dynamic>>(baseUrl + path, queryParameters: {"is_approved" : true});
+      final response = await dio.get<List<dynamic>>(Environment.baseUrl + path, queryParameters: {"is_approved" : true});
       final data = response.data;
       if (data== null) throw Exception("데이터가 Null");
       final chattingRooms = data.map((e) => ChattingRoom.fromJson(e)).toList();
@@ -32,7 +32,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try {
-      final response = await dio.get<List<dynamic>>(baseUrl + path, queryParameters: {"is_approved" : false});
+      final response = await dio.get<List<dynamic>>(Environment.baseUrl + path, queryParameters: {"is_approved" : false});
       final data = response.data;
       if (data== null) throw Exception("데이터가 Null");
       final chattingRooms = data.map((e) => ChattingRoom.fromJson(e)).toList();
@@ -53,7 +53,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try {
-      final response = await dio.post(baseUrl + path, data: {
+      final response = await dio.post(Environment.baseUrl + path, data: {
         "counterpart" : counterPartEmail,
       });
       final data = response.data;
@@ -77,7 +77,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
     final Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try {
-      final response = await dio.put(baseUrl + path, queryParameters: {
+      final response = await dio.put(Environment.baseUrl + path, queryParameters: {
         "chatting_id" : chattingRoomId,
       });
       final data = response.data;
@@ -102,7 +102,7 @@ class ChattingRepositoryImpl implements ChattingRepository {
     Dio dio = DioInstance.getDio;
     const path = "/chatting/";
     try{
-      final response = await dio.delete(baseUrl + path, queryParameters: {
+      final response = await dio.delete(Environment.baseUrl + path, queryParameters: {
         "chatting_id" : chattingRoomId,
       });
       final data = response.data;

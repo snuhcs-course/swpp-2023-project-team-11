@@ -7,6 +7,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/app/domain/service_interfaces/auth_service.dart';
 import 'package:mobile_app/app/presentation/widgets/chat_messages.dart';
+import 'package:mobile_app/core/constants/environment.dart';
 import 'package:mobile_app/dependency_manager.dart';
 import 'package:mobile_app/main.dart';
 import 'package:mockito/annotations.dart';
@@ -17,11 +18,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 import "main_test.mocks.dart";
 import 'test_main.dart';
 
+bool testInDocker = false;
+
 void main() async {
+  // needs to change base url to local host or not
+  String validEmail = "integration1@snu.ac.kr";
+  String validPwd = "password";
+  if(testInDocker) {
+    Environment.setTestMode();
+    validEmail = "test1@snu.ac.kr";
+    validPwd = "password";
+  }
+
+
   final widgetsBinding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  //auth service mocking
   final authService = MockAuthService();
   when(authService.getSessionKey).thenAnswer((_) async => null);
+
   group("main flow", ()  {
     testWidgets("main flow impl", (tester) async {
       // load app widget
@@ -34,8 +49,7 @@ void main() async {
       expect(find.text('회원가입'), findsOneWidget);
 
       // try sign in by pre generated data
-      const validEmail = "jun7332568@snu.ac.kr";
-      const validPwd = "test1234";
+
 
       // open login bottom sheet
       await tester.tap(loginButton);

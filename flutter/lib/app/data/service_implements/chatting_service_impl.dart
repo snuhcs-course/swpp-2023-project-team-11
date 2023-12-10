@@ -90,7 +90,7 @@ class ChattingServiceImpl implements ChattingService {
         params["seq_id"] = sequenceId;
       }
       final response = await dio.get<List<dynamic>>(
-        baseUrl + path,
+        Environment.baseUrl + path,
         queryParameters: params,
       );
       final data = response.data;
